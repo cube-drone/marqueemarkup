@@ -55,8 +55,12 @@ Blocks, separated by blank lines:
 - **Heading** - ATX only: 1-6 `#` + space + text. No setext underlines.
 - **Fenced code** - triple-backtick fences, optional info string, no indentation-based code.
 - **Blockquote** - `>` prefix per line. No lazy continuation.
-- **List** - `- ` unordered, `1. ` ordered (renderer numbers; author's digits not significant).
-  Nesting by exactly two spaces per level, capped depth. One marker style; no `+`/`*` markers.
+- **List** - `- `, `* `, or `+ ` unordered (pure synonyms: markdown muscle memory is the UX
+  budget, and a list that silently isn't a list is worse than any extra grammar line); `1. `
+  ordered (renderer numbers; author's digits not significant). **Marker choice never carries
+  meaning** - adjacent items with different markers are one list; there is no
+  CommonMark-style split-on-marker-switch. Canonical AST records the list, not the spelling.
+  Nesting by exactly two spaces per level, capped depth.
 - **Thematic break** - `---` alone on a line.
 - **Directive block** - see below.
 
@@ -109,12 +113,13 @@ Page layout is *picked, not authored* - the Geocities move, and the anti-CSS fir
 ### Includes: shared nav, footers, mix-ins
 
 ```
-:::include doc=doc:NAV_DOC_ID
+:::include doc=NAV_ID                        (relative: a sibling in the same context)
+:::include doc=ringtome://identity/NAV_ID    (absolute: someone else's, where permitted)
 ```
 
-- Includes are **live by default** (id-addressed: edit your nav once, every page updates) or
-  **pinned** (hash-addressed: this exact version forever). Live-vs-pinned is the target
-  duality, chosen per reference.
+- Includes are **live by default** (a relative or location-addressed reference: edit your nav
+  once, every page updates) or **pinned** (`blob:`-addressed: this exact version forever).
+  Live-vs-pinned is the target duality, chosen per reference.
 - The language enforces mechanics: include depth cap (v0: includes may not include), cycle =
   strict error. The *trust scope* - whose documents may be included - is embedder policy
   (Ringtome's profile: same-identity only in v1; someone else's mutable content inside your
@@ -126,8 +131,8 @@ Page layout is *picked, not authored* - the Geocities move, and the anti-CSS fir
 ### Computed slots: the client fills in the blank
 
 ```
-:::computed role=next-in-stream stream=doc:STREAM_DOC_ID
-:::computed role=prev-in-stream stream=doc:STREAM_DOC_ID
+:::computed role=next-in-stream stream=STREAM_ID
+:::computed role=prev-in-stream stream=STREAM_ID
 ```
 
 The webcomic "next" button: the *author* declares intent, the *client* computes the content at
@@ -144,15 +149,29 @@ the vocabulary grows from the corpus, one widget at a time.
 
 ## Targets
 
-One grammar for every reference (links, media, includes, oneboxes):
+One reference grammar for every target - links, media embeds, includes, oneboxes: a target is a
+**URI reference** (RFC 3986), absolute or relative, with standard resolution. Not a new
+mechanism - the web's own, adopted whole:
 
-- `https:` / `http:` - the regular web. **Marquee is useful outside any p2p system**; web
-  images, videos, and links are first-class *in the grammar*. Whether they are *fetched* is
-  embedder policy (below).
-- `ringtome://` - host-protocol content (an embedder-registered scheme; other embedders may
-  register their own).
-- `blob:HASH` - content-addressed, immutable: the pinned form.
-- `doc:ID` - a stable document identity within the embedding context: the live form.
+- **Relative references** (`nav`, `../shared/nav`, `/home/nav`) resolve against the containing
+  document's **base URI**, which the embedder supplies: on the web, the document's URL, exactly
+  as HTML; in Ringtome, the document's own `ringtome://root/...` address - so a bare `id` names
+  a sibling document in the same identity, and author-context resolution is a *corollary of the
+  standard*, not a bespoke rule. The known cost, accepted with eyes open: relative references
+  are location-dependent (move the document, break the short links) - the web's bargain since
+  1993, and the absolute form always exists.
+- **Transclusion base rule:** an included document's own relative references resolve against
+  *its* base, never the includer's (the iframe rule, not the SSI rule) - a shared nav renders
+  the same links on every page that includes it, or convergence dies.
+- **Absolute forms**: `https:` / `http:` (the regular web - Marquee is useful outside any p2p
+  system; web images, videos, and links are first-class in the grammar; whether they are
+  *fetched* is embedder policy), embedder-registered schemes (`ringtome://identity/id` - the
+  whole shebang, required for cross-identity references), and `blob:HASH`.
+- **Live vs. pinned is per-scheme**: relative references and location-addressed schemes are
+  *live* (resolution yields the current version); hash-addressed schemes (`blob:`) are *pinned*
+  (this exact content forever). Choose per reference.
+- Grammar-side, a target is a lexable token: no unescaped whitespace or `)`; the parser decides
+  where a target ends, never what it means.
 
 ## Embedder profiles
 
@@ -167,8 +186,11 @@ An embedder (Ringtome, a static-site generator, anything) declares:
 - **Include trust scope** and pin requirements.
 - **Onebox default** (full card / title / bare link) and its fetch rules.
 
-The **Ringtome profile** (maintained in the Ringtome repo, not here): embeds `blob:` +
-`ringtome://` natively; `https:` media allowed with node-proxy fetch as default and care modes
+The **Ringtome profile** (maintained in the Ringtome repo, not here): a document's base URI is
+its own `ringtome://root/...` address, so a bare relative `id` resolves within the authoring
+identity (the id being the store layer's stable `doc_id`: the private register key for notes,
+the reserved payload field for posts) and cross-identity references are fully qualified;
+embeds `blob:` + `ringtome://` natively; `https:` media allowed with node-proxy fetch as default and care modes
 present; includes same-identity only; the cozy widget set; oneboxes on by default for
 `ringtome://` targets and title-only for the web.
 
