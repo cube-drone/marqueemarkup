@@ -67,8 +67,24 @@ Blocks, separated by blank lines:
 Inlines:
 
 - `\` escapes the next punctuation character (renders it literal).
-- `` `code` `` spans; `*emphasis*`; `**strong**`.
+- `` `code` `` spans; `*emphasis*`; `**strong**`. **The whole emphasis rule:** asterisk runs of
+  length 1 (emphasis) or 2 (strong) are delimiters; runs of 3+ are literal asterisks (bold
+  italic nests: `**bold and *italic* too**`). An opener is followed by non-whitespace, a closer
+  preceded by non-whitespace; pairs match nearest-first without crossing; unmatched delimiters
+  render literal. **`_` is always literal text** - snake_case_names never italicize. (This
+  paragraph replaces CommonMark's seventeen emphasis rules, its flanking taxonomy, its Rule of
+  Three, and its second delimiter character. Confusing input degrades to visible literal
+  asterisks - total prose - never to a clever surprise.) `~~strikethrough~~` rides the same
+  rule verbatim: tilde runs of length 2 are delimiters, any other length is literal.
 - `[text](target)` links; `![alt](target)` media embeds.
+- **Spans** - BBCode-shaped, explicitly closed, arbitrarily nestable - one inline mechanism
+  carrying both *animated* vocabulary (effects) and *typographic* vocabulary (`[sup]`, `[sub]`):
+  `[marquee][blink]still open at 3am[/blink][/marquee]`, `[color=red]hp low[/color]`,
+  `[typewriter speed=30]...[/typewriter]`. Explicit closers make nesting unambiguous (no
+  emphasis-style matching rules); an opener without its closer renders as literal text (total
+  prose); links are distinguished by their immediate `(` - `[text](target)` is a link,
+  `[name ...]` is a span opener. The parser accepts any well-formed span name (grammar, not
+  vocabulary); effect names are vocabulary, validated by the embedder layer like directives.
 - A paragraph consisting of exactly one bare target is an **Onebox** node: the client may
   render an inline summary of the referenced content; how much (full card / title only / plain
   link) is embedder + user policy. `:::onebox` exists for explicit configuration.
@@ -77,6 +93,14 @@ Inlines:
 Deliberately absent, forever or until a version bump: embedded HTML, setext headings,
 reference-style links, lazy continuation, indented code blocks. Tables arrive later as a
 directive, not syntax.
+
+**Caps are spec, not implementation** - an implementation-defined depth limit is a manufactured
+parser differential (input parses on one client, blows the stack on another), so the limits are
+conformance rules with vectors: list nesting ≤ 8, directive nesting ≤ 4, targets ≤ 2048 bytes,
+attribute values ≤ 1024 bytes. Document size is deliberately the embedder's, not the
+language's. Behavior at a cap follows the prose/construct split: over-deep list indentation
+stays inside the deepest item as literal text (prose degrades); over-deep directives are
+`invalid_directive` nodes (constructs error, visibly for authors, fail-closed for strangers).
 
 ## Directive blocks
 
@@ -140,12 +164,38 @@ render time (from a stream/taxonomy artifact the role names). Roles are vocabula
 without the role renders the placeholder. This is "interactivity as platform widgets, never
 user code" - behavior lives in the client, state lives in the host protocol.
 
-### Widgets (host-provided vocabulary)
+### Text effects (language-defined) and the animation contract
 
-`:::marquee`, `:::blink`, `:::counter`, `:::guestbook`, `:::webring`, `:::construction` - each
-a vocabulary entry whose behavior the embedder implements and whose state (a counter's count, a
-guestbook's entries) lives in the host's data layer. The v0 cut is deliberately unfinished:
-the vocabulary grows from the corpus, one widget at a time.
+Effects are **pure presentation semantics with no state and no host services** - kin to
+`*emphasis*`, not to `:::guestbook` - so the language defines them completely: meaning,
+parameters, composition, degradation. They apply inline (effect spans, above) and to blocks
+(`:::marquee` as a directive wraps its blocks). Draft v0 vocabulary, grown from use like all
+vocabulary: animated - `marquee` (direction, speed), `blink` (rate), `rainbow`,
+`bounce`, `jitter`, `wave`, `typewriter` (speed); typographic - `sup`, `sub`,
+`color=<token|hex>` (the hex question belongs to the style-enum open item). Effects nest freely - marquee and blink at
+the same time is not an edge case, it is the point. (Godot's RichTextLabel speaks BBCode with
+effect tags natively; a game-engine Marquee renderer for RPG dialogue is an intended
+out-of-Ringtome embedder, and the effect set is chosen with it in mind.)
+
+**The animation contract** - renderer obligations at the same level as "never innerHTML":
+
+1. **Animate on visibility** - effects start when the text enters view, not at page load.
+2. **The user can always skip** - one interaction completes a typewriter, stills motion, shows
+   the whole text plainly. Animated text is a performance, never a hostage situation.
+3. **Reduced-motion is honored** - under an OS/user reduced-motion signal, every effect
+   degrades to its static text (color effects may keep their color). The old web's mistake was
+   never marquee; it was marquee without an exit.
+4. A renderer that doesn't implement an effect renders the text unstyled - degradation is
+   always to plain, readable content.
+
+### Stateful widgets (host-provided vocabulary)
+
+`:::counter`, `:::guestbook`, `:::webring`, `:::construction` - vocabulary entries whose
+behavior the embedder implements and whose **state lives in the host's data layer** (a
+counter's count, a guestbook's entries). This is the line between effects and widgets: if it
+needs storage or services, it is the host's; if it is pure presentation, it is the language's.
+The v0 cut is deliberately unfinished: the vocabulary grows from the corpus, one widget at a
+time.
 
 ## Targets
 
@@ -194,22 +244,62 @@ embeds `blob:` + `ringtome://` natively; `https:` media allowed with node-proxy 
 present; includes same-identity only; the cozy widget set; oneboxes on by default for
 `ringtome://` targets and title-only for the web.
 
+## The AST (the contract)
+
+The AST is a wire-adjacent format, not an internal data structure: it is what the vectors
+serialize, what every implementation must produce identically, and what every renderer - plain
+HTML, animation-capable HTML, a game engine's rich text - consumes. **One parser, many
+renderers: renderers may differ in fanciness, parsers may never differ in structure.**
+
+- **Parsing is total.** `parse(text) → document`, always. Malformed block constructs become
+  `invalid_directive{reason}` nodes *in* the tree; there is no separate error channel, and an
+  "error case" vector is just a vector whose AST contains invalid nodes. `reason` values are a
+  **closed, spec'd enum** - diagnostics are conformance surface (two clients disagreeing about
+  validity is a fail-closed disagreement), never freeform text.
+- **Blocks error; inlines degrade.** Directives (block constructs) are strict → `invalid_directive`.
+  Spans and delimiters (inline constructs) are total → malformed input renders as the literal
+  text typed. One sentence of error philosophy for the whole language.
+- **No source positions in the conformance AST.** Rust counts UTF-8 bytes, JavaScript counts
+  UTF-16 units; positions in vectors would make every emoji a conformance bug. Implementations
+  may carry positions out-of-band; vector comparison excludes them.
+- **Input normalization at the front door:** `\r\n` and `\r` → `\n` before anything else; tabs
+  never count as indentation (a tab in content is content). Text nodes preserve content
+  verbatim - no unicode normalization of prose. Paragraph-internal newlines are literal `\n`
+  in text nodes (no softbreak node).
+- **Attrs** are string→string maps: duplicate keys are strict errors in directives, literal
+  fallback in spans; vectors serialize maps with sorted keys (determinism is manual).
+- **Node inventory (v0, snake_case, children arrays):** blocks - `document{version}`,
+  `paragraph`, `heading{level}`, `code_block{info?}`, `blockquote`, `list{ordered}`,
+  `list_item`, `thematic_break`, `directive{name, attrs}`, `invalid_directive{reason}`;
+  inlines - `text`, `emphasis`, `strong`, `strikethrough`, `code_span`, `link{target}`,
+  `image{target, alt}`, `onebox{target}`, `span{name, attrs}`, `hard_break`. Twenty types.
+  Deliberately absent: `page`/`section` nodes (layout is directive *vocabulary*, checked by
+  the validator layer on a parsed tree - the parser knows shapes, never names).
+- **The renderer's shrug is contractual:** an unknown `span` renders its children as plain
+  text (the words always survive); an unknown `directive` renders the inert placeholder (the
+  reader learns something was there). Dropping unknown content silently is nonconforming.
+
 ## Conformance
 
-- Two reference implementations from birth (Rust: validation/authoring-gate; JS: rendering),
-  kept honest by **published vectors**: input → exact AST, in `vectors/`.
-- The parse is total for prose, strict for constructs; vectors include rejection cases with
-  exact error identities.
+- Two reference implementations from birth (Rust: validation/authoring-gate; TypeScript:
+  rendering), kept honest by **published vectors**: `vectors/*.json`, each file a themed set
+  (emphasis, spans, lists, directives, caps, ...) of `{name, marquee, ast}` triples. There is
+  no separate rejection format: an error case is a vector whose AST contains
+  `invalid_directive` nodes with their exact spec'd reasons. Maps serialize with sorted keys;
+  both implementations run the same files, bless-pattern guarded.
+- Vectors prove *parsers*. Renderer obligations (the contractual shrug, the animation
+  contract) are spec text enforced by review - dignity is not byte-comparable.
 - Version tag on every document; unknown *versions* are refused, unknown *vocabulary within a
   known version* renders placeholders.
 
 ## Open questions (v0)
 
-- [ ] Exact emphasis-delimiter rules (the one place markdown familiarity fights precision -
-  simplify aggressively; vectors decide).
-- [ ] List nesting depth cap and exact indentation rule.
 - [ ] Video/audio as embed types: grammar is ready (targets), vocabulary + host admission
   stories are not (see Ringtome's media-type admission test).
 - [ ] Tables directive design.
-- [ ] The style-attribute enum's v0 cut.
+- [ ] The style-attribute enum's v0 cut (including whether `color` takes palette tokens only
+  or tokens + hex).
+- [ ] Version declaration for standalone files: Ringtome supplies the dialect version via its
+  type registry, but a bare `.mq` file on the plain web needs a convention (shebang-style first
+  line? assume-latest?).
 - [ ] Whether `:::computed` roles beyond stream-nav make the first cut.
