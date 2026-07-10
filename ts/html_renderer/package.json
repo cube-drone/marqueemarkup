@@ -1,0 +1,21 @@
+{
+  "name": "marquee-html-renderer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reference static HTML renderer for the Marquee markup language",
+  "license": "MPL-2.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.ts",
+    "check": "tsc --noEmit",
+    "bless": "node scripts/bless.ts",
+    "preview": "node scripts/preview.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}

@@ -1,0 +1,370 @@
+[
+  {
+    "name": "adversarial/bracket-bedlam",
+    "html": "<div class=\"mq-doc\"><p><a href=\"https://en.wikipedia.org/wiki/Hat_(disambiguation)\">wiki</a> and deeper <a href=\"a(b(c))\">n</a> and cut short <a href=\"foo\">x</a>bar)</p><p>[x](a b) never links, and [unclosed](drifts across\nthe newline without linking</p><p><span class=\"mq-embed-fallback\">[alt with ] bracket]</span> and <span class=\"mq-embed-fallback\">[**alt is plain text**]</span></p><p>[/orphan] first, then <span class=\"mq-blink\">a[/marquee] mismatch survives</span></p><p><font class=\"mq-color\" color=\"red\" style=\"--mq-color:red\">classic</font> but [color=]is literal and quoted</p><p>:smile: but not :no space:, not ::, and :3:30 is an emoji named \"3\" hugging \"30\"</p><p>Note:this</p><p>/shrug</p><p class=\"mq-turbolink\">a://b</p><p class=\"mq-turbolink\"><a href=\"HTTPS://SHOUTING.example/LOUD\">HTTPS://SHOUTING.example/LOUD</a></p><p>blob:pinned-forever</p></div>"
+  },
+  {
+    "name": "adversarial/delimiter-soup",
+    "html": "<div class=\"mq-doc\"><p>*a <strong>b* c</strong> and the mirror **a <em>b** c</em></p><p>***three are literal*** but <strong>two <em>nest</em> fine</strong></p><p>intraword: 2<em>3</em>4 and snake_case_names and a * spaced * out</p><p><code>*stars in code*</code> and <code>a literal ` inside doubles</code> and `unclosed</p><p><del>struck</del> ~single~ ~~~triple~~~</p><p>*emphasis may not cross <span class=\"mq-blink\">a span* boundary</span></p><p>escaped *stars* and ~~tildes~~ stay prose</p><p>a hard break<br>lands here, and this paragraph ends in a lone backslash\\</p></div>"
+  },
+  {
+    "name": "adversarial/directive-maze",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-page mq-layout-basic\"><section class=\"mq-section\" data-slot=\"main\"><div class=\"mq-invalid\" data-reason=\"mismatched_close\"></div><p>words survive every fence mistake</p></section></div><div class=\"mq-invalid\" data-reason=\"stray_close\"></div><div class=\"mq-invalid\" data-reason=\"bad_name\"></div><div class=\"mq-invalid\" data-reason=\"bad_name\"></div><div class=\"mq-invalid\" data-reason=\"bad_name\"></div><div class=\"mq-invalid\" data-reason=\"bad_attribute\"></div><div class=\"mq-invalid\" data-reason=\"bad_attribute\"></div><div class=\"mq-placeholder\" data-directive=\"x\"></div><div class=\"mq-unknown\" data-directive=\"a\"><div class=\"mq-unknown\" data-directive=\"b\"><div class=\"mq-unknown\" data-directive=\"c\"><div class=\"mq-unknown\" data-directive=\"d\"><div class=\"mq-invalid\" data-reason=\"depth_exceeded\"></div></div></div></div></div><div class=\"mq-placeholder\" data-directive=\"x\"></div><div class=\"mq-invalid\" data-reason=\"bad_attribute\"></div></div>"
+  },
+  {
+    "name": "adversarial/fence-fakeout",
+    "html": "<div class=\"mq-doc\"><pre class=\"mq-code\"><code class=\"language-text\">:::page layout=basic\n- not a list\n%% not a comment\n&gt; not a quote\n</code></pre><p>Four backticks quote three:</p><pre class=\"mq-code\"><code>```\nstill inside\n```\n</code></pre><section class=\"mq-section mq-scheme-terminal\"><pre class=\"mq-code\"><code>::: this close line is code; the real closers follow\n</code></pre></section><p>The next fence never closes - it swallows to EOF and auto-closes there:</p><pre class=\"mq-code\"><code>these final words are code forever\n</code></pre></div>"
+  },
+  {
+    "name": "adversarial/list-labyrinth",
+    "html": "<div class=\"mq-doc\"><p>Shopping list:</p><ul><li><p>interrupts the paragraph above</p></li><li><p>one-space floors to sibling</p><ul><li><p>three-space floors to nested</p></li></ul></li><li><p>back to top level</p></li></ul><ol><li><p>first</p></li><li><p>all ones - the renderer numbers</p></li></ol><ul><li><p>kind switch splits the list</p></li></ul><p>plain column-0 text restarts everything</p><ol><li><p>numbering restarted here (visible, fixable)</p></li></ol><ul><li><p>item with</p><p>a second paragraph</p><pre class=\"mq-code\"><code>fenced code in a bullet\n</code></pre></li><li><p>-this second dash is content, not a marker</p></li></ul><blockquote><ul><li><p>a quoted list</p></li><li><p>stays in the quote</p><ul><li><p>nested inside both</p></li></ul></li></ul></blockquote><p>-not a list, - escaped dash, and three break-alikes:</p><hr><p> ---</p><p>--- x</p></div>"
+  },
+  {
+    "name": "blocks/blockquote",
+    "html": "<div class=\"mq-doc\"><blockquote><p>a\nb</p></blockquote><p>after</p></div>"
+  },
+  {
+    "name": "blocks/blockquote-no-lazy-continuation",
+    "html": "<div class=\"mq-doc\"><blockquote><p>a</p></blockquote><p>b</p></div>"
+  },
+  {
+    "name": "blocks/blockquote-nested",
+    "html": "<div class=\"mq-doc\"><blockquote><blockquote><p>deep</p></blockquote></blockquote></div>"
+  },
+  {
+    "name": "blocks/fenced-code-with-info",
+    "html": "<div class=\"mq-doc\"><pre class=\"mq-code\"><code class=\"language-python\">for x:\n    pass\n</code></pre><p>after</p></div>"
+  },
+  {
+    "name": "blocks/longer-fence-quotes-backticks",
+    "html": "<div class=\"mq-doc\"><pre class=\"mq-code\"><code>```\n</code></pre></div>"
+  },
+  {
+    "name": "blocks/unclosed-fence-auto-closes-at-eof",
+    "html": "<div class=\"mq-doc\"><pre class=\"mq-code\"><code>code\n</code></pre></div>"
+  },
+  {
+    "name": "blocks/comment-block",
+    "html": "<div class=\"mq-doc\"><p>after</p></div>"
+  },
+  {
+    "name": "blocks/escaped-comment-marker-is-prose",
+    "html": "<div class=\"mq-doc\"><p>%% not a comment</p></div>"
+  },
+  {
+    "name": "blocks/thematic-break",
+    "html": "<div class=\"mq-doc\"><p>a</p><hr><p>b</p></div>"
+  },
+  {
+    "name": "blocks/thematic-break-nbsp-tail-is-prose",
+    "html": "<div class=\"mq-doc\"><p>--- </p></div>"
+  },
+  {
+    "name": "blocks/four-dashes-are-prose",
+    "html": "<div class=\"mq-doc\"><p>----</p></div>"
+  },
+  {
+    "name": "blocks/list-interrupts-paragraph",
+    "html": "<div class=\"mq-doc\"><p>text here:</p><ul><li><p>one</p></li><li><p>two</p></li></ul></div>"
+  },
+  {
+    "name": "blocks/hard-break",
+    "html": "<div class=\"mq-doc\"><p>line one<br>line two</p></div>"
+  },
+  {
+    "name": "blocks/soft-newline-stays-literal",
+    "html": "<div class=\"mq-doc\"><p>a\nb</p></div>"
+  },
+  {
+    "name": "caps/ninth-span-is-literal",
+    "html": "<div class=\"mq-doc\"><p>[b]x[/b]</p></div>"
+  },
+  {
+    "name": "caps/emoji-slug-64-ok",
+    "html": "<div class=\"mq-doc\"><p>:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:</p></div>"
+  },
+  {
+    "name": "caps/emoji-slug-65-literal",
+    "html": "<div class=\"mq-doc\"><p>:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:</p></div>"
+  },
+  {
+    "name": "caps/attr-value-1024-ok",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-placeholder\" data-directive=\"x\"></div></div>"
+  },
+  {
+    "name": "caps/attr-value-1025-too-long",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-invalid\" data-reason=\"attribute_too_long\"></div></div>"
+  },
+  {
+    "name": "caps/ninth-list-level-is-literal",
+    "html": "<div class=\"mq-doc\"><ul><li><p>L1</p><ul><li><p>L2</p><ul><li><p>L3</p><ul><li><p>L4</p><ul><li><p>L5</p><ul><li><p>L6</p><ul><li><p>L7</p><ul><li><p>L8\n- too deep</p></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></div>"
+  },
+  {
+    "name": "caps/ninth-link-is-literal",
+    "html": "<div class=\"mq-doc\"><p><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\">[x](t)</a></a></a></a></a></a></a></a></p></div>"
+  },
+  {
+    "name": "directives/container",
+    "html": "<div class=\"mq-doc\"><section class=\"mq-section\" data-slot=\"nav\"><p>Welcome!</p></section></div>"
+  },
+  {
+    "name": "directives/leaf",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-placeholder\" data-directive=\"counter\"></div></div>"
+  },
+  {
+    "name": "directives/meta-with-quoted-values",
+    "html": "<div class=\"mq-doc\"></div>"
+  },
+  {
+    "name": "directives/duplicate-key-first-writer-wins",
+    "html": "<div class=\"mq-doc\"></div>"
+  },
+  {
+    "name": "directives/auto-close-at-eof",
+    "html": "<div class=\"mq-doc\"><section class=\"mq-section\"><p>words</p></section></div>"
+  },
+  {
+    "name": "directives/named-close-mismatch-flagged-at-line",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-page\"><section class=\"mq-section\"><div class=\"mq-invalid\" data-reason=\"mismatched_close\"></div></section></div></div>"
+  },
+  {
+    "name": "directives/stray-close",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-invalid\" data-reason=\"stray_close\"></div></div>"
+  },
+  {
+    "name": "directives/depth-exceeded",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-unknown\" data-directive=\"a\"><div class=\"mq-unknown\" data-directive=\"b\"><div class=\"mq-unknown\" data-directive=\"c\"><div class=\"mq-unknown\" data-directive=\"d\"><div class=\"mq-invalid\" data-reason=\"depth_exceeded\"></div></div></div></div></div><div class=\"mq-invalid\" data-reason=\"stray_close\"></div></div>"
+  },
+  {
+    "name": "directives/empty-bare-value-is-bad",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-invalid\" data-reason=\"bad_attribute\"></div></div>"
+  },
+  {
+    "name": "directives/uppercase-name-is-bad",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-invalid\" data-reason=\"bad_name\"></div></div>"
+  },
+  {
+    "name": "directives/leaf-quoted-colons-are-safe",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-placeholder\" data-directive=\"x\"></div></div>"
+  },
+  {
+    "name": "emphasis/simple",
+    "html": "<div class=\"mq-doc\"><p><em>hi</em></p></div>"
+  },
+  {
+    "name": "emphasis/strong-nests-emphasis",
+    "html": "<div class=\"mq-doc\"><p><strong>bold and <em>italic</em> too</strong></p></div>"
+  },
+  {
+    "name": "emphasis/wrong-kind-closer-goes-literal",
+    "html": "<div class=\"mq-doc\"><p>*a <strong>b* c</strong></p></div>"
+  },
+  {
+    "name": "emphasis/triple-stars-are-literal",
+    "html": "<div class=\"mq-doc\"><p>***three***</p></div>"
+  },
+  {
+    "name": "emphasis/underscore-is-always-literal",
+    "html": "<div class=\"mq-doc\"><p>snake_case_names</p></div>"
+  },
+  {
+    "name": "emphasis/unmatched-opener-reverts",
+    "html": "<div class=\"mq-doc\"><p>*alone</p></div>"
+  },
+  {
+    "name": "emphasis/strikethrough-rides-the-same-rule",
+    "html": "<div class=\"mq-doc\"><p><del>gone</del> but ~one~ stays</p></div>"
+  },
+  {
+    "name": "emphasis/space-flanked-stars-are-literal",
+    "html": "<div class=\"mq-doc\"><p>a * b * c</p></div>"
+  },
+  {
+    "name": "emphasis/unicode-space-is-content-not-whitespace",
+    "html": "<div class=\"mq-doc\"><p>a <em> x </em> b</p></div>"
+  },
+  {
+    "name": "examples/blog-entry",
+    "html": "<div class=\"mq-doc\"><h1>The Great Hat Migration of 2031</h1><p>Every spring, the hats come down from the <strong>north attic</strong>. Nobody knows who put them there,\nand frankly nobody is asking.</p><h2>What we found</h2><ul><li><p>Seventeen fedoras, all slightly damp</p></li><li><p>A single, magnificent <font class=\"mq-color\" color=\"goldenrod\" style=\"--mq-color:goldenrod\">sombrero</font></p></li><li><p>Three hats we are <del>legally</del> <em>contractually</em> forbidden to describe</p></li></ul><p>I wrote a little script to catalogue them:</p><pre class=\"mq-code\"><code class=\"language-python\">for hat in attic.hats():\n    print(hat.vibe, hat.dampness)\n</code></pre><p>The sombrero deserves its own post. For now, here is the webring that started it all:</p><p class=\"mq-turbolink\"><a href=\"https://hatenjoyers.example/ring\">https://hatenjoyers.example/ring</a></p><p>More soon. :tophat:</p></div>"
+  },
+  {
+    "name": "examples/friendly-message",
+    "html": "<div class=\"mq-doc\"><p>omg did you SEE the sombrero post :sob: :tophat:</p><p>i am <del>crying</del> <strong>weeping</strong>. we are going to the attic this weekend, no excuses</p><p><span class=\"mq-embed-fallback\">[the sombrero in question]</span></p><p>(also i fixed the thing you mentioned - it was a <font class=\"mq-color\" color=\"red\" style=\"--mq-color:red\">missing semicolon</font>, as always)</p></div>"
+  },
+  {
+    "name": "examples/real-blog-house-of-leaves",
+    "html": "<div class=\"mq-doc\"><p><img class=\"mq-embed\" src=\"hol.png\" alt=\"\" loading=\"lazy\"></p><p>So, 25 years after it launched, I finally read <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font> of Leaves.</p><p>That time I read Homestuck 5 times over 5 consecutive years<span class=\"mq-sidenote\" role=\"note\">I feel like I should write a very long blog post about this sometime.</span>:</p><blockquote><ul><li><p>it's like if <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font> of Leaves was awesome instead of horseshit</p></li><li><p><small>I've never actually read house of leaves it sounds like horseshit though</small></p></li></ul></blockquote><p>That time I read Neverending Story:</p><blockquote><p>(side note: this is also why I've been holding off on <a href=\"https://en.wikipedia.org/wiki/House_of_Leaves\">House of Leaves</a>, which is also in my reading queue now that I've got a color e-reader)</p></blockquote><p>So I've been <em>aware</em> of <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font> of Leaves for a long time, but I wasn't willing to fully tackle it until I had a <em>large format full-color e-reader</em>.</p><p>Which, uh: I guess I've had one of those for a little over a year now. So I guess it is <em>time</em>.</p><p>I'll even write an article about it.<span class=\"mq-sidenote\" role=\"note\">with a bunch of images that I stole from the r/houseofleaves subreddit because they are funny and illustrative.</span></p><p><img class=\"mq-embed\" src=\"./noleaves.png\" alt=\"\" loading=\"lazy\"></p><hr><h2>Reading Patterns</h2><p>The first 50 pages of <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font> of Leaves took me weeks to read. I'd open it, power through some boring-ass text, fail to see what the deal was, and put it back down.</p><p>The last 700 pages of <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font> of Leaves took me 2 days to read. Once I got in to it, it became harder to put down.</p><p><img class=\"mq-embed\" src=\"beefus.png\" alt=\"\" loading=\"lazy\"></p><hr><h2>This Is Not For You</h2><p>I bet you'd live to criticize that, wouldn't you, you Critics! But you can't. It's not <em>for</em> you.</p><p><a href=\"https://www.penny-arcade.com/comic/2004/03/24/the-adventures-of-twisp-and-catsby\"><img class=\"mq-embed\" src=\"./criticism.png\" alt=\"\" loading=\"lazy\"></a></p><p>This is also, uh, maybe a good time to talk a little bit about how <em>divisive</em> <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font> of Leaves is. Loved by many, hated by many.</p><p>Beyond that, though, what does \"this book is not for you\" mean, at the beginning of the book, in Johnny Truant's font<span class=\"mq-sidenote\" role=\"note\">oh, btw, every narrator of this book is written with a different typeface.</span>? Well, it could mean any number of things, each interpretation supported by the text:</p><ul><li><p>This is a note from Johnny Truant to <em>himself</em>, pointing out that this book is potentially dangerous to his sanity<span class=\"mq-sidenote\" role=\"note\">which: it is, good call Johnny</span>.</p></li><li><p>This is a note from Johnny to <em>the potential reader</em>, warning them that this book is dangerous to their sanity<span class=\"mq-sidenote\" role=\"note\">which: it is not, bad call Johnny</span>.</p></li><li><p>This indicates Johnny compiled the book for personal reasons, rather than to share it with the world<span class=\"mq-sidenote\" role=\"note\">Definitely true: Johnny never seems to care about the book's popularity - he is compiling it for his own, personal reasons.</span>.</p></li><li><p>Mark Danielewski wants you to know he doesn't care if you like this book, because <em>he</em> wrote it following the death of his own father as a meditation on grieving a parent who was not always kind.</p></li></ul><p>Okay, there we go, we've made it through the first line of the book, only about ten thousand more to go.</p><hr><h2>Horror Thrives Off of Ambiguity</h2><p>Horror is better when it goes underexplained: spooky things don't tend to <em>remain spooky</em> under careful examination.</p><p>In this 30-minute long<span class=\"mq-sidenote\" role=\"note\">by this youtuber's current standards, this is an unbelievably short video</span> YouTube video, Hbomberguy makes the point that horror suffered in theaters and thrived on VHS partially because <em>the format itself</em> obscured the fine details:</p><p class=\"mq-turbolink\"><a href=\"https://www.youtube.com/watch?v=xbZMqS-fW-8\">https://www.youtube.com/watch?v=xbZMqS-fW-8</a></p><p>Longer horror series tend towards separating into episodic horror stories — Black Mirror, Twilight Zone, Goosebumps — and that's partially because horror just works <em>better</em> in shorter form. So in order for longer-form horror to thrive, it has to be, well, incredibly oblique. And boy, does <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font> of Leaves understand the assignment.</p><h2>Puzzle-Box Writing</h2><p>In fact, a lot of the time it does this <em>too well</em>: <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font> of Leaves raises a lot of questions and doesn't seem too concerned about answering them, ever.</p><p>One of the most prominent questions is that the word \"<font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">house</font>\" is always written in blue, regardless of who's narrating. Why? It can't be a persistent tic of any individual narrator, because then it wouldn't be consistent throughout the whole book. Of <em>course</em> this is never explicitly explained.</p><p>This was a major criticism of shows like Lost and the unsatisfying ending of X-Files:</p><p class=\"mq-turbolink\"><a href=\"https://www.youtube.com/watch?v=LkoGBOs5ecM\">https://www.youtube.com/watch?v=LkoGBOs5ecM</a></p><p>They raise a lot of <em>juicy questions</em> because juicy questions get people engaged, but then never answer them, earning the derogatory term \"puzzle-box screenwriting.\" I'll argue that <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font> of Leaves<span class=\"mq-sidenote\" role=\"note\">and a different \"puzzle box\" obsession of mine, Homestuck. — Homestuck actually explains almost everything, to full satisfaction, if you bother to close read it. Hussie raised impossibly complicated questions, wrote it <strong>live</strong>, and had access to a rabid fan community who created impossibly detailed theories; then he quietly read the forums and implemented the fan theories. This creates the impression that he's a brilliant author when he just created compelling questions and crowdsourced the solutions.</span> manages to stick these landings <em>better</em> than Sherlock or Lost, because it makes its own refusal to explain itself <em>thematically important</em>.</p><h2>The Structure</h2><p>Talking about the book requires that I give you a brief look at what happens in it. Beware: past this point be spoilers (for a 25-year old book).</p><ul><li><p>Johnny Truant, a punk kid mostly interested in drugs and sex, comes into possession of the rambling, mostly insane notes of Zampanó, an elderly blind man who was writing a book.</p></li><li><p>Johnny decides to make it his mission to clean this book up and get it publishable.</p></li><li><p>The actual book is an academic treatise examining \"The Navidson Record\", a short documentary (imagine \"The Blair Witch Project\") covering explorations of a <em>very clearly evil</em> <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">house</font>.</p></li><li><p>In a layered double-cross it turns out The Navidson Record and its academic discussion are not real: most references are to books that never existed. The entire book is an invention of Zampanó.</p></li><li><p>Compiling the book is difficult: Johnny slowly loses his mind, withdrawing from society.</p></li><li><p>Within The Navidson Record, Will Navidson moves into a <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">house</font> only to discover it is just a little bigger on the inside than the outside.</p></li><li><p>A freshly discovered door leads to a dark hallway. Down the hallway: another, an endless procession of lightless rooms getting bigger and more abstract the deeper Will explores.</p></li></ul><p><img class=\"mq-embed\" src=\"./impossible.png\" alt=\"\" loading=\"lazy\"></p><ul><li><p>An Exploration Team goes in with ropes and lights, and mostly just goes crazy and kills one another.</p></li><li><p>Will's family escapes; Will broods, obsesses, and eventually goes back in.</p></li><li><p>The book ends. Some Zampanó appendices and footnotes follow.</p></li><li><p>The Appendices include letters Johnny saved from his mother, Pelafina, who wrote from the mental institution where she was kept after she attempted to strangle Johnny to death when he was 4, ending with the notice of her suicide.</p></li></ul><p>and that's it, that's the book!</p><h2>The Book Itself Contorts</h2><p>The thing a lot of people remember about <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font> of Leaves is that, in the parts within the deepest, darkest parts of the <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">house</font>, the book's text gets wonky, contorting and shifting to force the reader to adjust to its strangeness.</p><p><img class=\"mq-embed\" src=\"contorts.png\" alt=\"\" loading=\"lazy\">\n<img class=\"mq-embed\" src=\"./contorts2.png\" alt=\"\" loading=\"lazy\"></p><p>Another detail is the near-constant footnotes<span class=\"mq-sidenote\" role=\"note\">nobody else does this</span>: Johnny Truant, arguably the main character, exists <em>only</em> within the introduction and footnotes.</p><h2>Zampanó Might Be Worse</h2><p>He apes a lot of conventions from academic writing, including <em>endless navel gazing</em>. He can't form a complete thought without referencing a dozen other works. But <em>of course</em> Zampanó <em>is</em> generating new ideas: his references are entirely fabricated<span class=\"mq-sidenote\" role=\"note\">ChatGPT learned it from Zampanó.</span>, as is the entire <em>topic</em> his book covers.</p><p>You know, like when folks just read the Wikipedia article and <em>reference all of the things referenced by the Wikipedia article</em> without mentioning that all the work was A Single Wikipedia Page All Along.<span class=\"mq-sidenote\" role=\"note\">This was the subject of YET ANOTHER hbomberguy video, I need to find a different <em>guy</em> to reference, why is this one video essayist so frequently relevant?</span></p><h2>The Impossible Question of Who Wrote \"<font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font> of Leaves\"</h2><p>I think one of the core mysteries is <em>who wrote what</em>. Every source of information comes from an <a href=\"https://tvtropes.org/pmwiki/pmwiki.php/Main/UnreliableNarrator\">unreliable narrator</a> who may or may not even exist. It's a 50 unreliable narrator pile-up!</p><p>Johnny could be a fiction created by Zampanó. Zampanó could be a fiction created by Johnny. Pelafina's footnotes introduce a brilliant mad-woman who constantly introduces themes that later show up in the book. The question of <em>who invented what</em> is both central to the mystery and <em>utterly unanswerable</em>.</p><h2>The Book Is The <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font>, The <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font> is the Book</h2><p>I'm a sucker for meaningful framing devices. The book, <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font> of Leaves, has a cover that's a little short - it doesn't extend all the way to the end of the pages. It's, uh, <em>bigger on the inside than the outside</em>.</p><p>The book describes <em>a labyrinth</em> that demands to be explained, yet contains no answers and engenders obsession and madness from people who <em>demand</em> those answers. Also <em>the book itself</em> demands to be explained, yet contains no answers and engenders obsession and madness from people who <em>demand</em> those answers. The main character tries to fully understand the mysteries of the book and goes mad trying.</p><p><img class=\"mq-embed\" src=\"./mirror.png\" alt=\"\" loading=\"lazy\"></p><p>Seemingly an endless, infinite, self-referential loop, but actually pretty easily explained if you think about it.</p><h2>The Actual Answer To The Impossible Question</h2><p>Mark Danielewski, obviously. Someone had to point these mirrors at one another and then hand it to you like some kinda big fuckin' mystery.</p><h2>Johnny's Mother's Impossible to Decipher Letter</h2><p>When Pelafina became increasingly paranoid, she'd layer encoded messages <em>into</em> her messages to her son - messages that, when decoded, felt <em>more real</em> (because of the effort) but were, of course, still nonsense. Then she sends this letter:</p><p><img class=\"mq-embed\" src=\"./letter.webp\" alt=\"\" loading=\"lazy\"></p><p>It <em>seems</em> pregnant with meaning, overflowing with a code that lies <em>just below the surface</em> — but I checked online, and 25 years later nobody has cracked it. Because there is nothing to crack.</p><blockquote><p><a href=\"https://www.reddit.com/r/houseofleaves/comments/j5ryae/notes_on_the_three_attic_whalestoe_letters/\">Page 633</a></p><p>This page. This fucking page. <a href=\"https://imgur.com/9paUZEd.jpeg\">I've spent a lot of time on this page.</a> I think that's maybe the point of it. Here, at the nucleus of Pelafina's madness, the riddle is unsolvable. No matter how much effort Johnny or the reader puts into these words, they <a href=\"https://en.wikipedia.org/wiki/Word_salad\">mean nothing</a>.</p><p><em>However.</em></p><p>The words may not mean much in themselves, but their significance is so enormous that any all-encompassing interpretation of <em><font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font> of Leaves</em> must account for them. They reappear all over the book - in Johnny's poems, in Pelafina's letters, and <em>even in Zampanò's writing.</em></p></blockquote><p>This book is this page, too: a meaningless labyrinth, meant to be explored but not understood. Like the <a href=\"https://en.wikipedia.org/wiki/Codex_Seraphinianus\">Codex Seraphinianus</a> it's meant to <em>evoke</em> internal consistency without needing to <em>contain</em> it.</p><h2>That's Why It Works</h2><p>I think <font class=\"mq-color\" color=\"blue\" style=\"--mq-color:blue\">House</font> of Leaves works because <em>it is thematically and structurally about unsolvable mysteries</em>. It's a rumination on the meaning and draw of unsolvable mysteries.<span class=\"mq-sidenote\" role=\"note\">Like, for example, the unsolvable mystery of death, which had just, at time of writing, claimed Mark's father. Grief, too, is a major theme. The house is death. The house is grief.</span></p><p>The book is the house, the house is the book, and both are impossible, unresolvable labyrinths concocted by grieving conmen with unhealthy fixations.</p><h2>Infohazard</h2><p><em>good god damn this book is hard to stop thinking about</em></p><p>I'll be chillin' at work trying to put together Avatar Grembling or whatever the feature of the week is and suddenly I'll just think \"but was Johnny real tho\". <em>this book is exactly the sort of infohazard it purports to be</em></p><h2>Why Is The Internet Obsessed With This Book?</h2><p class=\"mq-turbolink\"><a href=\"https://www.youtube.com/watch?v=kMmBFnTfnn0\">https://www.youtube.com/watch?v=kMmBFnTfnn0</a></p><p>Just because a book is metanarratively and thematically <strong>about</strong> being badly written, impenetrable, sexist, frustrating, self-contradictory, meaningless, and the topic of endless circular debate... doesn't... mean it's <strong>not</strong> badly written, impenetrable, sexist, frustrating, self-contradictory, meaningless, and the topic of endless circular debate.</p><p>Something can be fascinating and even self aware without being... y'know... good.<span class=\"mq-sidenote\" role=\"note\">you know, like (he gestures around) me</span></p><h2>Conclusion</h2><p>anyhoo, that's a <em>soft recommend</em> from me</p></div>"
+  },
+  {
+    "name": "examples/rpg-conversation",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-page mq-scheme-parchment\"><div class=\"mq-unknown\" data-directive=\"say\"><p>We shouldn't be here. The <font class=\"mq-color\" color=\"crimson\" style=\"--mq-color:crimson\"><span class=\"mq-jitter\">whispering dark</span></font> has <em>eyes</em>, Kael.</p></div><div class=\"mq-unknown\" data-directive=\"say\"><p><span class=\"mq-wave\">Relax.</span> I've got a <span class=\"mq-rainbow\">legendary torch</span> and the <span class=\"mq-bounce\">confidence of a much taller man</span>. :torch:</p></div><div class=\"mq-unknown\" data-directive=\"say\"><p>...that is not a torch. That is a <font class=\"mq-color\" color=\"sickly-green\" style=\"--mq-color:sickly-green\"><span class=\"mq-blink\">glowstick</span></font>.</p></div></div></div>"
+  },
+  {
+    "name": "examples/webcomic",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-page mq-layout-nav-footer mq-scheme-noir\"><section class=\"mq-section\" data-slot=\"nav\"><h1>Skeleton Detective - Episode 47: \"A Bone to Pick\"</h1></section><section class=\"mq-section\" data-slot=\"main\"><p><span class=\"mq-embed-fallback\">[Episode 47]</span></p><div class=\"mq-placeholder\" data-directive=\"computed\"></div><div class=\"mq-placeholder\" data-directive=\"computed\"></div></section><section class=\"mq-section\" data-slot=\"footer\"><div class=\"mq-placeholder\" data-directive=\"webring\"></div><p>Updates Tuesdays. Probably.</p></section></div></div>"
+  },
+  {
+    "name": "examples/website-frontpage",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-page mq-layout-two-column-nav-footer mq-scheme-hotdog-stand\"><section class=\"mq-section\" data-slot=\"nav\"><div class=\"mq-placeholder\" data-directive=\"include\"></div></section><section class=\"mq-section\" data-slot=\"main\"><p><span class=\"mq-marquee\"><span class=\"mq-marquee-inner\">WELCOME TO CORFF'S HOUSE OF HATS</span></span></p><p><span class=\"mq-blink\">** UNDER CONSTRUCTION **</span> :construction:</p><p>You are visitor number:</p><div class=\"mq-placeholder\" data-directive=\"counter\"></div><p>Here you will find my collected thoughts on hats, sombreros, and the <span class=\"mq-rainbow\">occasional cape</span>.</p><p><span class=\"mq-embed-fallback\">[my beautiful hat]</span></p></section><section class=\"mq-section\" data-slot=\"right\"><h2>Cool Links</h2><ul><li><p><a href=\"https://hatenjoyers.example\">The Hat Ring</a></p></li><li><p><span class=\"mq-blocked\">Sombrero Facts</span></p></li></ul><div class=\"mq-placeholder\" data-directive=\"webring\"></div></section><section class=\"mq-section\" data-slot=\"footer\"><p>Best viewed in Netscape Navigator. Signed, <span class=\"mq-wave\">Corff</span> :tophat:</p></section></div></div>"
+  },
+  {
+    "name": "links/simple",
+    "html": "<div class=\"mq-doc\"><p>See <a href=\"https://example.org\">here</a> now</p></div>"
+  },
+  {
+    "name": "links/balanced-parens-ride-along",
+    "html": "<div class=\"mq-doc\"><p><a href=\"https://en.wikipedia.org/wiki/Hat_(disambiguation)\">wiki</a></p></div>"
+  },
+  {
+    "name": "links/unbalanced-paren-ends-target",
+    "html": "<div class=\"mq-doc\"><p><a href=\"foo\">x</a>bar)</p></div>"
+  },
+  {
+    "name": "links/embed",
+    "html": "<div class=\"mq-doc\"><p><span class=\"mq-embed-fallback\">[alt text]</span></p></div>"
+  },
+  {
+    "name": "links/whitespace-in-target-is-not-a-link",
+    "html": "<div class=\"mq-doc\"><p>[x](a b)</p></div>"
+  },
+  {
+    "name": "links/emoji",
+    "html": "<div class=\"mq-doc\"><p>cool :tophat: hat</p></div>"
+  },
+  {
+    "name": "links/single-colon-never-matches",
+    "html": "<div class=\"mq-doc\"><p>meet at 3:30, ok</p></div>"
+  },
+  {
+    "name": "links/escaped-bracket-stays-prose",
+    "html": "<div class=\"mq-doc\"><p>[not a span]</p></div>"
+  },
+  {
+    "name": "lists/simple",
+    "html": "<div class=\"mq-doc\"><ul><li><p>a</p></li><li><p>b</p></li></ul></div>"
+  },
+  {
+    "name": "lists/mixed-markers-one-list",
+    "html": "<div class=\"mq-doc\"><ul><li><p>a</p></li><li><p>b</p></li><li><p>c</p></li></ul></div>"
+  },
+  {
+    "name": "lists/ordered-digits-not-significant",
+    "html": "<div class=\"mq-doc\"><ol><li><p>a</p></li><li><p>b</p></li></ol></div>"
+  },
+  {
+    "name": "lists/kind-switch-splits",
+    "html": "<div class=\"mq-doc\"><ul><li><p>a</p></li></ul><ol><li><p>b</p></li></ol></div>"
+  },
+  {
+    "name": "lists/nested-two-spaces",
+    "html": "<div class=\"mq-doc\"><ul><li><p>a</p><ul><li><p>b</p></li></ul></li></ul></div>"
+  },
+  {
+    "name": "lists/three-spaces-floor-to-nested",
+    "html": "<div class=\"mq-doc\"><ul><li><p>a</p><ul><li><p>b</p></li></ul></li></ul></div>"
+  },
+  {
+    "name": "lists/one-space-floors-to-sibling",
+    "html": "<div class=\"mq-doc\"><ul><li><p>a</p></li><li><p>b</p></li></ul></div>"
+  },
+  {
+    "name": "lists/item-with-two-paragraphs",
+    "html": "<div class=\"mq-doc\"><ul><li><p>a</p><p>second</p></li></ul></div>"
+  },
+  {
+    "name": "lists/column-zero-block-ends-list",
+    "html": "<div class=\"mq-doc\"><ul><li><p>a</p></li></ul><p>plain</p></div>"
+  },
+  {
+    "name": "lists/wrapped-item-text",
+    "html": "<div class=\"mq-doc\"><ul><li><p>a line\nwrapped</p></li></ul></div>"
+  },
+  {
+    "name": "smoke/empty-document",
+    "html": "<div class=\"mq-doc\"></div>"
+  },
+  {
+    "name": "smoke/one-paragraph",
+    "html": "<div class=\"mq-doc\"><p>hello world</p></div>"
+  },
+  {
+    "name": "smoke/version-line-stripped",
+    "html": "<div class=\"mq-doc\"><p>hi</p></div>"
+  },
+  {
+    "name": "smoke/heading-and-paragraph",
+    "html": "<div class=\"mq-doc\"><h1>Title</h1><p>Body text.</p></div>"
+  },
+  {
+    "name": "smoke/seven-hashes-are-prose",
+    "html": "<div class=\"mq-doc\"><p>####### nope</p></div>"
+  },
+  {
+    "name": "smoke/hash-without-space-is-prose",
+    "html": "<div class=\"mq-doc\"><p>#nope</p></div>"
+  },
+  {
+    "name": "spans/simple",
+    "html": "<div class=\"mq-doc\"><p><span class=\"mq-blink\">still open</span></p></div>"
+  },
+  {
+    "name": "spans/default-parameter-idiom",
+    "html": "<div class=\"mq-doc\"><p><font class=\"mq-color\" color=\"red\" style=\"--mq-color:red\">hp low</font></p></div>"
+  },
+  {
+    "name": "spans/nested",
+    "html": "<div class=\"mq-doc\"><p><span class=\"mq-marquee\"><span class=\"mq-marquee-inner\"><span class=\"mq-blink\">3am</span></span></span></p></div>"
+  },
+  {
+    "name": "spans/mismatched-closer-all-literal",
+    "html": "<div class=\"mq-doc\"><p>[blink]a[/marquee]b</p></div>"
+  },
+  {
+    "name": "spans/sidenote",
+    "html": "<div class=\"mq-doc\"><p>note<span class=\"mq-sidenote\" role=\"note\">the aside</span> continues</p></div>"
+  },
+  {
+    "name": "spans/unclosed-opener-reverts",
+    "html": "<div class=\"mq-doc\"><p>[blink]oops</p></div>"
+  },
+  {
+    "name": "spans/attribute",
+    "html": "<div class=\"mq-doc\"><p><span class=\"mq-typewriter\">slow reveal</span></p></div>"
+  },
+  {
+    "name": "turbolink/https",
+    "html": "<div class=\"mq-doc\"><p class=\"mq-turbolink\"><a href=\"https://example.org/post\">https://example.org/post</a></p></div>"
+  },
+  {
+    "name": "turbolink/registered-scheme",
+    "html": "<div class=\"mq-doc\"><p class=\"mq-turbolink\">ringtome://identity/doc</p></div>"
+  },
+  {
+    "name": "turbolink/bare-word-is-prose",
+    "html": "<div class=\"mq-doc\"><p>hello</p></div>"
+  },
+  {
+    "name": "turbolink/relative-path-is-prose",
+    "html": "<div class=\"mq-doc\"><p>../up.png</p></div>"
+  },
+  {
+    "name": "turbolink/blob-is-prose",
+    "html": "<div class=\"mq-doc\"><p>blob:abc</p></div>"
+  },
+  {
+    "name": "turbolink/note-colon-is-prose",
+    "html": "<div class=\"mq-doc\"><p>Note:this</p></div>"
+  },
+  {
+    "name": "turbolink/directive-explicit-form",
+    "html": "<div class=\"mq-doc\"><p class=\"mq-turbolink\"><a href=\"../up.png\">../up.png</a></p></div>"
+  },
+  {
+    "name": "turbolink/second-line-defeats-sugar",
+    "html": "<div class=\"mq-doc\"><p>https://example.org\nmore</p></div>"
+  },
+  {
+    "name": "turbolink/trailing-prose-defeats-sugar",
+    "html": "<div class=\"mq-doc\"><p>https://example.org and more</p></div>"
+  }
+]

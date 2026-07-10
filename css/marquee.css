@@ -1,0 +1,311 @@
+/* marquee.css — the reference stylesheet for rendered Marquee.
+ *
+ * This file is the class contract every reference renderer targets: the
+ * mq-* names and --mq-* slots here are the shared surface; the HTML tree
+ * shapes around them may differ per renderer. Everything degrades: without
+ * this stylesheet a rendered document is still readable semantic HTML (and
+ * <font color> still colors, courtesy of the browser itself).
+ */
+
+/* ---- document ---- */
+
+.mq-doc {
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+.mq-doc :is(img, video, audio) {
+  max-width: 100%;
+}
+
+.mq-doc pre.mq-code {
+  overflow-x: auto;
+  padding: 0.75rem;
+  background: rgba(127, 127, 127, 0.12);
+  border-radius: 0.25rem;
+}
+
+/* ---- the color slot: validated author values, property mapping ours ---- */
+
+.mq-color {
+  color: var(--mq-color);
+}
+
+.mq-page,
+.mq-section {
+  background: var(--mq-bg, transparent);
+  color: var(--mq-color, inherit);
+}
+
+/* ---- placeholders and affordances (the contractual shrug, visibly) ---- */
+
+.mq-placeholder,
+.mq-unknown,
+.mq-invalid {
+  border: 1px dashed rgba(136, 136, 136, 0.66);
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.mq-placeholder::before,
+.mq-invalid::before {
+  font-family: ui-monospace, monospace;
+  font-size: 0.85em;
+  opacity: 0.66;
+}
+
+.mq-placeholder::before {
+  content: "⬚ " attr(data-directive);
+}
+
+.mq-unknown::before {
+  content: "⬚ " attr(data-directive) " (unsupported here)";
+  display: block;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8em;
+  opacity: 0.6;
+}
+
+.mq-invalid::before {
+  content: "✂ invalid markup: " attr(data-reason);
+}
+
+.mq-blocked {
+  text-decoration: underline dotted;
+}
+
+/* ---- turbolinks (the bare rung; enrichment is embedder-side) ---- */
+
+.mq-turbolink {
+  border: 1px solid rgba(136, 136, 136, 0.33);
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.mq-turbolink a {
+  text-decoration: none;
+}
+
+/* ---- sidenotes: margin aside when wide, parenthetical when narrow ---- */
+
+.mq-sidenote {
+  font-size: 0.85em;
+  opacity: 0.85;
+}
+
+.mq-sidenote::before {
+  content: " (";
+}
+
+.mq-sidenote::after {
+  content: ") ";
+}
+
+@media (min-width: 70rem) {
+  .mq-sidenote {
+    float: right;
+    clear: right;
+    width: min(18rem, 40%);
+    margin: 0 0 0.5rem 1rem;
+    border-left: 2px solid rgba(136, 136, 136, 0.33);
+    padding-left: 0.5rem;
+  }
+
+  .mq-sidenote::before,
+  .mq-sidenote::after {
+    content: none;
+  }
+}
+
+/* ---- effects: best-effort CSS motion. The old web's mistake was never
+ * marquee; it was marquee without an exit — the exit is the media query. */
+
+.mq-marquee {
+  display: inline-block;
+  overflow: hidden;
+  max-width: 100%;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.mq-marquee-inner {
+  display: inline-block;
+  padding-left: 100%;
+}
+
+.mq-bounce,
+.mq-jitter,
+.mq-wave {
+  display: inline-block;
+}
+
+.mq-rainbow {
+  color: #ff004c;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mq-marquee-inner {
+    animation: mq-marquee calc(16s / max(var(--mq-speed, 1), 1)) linear infinite;
+  }
+
+  .mq-marquee[data-direction="right"] .mq-marquee-inner {
+    animation-direction: reverse;
+  }
+
+  .mq-blink {
+    animation: mq-blink calc(1.2s / max(var(--mq-rate, 1), 1)) step-end infinite;
+  }
+
+  .mq-rainbow {
+    animation: mq-rainbow 3s linear infinite;
+  }
+
+  .mq-bounce {
+    animation: mq-bounce 0.6s ease-in-out infinite alternate;
+  }
+
+  .mq-jitter {
+    animation: mq-jitter 0.18s steps(2) infinite;
+  }
+
+  .mq-wave {
+    animation: mq-wave 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes mq-marquee {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes mq-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes mq-rainbow {
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
+
+@keyframes mq-bounce {
+  to {
+    transform: translateY(-0.25em);
+  }
+}
+
+@keyframes mq-jitter {
+  25% {
+    transform: translate(0.05em, -0.05em);
+  }
+  75% {
+    transform: translate(-0.05em, 0.05em);
+  }
+}
+
+@keyframes mq-wave {
+  25% {
+    transform: rotate(1.5deg) translateY(-0.08em);
+  }
+  75% {
+    transform: rotate(-1.5deg) translateY(0.08em);
+  }
+}
+
+/* .mq-typewriter ships no motion: letter-by-letter reveal needs JS (the
+ * interactive renderer); here it is its full static text, per contract. */
+
+/* ---- layouts: picked, not authored ---- */
+
+.mq-layout-nav-footer,
+.mq-layout-two-column-nav-footer,
+.mq-layout-three-column-nav-footer {
+  display: grid;
+  gap: 1rem;
+}
+
+.mq-layout-nav-footer {
+  grid-template-areas: "nav" "main" "footer";
+}
+
+.mq-layout-two-column-nav-footer {
+  grid-template-areas:
+    "nav nav"
+    "main right"
+    "footer footer";
+  grid-template-columns: 1fr minmax(10rem, 16rem);
+}
+
+.mq-layout-three-column-nav-footer {
+  grid-template-areas:
+    "nav nav nav"
+    "left main right"
+    "footer footer footer";
+  grid-template-columns: minmax(8rem, 12rem) 1fr minmax(8rem, 12rem);
+}
+
+.mq-section[data-slot="nav"] { grid-area: nav; }
+.mq-section[data-slot="main"] { grid-area: main; }
+.mq-section[data-slot="left"] { grid-area: left; }
+.mq-section[data-slot="right"] { grid-area: right; }
+.mq-section[data-slot="footer"] { grid-area: footer; }
+
+@media (max-width: 48rem) {
+  .mq-layout-two-column-nav-footer,
+  .mq-layout-three-column-nav-footer {
+    grid-template-areas: "nav" "main" "left" "right" "footer";
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- schemes: named knob bundles (grown from the corpus) ---- */
+
+.mq-scheme-noir {
+  --mq-bg: #101014;
+  --mq-color: #e8e8ee;
+  background: var(--mq-bg);
+  color: var(--mq-color);
+}
+
+.mq-scheme-noir a {
+  color: #9ecbff;
+}
+
+.mq-scheme-terminal {
+  --mq-bg: #0a0f0a;
+  --mq-color: #33ff66;
+  background: var(--mq-bg);
+  color: var(--mq-color);
+  font-family: ui-monospace, "Cascadia Mono", "JetBrains Mono", monospace;
+}
+
+.mq-scheme-terminal a {
+  color: #66ffcc;
+}
+
+.mq-scheme-parchment {
+  --mq-bg: #f4e8d0;
+  --mq-color: #3a2f1b;
+  background: var(--mq-bg);
+  color: var(--mq-color);
+  font-family: Georgia, "Iowan Old Style", serif;
+}
+
+.mq-scheme-parchment a {
+  color: #7a4a12;
+}
+
+.mq-scheme-hotdog-stand {
+  --mq-bg: #c41e1e;
+  --mq-color: #ffe900;
+  background: var(--mq-bg);
+  color: var(--mq-color);
+}
+
+.mq-scheme-hotdog-stand a {
+  color: #ffffff;
+}
