@@ -164,6 +164,16 @@ test("size dial: seven steps, presentational floor, off-dial degrades", () => {
   assert.ok(named.includes('<font class="mq-size-2" size="2">no</font>'));
 });
 
+test("font list: closed names render floor+ceiling, off-list degrades", () => {
+  const html = renderMarquee("[font=orbitron]go[/font] [font=papyrus]nope[/font]\n");
+  assert.ok(html.includes('<font class="mq-font-orbitron" face="Orbitron">go</font>'));
+  assert.ok(html.includes("nope") && !html.includes("papyrus"), "off-list name degrades");
+  const block = renderMarquee(":::section font=vt323\nwords\n:::\n");
+  assert.ok(block.includes("mq-font-vt323"), "block knob lands as a class");
+  const bogus = renderMarquee(":::section font=wingdings\nwords\n:::\n");
+  assert.ok(!bogus.includes("mq-font-"), "off-list block knob emits nothing");
+});
+
 test("unknown span shrugs but children survive styled context", () => {
   const html = renderMarquee("[spiral]still here[/spiral]\n");
   assert.ok(html.includes("still here"));

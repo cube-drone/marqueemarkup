@@ -9,7 +9,7 @@ import { parse } from "../../parser/src/index.ts";
 import { render } from "./render.ts";
 import type { Profile } from "./profile.ts";
 
-export { render, escapeText, escapeAttr } from "./render.ts";
+export { render, escapeText, escapeAttr, FONTS } from "./render.ts";
 export { bareWebProfile } from "./profile.ts";
 export type { Profile, MediaResolution } from "./profile.ts";
 

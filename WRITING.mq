@@ -167,6 +167,12 @@ and [big]big[/big] is [small]small[/small]'s mirror.
 
 When numbers feel cold, the rungs have names: [miniscule]miniscule[/miniscule],
 [tiny]tiny[/tiny], [huge]huge[/huge], [enormous]ENORMOUS[/enormous].
+
+Fonts are picked from a closed list, never uploaded: [font=orbitron]SPACE STATION[/font],
+[font=vt323]terminal green[/font], [font=im-fell-english]ye olde booke[/font],
+[font=press-start]INSERT COIN[/font], [font=lobster]a fancy lobster[/font],
+[font=creepster]the abomination approves[/font], [font=comic]the people's classic[/font],
+[font=kablammo]KABLAMMO[/font], and [font=rye]howdy, partner[/font].
 ```
 
 E = mc[sup]2[/sup], H[sub]2[/sub]O, [small]the fine print[/small], colors by
@@ -180,6 +186,14 @@ and [big]big[/big] is [small]small[/small]'s mirror.
 
 When numbers feel cold, the rungs have names: [miniscule]miniscule[/miniscule],
 [tiny]tiny[/tiny], [huge]huge[/huge], [enormous]ENORMOUS[/enormous].
+
+Fonts are picked from a closed list, never uploaded: [font=orbitron]SPACE STATION[/font],
+[font=vt323]terminal green[/font], [font=im-fell-english]ye olde booke[/font],
+[font=press-start]INSERT COIN[/font], [font=lobster]a fancy lobster[/font],
+[font=creepster]the abomination approves[/font], [font=comic]the people's classic[/font],
+[font=kablammo]KABLAMMO[/font], and [font=rye]howdy, partner[/font].
+(Thirty-one real, self-hosted faces live in `fonts/`, each with its license riding along —
+your host serves them itself; no reader ever pings a font CDN.)
 
 ## Effects
 

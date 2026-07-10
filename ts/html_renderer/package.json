@@ -12,7 +12,8 @@
     "test": "node --test test/*.test.ts",
     "check": "tsc --noEmit",
     "bless": "node scripts/bless.ts",
-    "preview": "node scripts/preview.ts"
+    "preview": "node scripts/preview.ts",
+    "fetch-fonts": "node scripts/fetch-fonts.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

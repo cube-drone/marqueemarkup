@@ -86,6 +86,51 @@ function isToken(v: string | undefined): v is string {
   return v !== undefined && TOKEN.test(v);
 }
 
+/** The font vocabulary (closed, two tiers): four standard stacks that need
+ * no files, and the grab bag - SIL OFL faces the embedder serves itself
+ * (never a third-party CDN: fonts are a tracking vector, care-modes apply).
+ * Values are the `face` presentational attribute - the no-stylesheet floor;
+ * the mq-font-* class is the ceiling, where the real @font-face lives. */
+export const FONTS: Record<string, string> = {
+  // standard stacks
+  sans: "sans-serif",
+  serif: "serif",
+  mono: "monospace",
+  comic: "Comic Sans MS",
+  // the grab bag
+  "radio-canada": "Radio Canada",
+  "atkinson-hyperlegible": "Atkinson Hyperlegible",
+  lexend: "Lexend",
+  "zilla-slab": "Zilla Slab",
+  "playfair-display": "Playfair Display",
+  cormorant: "Cormorant",
+  "im-fell-english": "IM Fell English",
+  "uncial-antiqua": "Uncial Antiqua",
+  unifraktur: "UnifrakturMaguntia",
+  "jetbrains-mono": "JetBrains Mono",
+  vt323: "VT323",
+  "press-start": "Press Start 2P",
+  silkscreen: "Silkscreen",
+  "major-mono": "Major Mono Display",
+  orbitron: "Orbitron",
+  bungee: "Bungee",
+  monoton: "Monoton",
+  creepster: "Creepster",
+  "special-elite": "Special Elite",
+  fredericka: "Fredericka the Great",
+  lobster: "Lobster",
+  pacifico: "Pacifico",
+  caveat: "Caveat",
+  "comic-neue": "Comic Neue",
+  audiowide: "Audiowide",
+  kablammo: "Kablammo",
+  "henny-penny": "Henny Penny",
+  oi: "Oi",
+  rye: "Rye",
+  bitcount: "Bitcount",
+  quicksand: "Quicksand",
+};
+
 /** One rung of the font-element seven-step dial: presentational floor
  * (works with no stylesheet, under any CSP), stylesheet class as ceiling.
  * The named rungs - miniscule, tiny, huge, enormous - are unnecessary
@@ -179,6 +224,11 @@ function schemeClass(attrs: Attrs): string {
   return isToken(attrs["scheme"]) ? ` mq-scheme-${attrs["scheme"]}` : "";
 }
 
+function fontClass(attrs: Attrs): string {
+  const value = attrs["font"];
+  return value !== undefined && FONTS[value] !== undefined ? ` mq-font-${value}` : "";
+}
+
 function directive(name: string, attrs: Attrs, nodes: Node[], profile: Profile): string {
   const inner = children(nodes, profile);
   const custom = profile.directive(name, attrs, inner);
@@ -192,11 +242,11 @@ function directive(name: string, attrs: Attrs, nodes: Node[], profile: Profile):
       return inner;
     case "page": {
       const layout = isToken(attrs["layout"]) ? ` mq-layout-${attrs["layout"]}` : "";
-      return `<div class="mq-page${layout}${schemeClass(attrs)}"${styleVars(attrs)}>${inner}</div>`;
+      return `<div class="mq-page${layout}${schemeClass(attrs)}${fontClass(attrs)}"${styleVars(attrs)}>${inner}</div>`;
     }
     case "section": {
       const slot = isToken(attrs["slot"]) ? ` data-slot="${attrs["slot"]}"` : "";
-      return `<section class="mq-section${schemeClass(attrs)}"${slot}${styleVars(attrs)}>${inner}</section>`;
+      return `<section class="mq-section${schemeClass(attrs)}${fontClass(attrs)}"${slot}${styleVars(attrs)}>${inner}</section>`;
     }
     case "turbolink": {
       const target = attrs["target"];
@@ -253,6 +303,14 @@ function span(name: string, attrs: Attrs, nodes: Node[], profile: Profile): stri
         return sizeRung(value, inner);
       }
       return inner; // off the dial: the effect degrades, the words survive
+    }
+    case "font": {
+      const value = attrs["font"];
+      const face = value !== undefined ? FONTS[value] : undefined;
+      if (face !== undefined) {
+        return `<font class="mq-font-${value}" face="${escapeAttr(face)}">${inner}</font>`;
+      }
+      return inner; // not on the list: the words survive in their own clothes
     }
     case "miniscule":
       return sizeRung("1", inner);

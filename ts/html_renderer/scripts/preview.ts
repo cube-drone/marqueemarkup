@@ -22,7 +22,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { bareWebProfile, renderMarquee, type Profile } from "../src/index.ts";
+import { FONTS, bareWebProfile, renderMarquee, type Profile } from "../src/index.ts";
 
 const EMOJI: Record<string, string> = {
   tophat: "🎩", smile: "😀", sparkles: "✨", blobcat: "🐱", wave: "👋",
@@ -141,19 +141,44 @@ if (files.length === 0) {
 
 const css = readFileSync(fileURLToPath(new URL("../../../css/marquee.css", import.meta.url)), "utf8");
 
+/** Inline @font-face (as data URIs) for exactly the grab-bag faces the
+ * rendered pages actually use - real pixels, still one self-contained file,
+ * still zero scripts. */
+function usedFontFaces(html: string): string {
+  const fontsDir = fileURLToPath(new URL("../../../fonts/", import.meta.url));
+  const used = new Set<string>();
+  for (const m of html.matchAll(/mq-font-([a-z0-9-]+)/g)) {
+    used.add(m[1]!);
+  }
+  const rules: string[] = [];
+  for (const token of [...used].sort()) {
+    const family = FONTS[token];
+    const path = resolve(fontsDir, `${token}.woff2`);
+    if (family === undefined || !existsSync(path)) {
+      continue; // standard stacks and missing files: fallbacks handle it
+    }
+    const data = readFileSync(path).toString("base64");
+    rules.push(
+      `@font-face { font-family: "${family}"; src: url(data:font/woff2;base64,${data}) format("woff2"); font-display: swap; }`,
+    );
+  }
+  return rules.length === 0 ? "" : `<style>\n${rules.join("\n")}\n</style>\n`;
+}
+
 const sections = files.map((path) => {
   const profile = bare ? bareWebProfile : previewProfile(dirname(resolve(path)), mediaDir);
   const html = renderMarquee(readFileSync(path, "utf8"), profile);
   const label = files.length > 1 ? `<h2 class="preview-label">${basename(path)}</h2>\n` : "";
   return label + html;
 });
+const fontFaces = usedFontFaces(sections.join("\n"));
 
 process.stdout.write(`<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${files.length === 1 ? basename(files[0]!) : "Marquee preview"}</title>
 <style>${css}</style>
-<style>
+${fontFaces}<style>
   body { max-width: 60rem; margin: 2rem auto; padding: 0 1rem; font-family: system-ui, sans-serif; }
   .preview-label { font-family: ui-monospace, monospace; font-size: .9rem; opacity: .6;
                    border-top: 2px solid rgba(136,136,136,.4); padding-top: 1rem; margin-top: 2.5rem; }

@@ -157,8 +157,27 @@ fun lives.
 | `[big]a step up[/big]` | bigger text — small's mirror |
 | `[size=6]the dial[/size]` | the classic seven-step size scale, `1`–`7` (`3` is normal) |
 | `[miniscule]` `[tiny]` `[huge]` `[enormous]` | named rungs of that dial (1, 2, 6, 7) — unnecessary given the numbers, and yet |
+| `[font=orbitron]...[/font]` | a typeface from the closed list below (also a knob on pages and sections: `:::section font=vt323`) |
 | `[color=goldenrod]shiny[/color]` | colored text — a CSS color name or hex (`#f06`, `#ff0066`) |
 | `[sidenote]a witty aside[/sidenote]` | a margin note — floats beside the text on wide screens, becomes a parenthetical on narrow ones |
+
+**The font list** — a closed menu, picked not uploaded, so every page renders everywhere.
+Four standard stacks: `sans`, `serif`, `mono`, `comic`. And the grab bag (freely-licensed
+faces your host serves itself):
+
+| vibe | names |
+|---|---|
+| clean sans | `radio-canada`, `atkinson-hyperlegible`, `lexend`, `quicksand` |
+| serif & slab | `playfair-display`, `cormorant`, `zilla-slab` |
+| old book & gothic | `im-fell-english`, `uncial-antiqua`, `unifraktur` |
+| mono & terminal | `jetbrains-mono`, `vt323`, `major-mono`, `special-elite` |
+| pixel | `press-start`, `silkscreen`, `bitcount` |
+| display & neon | `orbitron`, `audiowide`, `bungee`, `monoton`, `creepster` |
+| loud & weird | `kablammo`, `oi`, `henny-penny`, `rye` |
+| script & hand | `lobster`, `pacifico`, `caveat`, `fredericka`, `comic-neue` |
+
+A name not on the list (or a face that hasn't loaded) degrades to a sensible fallback —
+readable always, never blank.
 
 **Effects** (animated — readers with reduced-motion settings see calm static text, always):
 

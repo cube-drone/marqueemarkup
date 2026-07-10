@@ -344,8 +344,13 @@ Style is where the spec says "no" most, so here is the positive model, in one pl
   scheme degrades to unstyled.
 - **Tiny closed knob set; only `color`'s value is open.** Color (text/background/link - hex or a
   palette token; inline via `[color=red]`, block via a knob), background (color / named pattern
-  / `tile:blob:HASH`), scheme, cursor, at most a named font-*family* enum. Exact lists grow from
-  the corpus. Layout knobs (slots, columns) live on layout directives, not here.
+  / `tile:blob:HASH`), scheme, cursor, and **`font` - a named family enum in two tiers**: four
+  standard stacks (`sans`, `serif`, `mono`, `comic`) and a curated grab bag of SIL-OFL faces
+  (~two dozen; the canonical name list ships with the reference stylesheet). Inline via
+  `[font=orbitron]`, block via the knob on pages/sections. An embedder serves the faces
+  *itself*, never from a third-party CDN - font fetches are a tracking vector, and care-modes
+  apply; an unknown or unloaded name degrades to its fallback stack, readable always. Exact
+  lists grow from the corpus. Layout knobs (slots, columns) live on layout directives, not here.
 - **Knobs are data mapped into the renderer's own styling, never CSS handed to a renderer.** The
   renderer applies "text = #00ff00" however it draws - the data/code boundary again. The *model*
   is convergent (every renderer computes the same effective knobs); the *rendering* varies by
@@ -430,7 +435,8 @@ vocabulary: animated - `marquee` (direction, speed), `blink` (rate), `rainbow` (
 `small`, `big`, `size` (the font-element seven-step dial, `1`-`7` with `3` normal - a closed
 enum, deliberately not a unit-bearing number), and the named rungs `miniscule` (1), `tiny`
 (2), `huge` (6), `enormous` (7) - unnecessary given the dial, and yet; `color` (hex or
-palette token - the color model is settled in Styling).
+palette token - the color model is settled in Styling); `font` (a name from the closed family
+enum - see Styling).
 **`by=letter` / `by=word`** animates the run unit by unit with phase-offset cycles -
 sequential offsets for `rainbow`/`wave`/`bounce` (the gradient / ripple look),
 deterministically scattered for `jitter`; the default animates the run as one piece. The

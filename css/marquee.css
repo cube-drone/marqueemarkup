@@ -50,6 +50,48 @@
   object-fit: cover;
 }
 
+/* ---- the font list: a closed name enum in two tiers. Standard stacks need
+ * no files; the grab bag is SIL-OFL faces the embedder self-hosts (see
+ * fonts/ and css/fonts.css) - until those files load, every name degrades
+ * to its fallback stack below. Never a third-party font CDN. ---- */
+
+.mq-font-sans { font-family: system-ui, sans-serif; }
+.mq-font-serif { font-family: Georgia, serif; }
+.mq-font-mono { font-family: ui-monospace, monospace; }
+.mq-font-comic { font-family: "Comic Sans MS", "Comic Neue", cursive; }
+
+.mq-font-radio-canada { font-family: "Radio Canada", system-ui, sans-serif; }
+.mq-font-atkinson-hyperlegible { font-family: "Atkinson Hyperlegible", system-ui, sans-serif; }
+.mq-font-lexend { font-family: Lexend, system-ui, sans-serif; }
+.mq-font-zilla-slab { font-family: "Zilla Slab", Georgia, serif; }
+.mq-font-playfair-display { font-family: "Playfair Display", Georgia, serif; }
+.mq-font-cormorant { font-family: Cormorant, Georgia, serif; }
+.mq-font-im-fell-english { font-family: "IM Fell English", Georgia, serif; }
+.mq-font-uncial-antiqua { font-family: "Uncial Antiqua", Georgia, serif; }
+.mq-font-unifraktur { font-family: UnifrakturMaguntia, Georgia, serif; }
+.mq-font-jetbrains-mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+.mq-font-vt323 { font-family: VT323, ui-monospace, monospace; }
+.mq-font-press-start { font-family: "Press Start 2P", ui-monospace, monospace; }
+.mq-font-silkscreen { font-family: Silkscreen, ui-monospace, monospace; }
+.mq-font-major-mono { font-family: "Major Mono Display", ui-monospace, monospace; }
+.mq-font-orbitron { font-family: Orbitron, system-ui, sans-serif; }
+.mq-font-bungee { font-family: Bungee, system-ui, sans-serif; }
+.mq-font-monoton { font-family: Monoton, system-ui, sans-serif; }
+.mq-font-creepster { font-family: Creepster, system-ui, sans-serif; }
+.mq-font-special-elite { font-family: "Special Elite", ui-monospace, monospace; }
+.mq-font-fredericka { font-family: "Fredericka the Great", cursive; }
+.mq-font-lobster { font-family: Lobster, cursive; }
+.mq-font-pacifico { font-family: Pacifico, cursive; }
+.mq-font-caveat { font-family: Caveat, cursive; }
+.mq-font-comic-neue { font-family: "Comic Neue", "Comic Sans MS", cursive; }
+.mq-font-audiowide { font-family: Audiowide, system-ui, sans-serif; }
+.mq-font-kablammo { font-family: Kablammo, cursive; }
+.mq-font-henny-penny { font-family: "Henny Penny", cursive; }
+.mq-font-oi { font-family: Oi, Georgia, serif; }
+.mq-font-rye { font-family: Rye, Georgia, serif; }
+.mq-font-bitcount { font-family: Bitcount, ui-monospace, monospace; }
+.mq-font-quicksand { font-family: Quicksand, system-ui, sans-serif; }
+
 /* ---- the size dial: seven closed steps, 3 is normal (font-element scale;
  * the size attribute on the same element is the no-stylesheet floor) ---- */
 
