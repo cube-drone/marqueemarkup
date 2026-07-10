@@ -7,6 +7,7 @@ the marquee markup language: a little bit of markdown, a little bit of RST, a wh
 This is a monorepo: the spec, the conformance vectors, and every reference implementation
 version together, because they are one conformance unit.
 
+- `WRITING.md` — **start here to write Marquee**: the authoring guide, every tag with examples
 - `SPEC.md` — the language specification (grammar, AST contract, conformance rules)
 - `examples/` — hand-written `.mq` documents; the ergonomics testbed and vector seed corpus
 - `vectors/` — published conformance vectors (`*.json`, input → exact AST); see `vectors/README.md`
