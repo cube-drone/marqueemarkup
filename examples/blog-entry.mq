@@ -1,0 +1,27 @@
+#!marquee 0
+
+# The Great Hat Migration of 2031
+
+%% draft 3 - cut the pigeon tangent, save it for its own post
+
+Every spring, the hats come down from the **north attic**. Nobody knows who put them there,
+and frankly nobody is asking.
+
+## What we found
+
+- Seventeen fedoras, all slightly damp
+- A single, magnificent [color=goldenrod]sombrero[/color]
+- Three hats we are ~~legally~~ *contractually* forbidden to describe
+
+I wrote a little script to catalogue them:
+
+```python
+for hat in attic.hats():
+    print(hat.vibe, hat.dampness)
+```
+
+The sombrero deserves its own post. For now, here is the webring that started it all:
+
+https://hatenjoyers.example/ring
+
+More soon. :tophat:

@@ -1,0 +1,25 @@
+#!marquee 0
+
+:::page layout=nav-footer scheme=noir
+
+:::section slot=nav
+# Skeleton Detective - Episode 47: "A Bone to Pick"
+:::
+
+:::section slot=main
+![Episode 47](blob:skeldet-047)
+
+%% the client computes these links from the comic's stream at render time - see the
+%% :::computed resolution contract. the query is opaque to Marquee; ringtome resolves it.
+
+:::computed lang=ringtome-tql query="prev-in-stream stream=skeleton-detective":::
+:::computed lang=ringtome-tql query="next-in-stream stream=skeleton-detective":::
+:::
+
+:::section slot=footer
+:::webring ring=spooky-comics:::
+
+Updates Tuesdays. Probably.
+:::
+
+:::

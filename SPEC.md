@@ -38,7 +38,7 @@ Everything in Marquee is an instance of exactly four mechanisms:
 
 1. **The prose core** - paragraphs and inline formatting.
 2. **Directive blocks** - layout, sections, widgets, includes, media: all vocabulary.
-3. **Targets** - one reference grammar for links, media, includes, oneboxes, with a
+3. **Targets** - one reference grammar for links, media, includes, turbolinks, with a
    live-vs-pinned duality (id-addressed targets may change; hash-addressed targets cannot).
 4. **Embedder policy** - render-time capability decisions (fetch, trust, privacy), owned
    entirely by the host; zero grammar surface.
@@ -52,15 +52,28 @@ one more syntax" is how markup languages die.
 Blocks, separated by blank lines:
 
 - **Paragraph** - the default block.
-- **Heading** - ATX only: 1-6 `#` + space + text. No setext underlines.
-- **Fenced code** - triple-backtick fences, optional info string, no indentation-based code.
-- **Blockquote** - `>` prefix per line. No lazy continuation.
+- **Heading** - ATX only: 1-6 `#` + space + **inline content** (emphasis, spans, color, emoji,
+  embeds - the full inline grammar; a blinking heading is fair game). No setext underlines.
+- **Fenced code** - triple-backtick fences; the optional **info string** (the `python` after the
+  opening fence) is captured *opaquely* - the parser records it, never interprets it (same family
+  as directive
+  names, emoji slugs, and computed queries). A renderer MAY use it (syntax highlighting) but MUST
+  fall back to plain monospace: highlighting is a renderer *enhancement*, never a language
+  obligation - mandating it would force every client to embed highlight grammars for N languages,
+  CSS-scale overreach Marquee declines. No indentation-based code.
+- **Blockquote** - `>` prefix on *every* line. No lazy continuation (a wrapped quote line still
+  carries its `>`; an unprefixed line leaves the quote - CommonMark's lazy rule is an ambiguity
+  source, deliberately cut).
 - **List** - `- `, `* `, or `+ ` unordered (pure synonyms: markdown muscle memory is the UX
   budget, and a list that silently isn't a list is worse than any extra grammar line); `1. `
   ordered (renderer numbers; author's digits not significant). **Marker choice never carries
   meaning** - adjacent items with different markers are one list; there is no
   CommonMark-style split-on-marker-switch. Canonical AST records the list, not the spelling.
-  Nesting by exactly two spaces per level, capped depth.
+  Nesting by exactly two spaces per level, capped depth. Item text that wraps, and any block
+  content *inside* an item (an image, a paragraph), must be indented to the item's content column
+  (no lazy continuation, as blockquotes). A column-0 block ends the list - cosmetically invisible
+  between unordered bullets, but it **restarts numbering** in an ordered list, so the failure is
+  visible-and-fixable (you see `1. 2. 1.`), never silent. To keep an image in a bullet, indent it.
 - **Thematic break** - `---` alone on a line.
 - **Comment** - `%%` at line start; consecutive `%%` lines form one comment block. **Raw
   content** (never parsed - a comment may hold broken sketch markup without spawning errors),
@@ -95,10 +108,18 @@ Inlines:
   prose); links are distinguished by their immediate `(` - `[text](target)` is a link,
   `[name ...]` is a span opener. The parser accepts any well-formed span name (grammar, not
   vocabulary); effect names are vocabulary, validated by the embedder layer like directives.
-- A paragraph consisting of exactly one bare target is an **Onebox** node: the client may
-  render an inline summary of the referenced content; how much (full card / title only / plain
-  link) is embedder + user policy. `:::onebox` exists for explicit configuration.
-- Hard line break: trailing backslash.
+- A paragraph consisting of exactly one bare target is a **turbolink** node (a hyperlink, but
+  more - a link the renderer MAY enrich into a rich preview; Discourse calls its version a
+  "onebox," Slack an "unfurl"). Marquee owns only the node; **where the summary comes from is
+  entirely render/embedder-side** - OpenGraph/meta tags fetched from a web URL, native metadata
+  (title, etc.) for a `ringtome://` target - and because enriching a web link means *fetching*
+  it, that obeys the fetch-policy/care-modes dial (a privacy-max reader gets a plain link, not a
+  fetched preview). Degrades to a plain link always. `:::turbolink` configures the level (full /
+  title / bare).
+- Line breaks: a single newline inside a paragraph is **soft** - it and any surrounding
+  horizontal whitespace collapse to one space, so hard-wrapping a paragraph at any column is
+  render-invariant (the source breaks vanish). A **hard** break is a trailing backslash; a blank
+  line (two newlines) is a paragraph separator.
 
 Deliberately absent, forever or until a version bump: embedded HTML, setext headings,
 reference-style links, lazy continuation, indented code blocks. Tables are deferred from v0, but the name `:::table` is **reserved** (see Reserved
@@ -106,11 +127,48 @@ vocabulary): cozy pages rarely want them, and the body model is an open fork.
 
 **Caps are spec, not implementation** - an implementation-defined depth limit is a manufactured
 parser differential (input parses on one client, blows the stack on another), so the limits are
-conformance rules with vectors: list nesting ≤ 8, directive nesting ≤ 4, targets ≤ 2048 bytes,
-attribute values ≤ 1024 bytes. Document size is deliberately the embedder's, not the
+conformance rules with vectors: list nesting ≤ 8, directive nesting ≤ 4, inline nesting
+(spans and delimiters) ≤ 8, targets ≤ 2048 bytes, attribute values ≤ 1024 bytes. Document size is deliberately the embedder's, not the
 language's. Behavior at a cap follows the prose/construct split: over-deep list indentation
 stays inside the deepest item as literal text (prose degrades); over-deep directives are
 `invalid_directive` nodes (constructs error, visibly for authors, fail-closed for strangers).
+
+## Document metadata
+
+A document can carry its own metadata - title, date, author, tags - and it needs to: Marquee is
+standalone, so a `.mq` file on a plain web server or in a git repo has no external record to lean
+on, and a self-describing document is a complete one (portable, archivable, mailable). The
+ubiquity of markdown front matter is the proof this is needed; Marquee provides it without the
+two things that make front matter a wart.
+
+**A `:::meta` leaf directive carries metadata as attributes:**
+
+```
+:::meta title="House of Leaves" date=2025-01-27 tags="king in yellow, house of leaves":::
+```
+
+- **No embedded second language.** Front matter stuffs YAML/TOML - a whole cursed grammar - into
+  the top of the file. Marquee's attribute grammar *already is* a key-value format, so metadata
+  costs **zero new parsing**: `:::meta` is an ordinary leaf directive, and the parser stays
+  vocabulary-blind (`directive{name:"meta"}`).
+- **The place, not the schema.** The spec blesses the `meta` name and the rule "its attributes
+  are document metadata"; the *keys* (title, date, tags, ...) are consumer-defined, opaque to
+  Marquee like every attribute. Marquee carries metadata; it does not dictate a metadata model.
+- **Renders nothing by default;** a consumer MAY use it (a renderer showing the title as a
+  heading, a feed showing the date). Conventionally near the top, but **position-free** - the
+  parser does not enforce it.
+- **Multiple `:::meta` are allowed and their keys *union*** (declare metadata in one block or
+  scattered). A **duplicate key resolves first-writer-wins** - the first occurrence in document
+  order is authoritative, later duplicates are ignored. Deterministic (no differential), and no
+  per-key merge rules (title-concatenates, tags-union would force Marquee to *know what each key
+  means* - the schema it deliberately does not own). No-spooky-action: a value, once declared, is
+  fixed; a later line cannot silently reach back and change it.
+- **Reconciliation with external records is host policy.** A standalone file self-describes via
+  `:::meta`. A host with its own record (Ringtome's post fields) decides precedence - the sane
+  default is *import-time seeding*: `:::meta` populates the record on ingest, then the record is
+  authoritative (a host-native document may carry no `:::meta` at all, its record being the
+  metadata). Marquee guarantees only that the document *can* carry its own description when
+  nothing external will.
 
 ## Directive blocks
 
@@ -172,7 +230,10 @@ webring stuff
 
 - `layout` is an enum; each layout defines its named slots. v0 set: `basic`,
   `nav-footer`, `two-column-nav-footer`, `three-column-nav-footer`.
-- Duplicate slot claims are a strict error; unclaimed slots collapse.
+- A `:::section` is a general block container; `slot` is optional, meaningful only inside a
+  slotted layout (elsewhere - e.g. a themed group with a `scheme` - a slotless section is just a
+  container, and children inherit its style). Duplicate slot claims are a strict error; unclaimed
+  slots collapse.
 - Style attributes (`background`, `scheme`, `color`, `cursor`, ...) attach here and to sections
   and spans; the full model is one section down (Styling).
 
@@ -209,8 +270,8 @@ Style is where the spec says "no" most, so here is the positive model, in one pl
 ### Includes: shared nav, footers, mix-ins
 
 ```
-:::include doc=NAV_ID                        (relative: a sibling in the same context)
-:::include doc=ringtome://identity/NAV_ID    (absolute: someone else's, where permitted)
+:::include doc=NAV_ID:::                        (relative: a sibling in the same context)
+:::include doc=ringtome://identity/NAV_ID:::    (absolute: someone else's, where permitted)
 ```
 
 - Includes are **live by default** (a relative or location-addressed reference: edit your nav
@@ -232,8 +293,8 @@ a resolved directive and a stateful widget are one species (host-provided behavi
 parser is as blind to it as to every other directive name.
 
 ```
-:::computed lang=ringtome-tql query="..."      (opaque: Marquee neither parses nor understands the query)
-:::computed lang=sql query="SELECT ..."         (equally valid syntactically - Marquee has no opinion)
+:::computed lang=ringtome-tql query="...":::      (opaque: Marquee neither parses nor understands the query)
+:::computed lang=sql query="SELECT ...":::         (equally valid syntactically - Marquee has no opinion)
 ```
 
 Marquee owns the **resolution contract**, never the query semantics (the same split as
@@ -242,6 +303,10 @@ animation and targets: contract yes, meaning no):
 - The query string and its language are **opaque** - passed through to the embedder's resolver.
   Marquee defines no query language, no role vocabulary, no taxonomy shapes. Those belong to the
   embedder's own system (for Ringtome, a future taxonomy query language - out of scope here).
+- **`:::computed` is the mechanism, not the author surface - it is verbose on purpose.** An
+  embedder should offer friendly named directives (`:::next-in stream=my-comic:::`) as ordinary
+  vocabulary over it; the raw form is plumbing a hand-author rarely writes, the way nobody writes
+  raw SQL in a template when a helper exists.
 - **Resolved content is content, never authority** (derived-not-signed): it is not in the
   document's signed bytes, it may change between renders, it cannot smuggle privilege, and it is
   subject to the same rendering rules as any content.
@@ -273,11 +338,25 @@ Effects are **pure presentation semantics with no state and no host services** -
 parameters, composition, degradation. They apply inline (effect spans, above) and to blocks
 (`:::marquee` as a directive wraps its blocks). Draft v0 vocabulary, grown from use like all
 vocabulary: animated - `marquee` (direction, speed), `blink` (rate), `rainbow`,
-`bounce`, `jitter`, `wave`, `typewriter` (speed); typographic - `sup`, `sub`,
+`bounce`, `jitter`, `wave`, `typewriter` (speed); typographic - `sup`, `sub`, `small`,
 `color` (hex or palette token - the color model is settled in Styling). Effects nest freely - marquee and blink at
-the same time is not an edge case, it is the point. (Godot's RichTextLabel speaks BBCode with
+the same time is not an edge case, it is the point.
+
+**Sidenotes are first-class** (`text[sidenote]the witty aside[/sidenote] continues`): the
+Pratchett/Adams/Tufte margin aside, which every markdown ecosystem reinvents as a plugin, is
+blessed vocabulary here. The span's body is the aside (rich inline content); it attaches at its
+position in the flow; a capable renderer floats it in the margin (or hover/tap-to-expand on
+narrow screens), and it degrades - never hidden - to an inline parenthetical or a footnote. No
+grammar change: it is a `span{name: "sidenote"}` like any other, just one the spec defines rather
+than the embedder. (Godot's RichTextLabel speaks BBCode with
 effect tags natively; a game-engine Marquee renderer for RPG dialogue is an intended
-out-of-Ringtome embedder, and the effect set is chosen with it in mind.)
+out-of-Ringtome embedder, and the effect set is chosen with it in mind.) The vocabulary is meant
+to *grow* - the early web's charm was people experimenting with a widening typographic palette,
+and additive vocabulary + version bumps are that path. The discipline that keeps it convergent
+rather than tag-soup: growth adds **closed, named constructs** (a future `[spiral]`, `:::columns`,
+a vertical-text mode), never arbitrary positioning. So the wild typography of a book like *House
+of Leaves* becomes progressively more *approximable* over time, while never becoming a free-form
+canvas - the "yet" is real, the CSS swamp stays drained.
 
 **The animation contract** - renderer obligations at the same level as "never innerHTML":
 
@@ -305,8 +384,8 @@ Marquee's conformance model can, so it does not need them:
   contractual shrug applied to media: a text-only client renders `[video: trailer.mp4]` as a
   link, a capable one plays it, nobody is nonconforming.
 - **Configuration lives on `:::media`, an open, growing attribute vocabulary** (not a closed
-  list - a bare `![]()` is the zero-config common case, exactly as a bare link is a onebox but
-  `:::onebox` configures it). The attribute *set* grows additively across versions like all
+  list - a bare `![]()` is the zero-config common case, exactly as a bare link is a turbolink but
+  `:::turbolink` configures it). The attribute *set* grows additively across versions like all
   vocabulary; each attribute is a **closed knob** (`width=small|medium|large|full`, `fit=...`),
   never freeform CSS - the same closed-knobs discipline as page styling, so "size this image"
   never becomes "author arbitrary layout." Known categories, list deferred to the corpus:
@@ -348,7 +427,7 @@ time.
 
 ## Targets
 
-One reference grammar for every target - links, media embeds, includes, oneboxes: a target is a
+One reference grammar for every target - links, media embeds, includes, turbolinks: a target is a
 **URI reference** (RFC 3986), absolute or relative, with standard resolution. Not a new
 mechanism - the web's own, adopted whole:
 
@@ -383,7 +462,8 @@ An embedder (Ringtome, a static-site generator, anything) declares:
   placeholders; Security Max / private browsing). Per-mode, user-switchable, zero grammar.
 - **Widget + role vocabulary** it actually implements.
 - **Include trust scope** and pin requirements.
-- **Onebox default** (full card / title / bare link) and its fetch rules.
+- **Turbolink default** (full / title / bare link) and its fetch rules (summaries are fetched
+  render-side per care-modes: OpenGraph for web, native metadata for own schemes).
 
 **Messaging is Marquee under a restrictive profile**, not a separate format: a message is a
 short document (one renderer for pages, posts, notes, *and* messages - the old-internet norm
@@ -397,7 +477,7 @@ its own `ringtome://root/...` address, so a bare relative `id` resolves within t
 identity (the id being the store layer's stable `doc_id`: the private register key for notes,
 the reserved payload field for posts) and cross-identity references are fully qualified;
 embeds `blob:` + `ringtome://` natively; `https:` media allowed with node-proxy fetch as default and care modes
-present; includes same-identity only; the cozy widget set; oneboxes on by default for
+present; includes same-identity only; the cozy widget set; turbolinks on by default for
 `ringtome://` targets and title-only for the web.
 
 ## Reserved vocabulary
@@ -425,32 +505,37 @@ serialize, what every implementation must produce identically, and what every re
 HTML, animation-capable HTML, a game engine's rich text - consumes. **One parser, many
 renderers: renderers may differ in fanciness, parsers may never differ in structure.**
 
-- **Parsing is total.** `parse(text) → document`, always. Malformed block constructs become
-  `invalid_directive{reason}` nodes *in* the tree; there is no separate error channel, and an
-  "error case" vector is just a vector whose AST contains invalid nodes. `reason` values are a
-  **closed, spec'd enum** - diagnostics are conformance surface (two clients disagreeing about
-  validity is a fail-closed disagreement), never freeform text.
-- **Blocks flag, inlines degrade, neither hides content.** A malformed block directive becomes
-  `invalid_directive`: its *effect* is dropped and it is flagged (authoring tools warn; a
-  stranger-render fails closed on the effect), but its children still render as plain blocks. A
-  malformed inline (unmatched delimiter, unclosed span) renders as the literal text typed,
-  silently. Both preserve authored content - "strict" means the failure is *detected*, never that
-  words are *punished*.
+- **Parse is total, so every document renders - there is no invalid *document*.** Recovery is
+  always deterministic and readable: duplicate keys resolve first-writer-wins, fences auto-close
+  at EOF, unknown vocabulary shrugs, unmatched inline delimiters fall to literal text. Genuinely
+  malformed *syntax* (an unclosed fence, an unparseable attribute) becomes an `invalid_directive`
+  node that still renders inertly (content preserved / placeholder); its `reason` is a **closed,
+  spec'd enum** so that *parsers agree on what is malformed* - it is conformance surface for the
+  vectors, not an author-facing error screen. An editor may lint off that reason; that is an
+  editor being helpful, not a concept the language formalizes. "Error"/"strict"/"invalid" in this
+  spec name that malformed-construct case, never a render failure.
+- **Blocks vs inlines - the whole malformed-syntax split.** A malformed *block* becomes an
+  `invalid_directive` (its effect dropped, children still rendered as plain blocks; a
+  stranger-render drops the effect too, which is the fail-closed safety). A malformed *inline*
+  (unmatched delimiter, unclosed span) falls to the literal text typed. Blocks get a node,
+  inlines get their characters back; both preserve every authored word.
 - **No source positions in the conformance AST.** Rust counts UTF-8 bytes, JavaScript counts
   UTF-16 units; positions in vectors would make every emoji a conformance bug. Implementations
   may carry positions out-of-band; vector comparison excludes them.
 - **Input normalization at the front door:** `\r\n` and `\r` → `\n` before anything else; tabs
   never count as indentation (a tab in content is content). Text nodes preserve content
-  verbatim - no unicode normalization of prose. Paragraph-internal newlines are literal `\n`
-  in text nodes (no softbreak node).
-- **Attrs** are string→string maps: duplicate keys are strict errors in directives, literal
-  fallback in spans; vectors serialize maps with sorted keys (determinism is manual).
+  verbatim - no unicode normalization of prose. Paragraph-internal newlines stay literal `\n`
+  in text nodes (no softbreak node); the renderer presents a lone `\n` as a soft space/wrap and
+  a trailing-`\` hard break as a line break (see Line breaks).
+- **Attrs** are string→string maps; a duplicate key resolves **first-writer-wins** (document
+  order), the same rule everywhere it can occur. Vectors serialize maps with sorted keys
+  (determinism is manual).
 - **Node inventory (v0, snake_case, children arrays):** blocks - `document{version}`,
   `paragraph`, `heading{level}`, `code_block{info?}`, `blockquote`, `list{ordered}`,
   `list_item`, `thematic_break`, `directive{name, attrs}`, `invalid_directive{reason}`;
   inlines - `text`, `emphasis`, `strong`, `strikethrough`, `code_span`, `link{target}`,
   `embed{target, alt}` (media of any kind; the kind is a render-time concern, not a node type),
-  `onebox{target}`, `span{name, attrs}`, `emoji{slug}`, `hard_break`, and the block
+  `turbolink{target}`, `span{name, attrs}`, `emoji{slug}`, `hard_break`, and the block
   `comment{text}`. Twenty-two types.
   Deliberately absent: `page`/`section` nodes (layout is directive *vocabulary*, checked by
   the validator layer on a parsed tree - the parser knows shapes, never names).

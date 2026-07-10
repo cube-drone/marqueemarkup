@@ -1,0 +1,182 @@
+#!marquee 0
+
+%% A REAL 2025 blog post (Curtis, "House of Leaves"), translated in full from Hugo markdown to
+%% Marquee. The Hugo TOML front matter becomes a :::meta directive - the document carries its own
+%% metadata (a Ringtome import would seed the post record from it). Translation map:
+%% {{<blue>}}x{{</blue>}} -> [color=blue]x[/color]; {{<sidenote arg>}}body ->
+%% arg[sidenote]body[/sidenote]; {{<youtube ID>}} -> a bare YouTube URL (a turbolink); _italic_ ->
+%% *italic*; &mdash; -> literal em-dash; <small> -> [small]. Findings at examples/README.md.
+
+:::meta title="House of Leaves" date=2025-01-27 tags="the king in yellow, house of leaves, homestuck, meaningfully colored text" description="the book is the house, the house is the book":::
+
+![](hol.png)
+
+So, 25 years after it launched, I finally read [color=blue]House[/color] of Leaves.
+
+That time I read Homestuck 5 times over 5 consecutive years[sidenote]I feel like I should write a very long blog post about this sometime.[/sidenote]:
+
+> - it's like if [color=blue]House[/color] of Leaves was awesome instead of horseshit
+> - [small]I've never actually read house of leaves it sounds like horseshit though[/small]
+
+That time I read Neverending Story:
+
+> (side note: this is also why I've been holding off on [House of Leaves](https://en.wikipedia.org/wiki/House_of_Leaves), which is also in my reading queue now that I've got a color e-reader)
+
+So I've been *aware* of [color=blue]House[/color] of Leaves for a long time, but I wasn't willing to fully tackle it until I had a *large format full-color e-reader*.
+
+Which, uh: I guess I've had one of those for a little over a year now. So I guess it is *time*.
+
+I'll even write an article about it.[sidenote]with a bunch of images that I stole from the r/houseofleaves subreddit because they are funny and illustrative.[/sidenote]
+
+![](./noleaves.png)
+
+---
+
+## Reading Patterns
+
+The first 50 pages of [color=blue]House[/color] of Leaves took me weeks to read. I'd open it, power through some boring-ass text, fail to see what the deal was, and put it back down.
+
+The last 700 pages of [color=blue]House[/color] of Leaves took me 2 days to read. Once I got in to it, it became harder to put down.
+
+![](beefus.png)
+
+---
+
+## This Is Not For You
+
+I bet you'd live to criticize that, wouldn't you, you Critics! But you can't. It's not *for* you.
+
+[![](./criticism.png)](https://www.penny-arcade.com/comic/2004/03/24/the-adventures-of-twisp-and-catsby)
+
+This is also, uh, maybe a good time to talk a little bit about how *divisive* [color=blue]House[/color] of Leaves is. Loved by many, hated by many.
+
+Beyond that, though, what does "this book is not for you" mean, at the beginning of the book, in Johnny Truant's font[sidenote]oh, btw, every narrator of this book is written with a different typeface.[/sidenote]? Well, it could mean any number of things, each interpretation supported by the text:
+
+- This is a note from Johnny Truant to *himself*, pointing out that this book is potentially dangerous to his sanity[sidenote]which: it is, good call Johnny[/sidenote].
+- This is a note from Johnny to *the potential reader*, warning them that this book is dangerous to their sanity[sidenote]which: it is not, bad call Johnny[/sidenote].
+- This indicates Johnny compiled the book for personal reasons, rather than to share it with the world[sidenote]Definitely true: Johnny never seems to care about the book's popularity - he is compiling it for his own, personal reasons.[/sidenote].
+- Mark Danielewski wants you to know he doesn't care if you like this book, because *he* wrote it following the death of his own father as a meditation on grieving a parent who was not always kind.
+
+Okay, there we go, we've made it through the first line of the book, only about ten thousand more to go.
+
+---
+
+## Horror Thrives Off of Ambiguity
+
+Horror is better when it goes underexplained: spooky things don't tend to *remain spooky* under careful examination.
+
+In this 30-minute long[sidenote]by this youtuber's current standards, this is an unbelievably short video[/sidenote] YouTube video, Hbomberguy makes the point that horror suffered in theaters and thrived on VHS partially because *the format itself* obscured the fine details:
+
+https://www.youtube.com/watch?v=xbZMqS-fW-8
+
+Longer horror series tend towards separating into episodic horror stories — Black Mirror, Twilight Zone, Goosebumps — and that's partially because horror just works *better* in shorter form. So in order for longer-form horror to thrive, it has to be, well, incredibly oblique. And boy, does [color=blue]House[/color] of Leaves understand the assignment.
+
+## Puzzle-Box Writing
+
+In fact, a lot of the time it does this *too well*: [color=blue]House[/color] of Leaves raises a lot of questions and doesn't seem too concerned about answering them, ever.
+
+One of the most prominent questions is that the word "[color=blue]house[/color]" is always written in blue, regardless of who's narrating. Why? It can't be a persistent tic of any individual narrator, because then it wouldn't be consistent throughout the whole book. Of *course* this is never explicitly explained.
+
+This was a major criticism of shows like Lost and the unsatisfying ending of X-Files:
+
+https://www.youtube.com/watch?v=LkoGBOs5ecM
+
+They raise a lot of *juicy questions* because juicy questions get people engaged, but then never answer them, earning the derogatory term "puzzle-box screenwriting." I'll argue that [color=blue]House[/color] of Leaves[sidenote]and a different "puzzle box" obsession of mine, Homestuck. — Homestuck actually explains almost everything, to full satisfaction, if you bother to close read it. Hussie raised impossibly complicated questions, wrote it **live**, and had access to a rabid fan community who created impossibly detailed theories; then he quietly read the forums and implemented the fan theories. This creates the impression that he's a brilliant author when he just created compelling questions and crowdsourced the solutions.[/sidenote] manages to stick these landings *better* than Sherlock or Lost, because it makes its own refusal to explain itself *thematically important*.
+
+## The Structure
+
+Talking about the book requires that I give you a brief look at what happens in it. Beware: past this point be spoilers (for a 25-year old book).
+
+- Johnny Truant, a punk kid mostly interested in drugs and sex, comes into possession of the rambling, mostly insane notes of Zampanó, an elderly blind man who was writing a book.
+- Johnny decides to make it his mission to clean this book up and get it publishable.
+- The actual book is an academic treatise examining "The Navidson Record", a short documentary (imagine "The Blair Witch Project") covering explorations of a *very clearly evil* [color=blue]house[/color].
+- In a layered double-cross it turns out The Navidson Record and its academic discussion are not real: most references are to books that never existed. The entire book is an invention of Zampanó.
+- Compiling the book is difficult: Johnny slowly loses his mind, withdrawing from society.
+- Within The Navidson Record, Will Navidson moves into a [color=blue]house[/color] only to discover it is just a little bigger on the inside than the outside.
+- A freshly discovered door leads to a dark hallway. Down the hallway: another, an endless procession of lightless rooms getting bigger and more abstract the deeper Will explores.
+
+![](./impossible.png)
+
+- An Exploration Team goes in with ropes and lights, and mostly just goes crazy and kills one another.
+- Will's family escapes; Will broods, obsesses, and eventually goes back in.
+- The book ends. Some Zampanó appendices and footnotes follow.
+- The Appendices include letters Johnny saved from his mother, Pelafina, who wrote from the mental institution where she was kept after she attempted to strangle Johnny to death when he was 4, ending with the notice of her suicide.
+
+and that's it, that's the book!
+
+## The Book Itself Contorts
+
+The thing a lot of people remember about [color=blue]House[/color] of Leaves is that, in the parts within the deepest, darkest parts of the [color=blue]house[/color], the book's text gets wonky, contorting and shifting to force the reader to adjust to its strangeness.
+
+![](contorts.png)
+![](./contorts2.png)
+
+Another detail is the near-constant footnotes[sidenote]nobody else does this[/sidenote]: Johnny Truant, arguably the main character, exists *only* within the introduction and footnotes.
+
+## Zampanó Might Be Worse
+
+He apes a lot of conventions from academic writing, including *endless navel gazing*. He can't form a complete thought without referencing a dozen other works. But *of course* Zampanó *is* generating new ideas: his references are entirely fabricated[sidenote]ChatGPT learned it from Zampanó.[/sidenote], as is the entire *topic* his book covers.
+
+You know, like when folks just read the Wikipedia article and *reference all of the things referenced by the Wikipedia article* without mentioning that all the work was A Single Wikipedia Page All Along.[sidenote]This was the subject of YET ANOTHER hbomberguy video, I need to find a different *guy* to reference, why is this one video essayist so frequently relevant?[/sidenote]
+
+## The Impossible Question of Who Wrote "[color=blue]House[/color] of Leaves"
+
+I think one of the core mysteries is *who wrote what*. Every source of information comes from an [unreliable narrator](https://tvtropes.org/pmwiki/pmwiki.php/Main/UnreliableNarrator) who may or may not even exist. It's a 50 unreliable narrator pile-up!
+
+Johnny could be a fiction created by Zampanó. Zampanó could be a fiction created by Johnny. Pelafina's footnotes introduce a brilliant mad-woman who constantly introduces themes that later show up in the book. The question of *who invented what* is both central to the mystery and *utterly unanswerable*.
+
+## The Book Is The [color=blue]House[/color], The [color=blue]House[/color] is the Book
+
+I'm a sucker for meaningful framing devices. The book, [color=blue]House[/color] of Leaves, has a cover that's a little short - it doesn't extend all the way to the end of the pages. It's, uh, *bigger on the inside than the outside*.
+
+The book describes *a labyrinth* that demands to be explained, yet contains no answers and engenders obsession and madness from people who *demand* those answers. Also *the book itself* demands to be explained, yet contains no answers and engenders obsession and madness from people who *demand* those answers. The main character tries to fully understand the mysteries of the book and goes mad trying.
+
+![](./mirror.png)
+
+Seemingly an endless, infinite, self-referential loop, but actually pretty easily explained if you think about it.
+
+## The Actual Answer To The Impossible Question
+
+Mark Danielewski, obviously. Someone had to point these mirrors at one another and then hand it to you like some kinda big fuckin' mystery.
+
+## Johnny's Mother's Impossible to Decipher Letter
+
+When Pelafina became increasingly paranoid, she'd layer encoded messages *into* her messages to her son - messages that, when decoded, felt *more real* (because of the effort) but were, of course, still nonsense. Then she sends this letter:
+
+![](./letter.webp)
+
+It *seems* pregnant with meaning, overflowing with a code that lies *just below the surface* — but I checked online, and 25 years later nobody has cracked it. Because there is nothing to crack.
+
+> [Page 633](https://www.reddit.com/r/houseofleaves/comments/j5ryae/notes_on_the_three_attic_whalestoe_letters/)
+>
+> This page. This fucking page. [I've spent a lot of time on this page.](https://imgur.com/9paUZEd.jpeg) I think that's maybe the point of it. Here, at the nucleus of Pelafina's madness, the riddle is unsolvable. No matter how much effort Johnny or the reader puts into these words, they [mean nothing](https://en.wikipedia.org/wiki/Word_salad).
+>
+> *However.*
+>
+> The words may not mean much in themselves, but their significance is so enormous that any all-encompassing interpretation of *[color=blue]House[/color] of Leaves* must account for them. They reappear all over the book - in Johnny's poems, in Pelafina's letters, and *even in Zampanò's writing.*
+
+This book is this page, too: a meaningless labyrinth, meant to be explored but not understood. Like the [Codex Seraphinianus](https://en.wikipedia.org/wiki/Codex_Seraphinianus) it's meant to *evoke* internal consistency without needing to *contain* it.
+
+## That's Why It Works
+
+I think [color=blue]House[/color] of Leaves works because *it is thematically and structurally about unsolvable mysteries*. It's a rumination on the meaning and draw of unsolvable mysteries.[sidenote]Like, for example, the unsolvable mystery of death, which had just, at time of writing, claimed Mark's father. Grief, too, is a major theme. The house is death. The house is grief.[/sidenote]
+
+The book is the house, the house is the book, and both are impossible, unresolvable labyrinths concocted by grieving conmen with unhealthy fixations.
+
+## Infohazard
+
+*good god damn this book is hard to stop thinking about*
+
+I'll be chillin' at work trying to put together Avatar Grembling or whatever the feature of the week is and suddenly I'll just think "but was Johnny real tho". *this book is exactly the sort of infohazard it purports to be*
+
+## Why Is The Internet Obsessed With This Book?
+
+https://www.youtube.com/watch?v=kMmBFnTfnn0
+
+Just because a book is metanarratively and thematically **about** being badly written, impenetrable, sexist, frustrating, self-contradictory, meaningless, and the topic of endless circular debate... doesn't... mean it's **not** badly written, impenetrable, sexist, frustrating, self-contradictory, meaningless, and the topic of endless circular debate.
+
+Something can be fascinating and even self aware without being... y'know... good.[sidenote]you know, like (he gestures around) me[/sidenote]
+
+## Conclusion
+
+anyhoo, that's a *soft recommend* from me

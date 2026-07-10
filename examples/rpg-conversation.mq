@@ -1,0 +1,25 @@
+#!marquee 0
+
+%% A game embedder defines a `:::say` directive: speaker and portrait are ATTRS (chrome shown
+%% instantly on the dialogue box), the utterance is the BODY (the only part that typewrites).
+%% This is the correct data model - the speaker labels the utterance, it is not part of it - so
+%% skipping the animation never skips the name, a screen reader announces the speaker first, and
+%% the nameplate themes separately from the dialogue. The animation contract still applies:
+%% typewriter animates on visibility, tap-to-skip completes it, reduced-motion renders it static.
+%% `speed` here is a per-say attr the embedder passes through to its typewriter effect.
+
+:::page scheme=parchment
+
+:::say speaker=Aria portrait=blob:aria-portrait speed=35
+We shouldn't be here. The [color=crimson][jitter]whispering dark[/jitter][/color] has *eyes*, Kael.
+:::
+
+:::say speaker=Kael portrait=blob:kael-portrait speed=35
+[wave]Relax.[/wave] I've got a [rainbow]legendary torch[/rainbow] and the [bounce]confidence of a much taller man[/bounce]. :torch:
+:::
+
+:::say speaker=Aria portrait=blob:aria-portrait speed=15
+...that is not a torch. That is a [color=sickly-green][blink]glowstick[/blink][/color].
+:::
+
+:::

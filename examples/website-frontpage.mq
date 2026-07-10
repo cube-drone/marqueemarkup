@@ -1,0 +1,35 @@
+#!marquee 0
+
+:::page layout=two-column-nav-footer scheme=hotdog-stand background=tile:blob:starfield
+
+:::section slot=nav
+:::include doc=my-nav:::
+:::
+
+:::section slot=main
+[marquee]WELCOME TO CORFF'S HOUSE OF HATS[/marquee]
+
+[blink]** UNDER CONSTRUCTION **[/blink] :construction:
+
+You are visitor number:
+:::counter theme=retro:::
+
+Here you will find my collected thoughts on hats, sombreros, and the [rainbow]occasional cape[/rainbow].
+
+![my beautiful hat](blob:corff-hat-photo)
+:::
+
+:::section slot=right
+## Cool Links
+
+- [The Hat Ring](https://hatenjoyers.example)
+- [Sombrero Facts](ringtome://sombrerofacts/home)
+
+:::webring ring=hat-ring:::
+:::
+
+:::section slot=footer
+Best viewed in Netscape Navigator. Signed, [wave]Corff[/wave] :tophat:
+:::
+
+:::
