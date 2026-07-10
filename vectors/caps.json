@@ -1,0 +1,322 @@
+[
+  {
+    "name": "caps/ninth-span-is-literal",
+    "marquee": "[b][b][b][b][b][b][b][b][b]x[/b][/b][/b][/b][/b][/b][/b][/b][/b]\n",
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "span",
+              "name": "b",
+              "attrs": {},
+              "children": [
+                {
+                  "type": "span",
+                  "name": "b",
+                  "attrs": {},
+                  "children": [
+                    {
+                      "type": "span",
+                      "name": "b",
+                      "attrs": {},
+                      "children": [
+                        {
+                          "type": "span",
+                          "name": "b",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "type": "span",
+                              "name": "b",
+                              "attrs": {},
+                              "children": [
+                                {
+                                  "type": "span",
+                                  "name": "b",
+                                  "attrs": {},
+                                  "children": [
+                                    {
+                                      "type": "span",
+                                      "name": "b",
+                                      "attrs": {},
+                                      "children": [
+                                        {
+                                          "type": "span",
+                                          "name": "b",
+                                          "attrs": {},
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "value": "[b]x"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "value": "[/b]"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "caps/emoji-slug-64-ok",
+    "marquee": ":aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:\n",
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "emoji",
+              "slug": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "caps/emoji-slug-65-literal",
+    "marquee": ":aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:\n",
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": ":aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "caps/attr-value-1024-ok",
+    "marquee": ":::x k=vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv:::\n",
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "directive",
+          "name": "x",
+          "attrs": {
+            "k": "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          },
+          "children": []
+        }
+      ]
+    }
+  },
+  {
+    "name": "caps/attr-value-1025-too-long",
+    "marquee": ":::x k=vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv:::\n",
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "invalid_directive",
+          "reason": "attribute_too_long",
+          "children": []
+        }
+      ]
+    }
+  },
+  {
+    "name": "caps/ninth-list-level-is-literal",
+    "marquee": "- L1\n  - L2\n    - L3\n      - L4\n        - L5\n          - L6\n            - L7\n              - L8\n                - too deep\n",
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "list",
+          "ordered": false,
+          "children": [
+            {
+              "type": "list_item",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "L1"
+                    }
+                  ]
+                },
+                {
+                  "type": "list",
+                  "ordered": false,
+                  "children": [
+                    {
+                      "type": "list_item",
+                      "children": [
+                        {
+                          "type": "paragraph",
+                          "children": [
+                            {
+                              "type": "text",
+                              "value": "L2"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "list",
+                          "ordered": false,
+                          "children": [
+                            {
+                              "type": "list_item",
+                              "children": [
+                                {
+                                  "type": "paragraph",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "value": "L3"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "list",
+                                  "ordered": false,
+                                  "children": [
+                                    {
+                                      "type": "list_item",
+                                      "children": [
+                                        {
+                                          "type": "paragraph",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "value": "L4"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "list",
+                                          "ordered": false,
+                                          "children": [
+                                            {
+                                              "type": "list_item",
+                                              "children": [
+                                                {
+                                                  "type": "paragraph",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "value": "L5"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "type": "list",
+                                                  "ordered": false,
+                                                  "children": [
+                                                    {
+                                                      "type": "list_item",
+                                                      "children": [
+                                                        {
+                                                          "type": "paragraph",
+                                                          "children": [
+                                                            {
+                                                              "type": "text",
+                                                              "value": "L6"
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "type": "list",
+                                                          "ordered": false,
+                                                          "children": [
+                                                            {
+                                                              "type": "list_item",
+                                                              "children": [
+                                                                {
+                                                                  "type": "paragraph",
+                                                                  "children": [
+                                                                    {
+                                                                      "type": "text",
+                                                                      "value": "L7"
+                                                                    }
+                                                                  ]
+                                                                },
+                                                                {
+                                                                  "type": "list",
+                                                                  "ordered": false,
+                                                                  "children": [
+                                                                    {
+                                                                      "type": "list_item",
+                                                                      "children": [
+                                                                        {
+                                                                          "type": "paragraph",
+                                                                          "children": [
+                                                                            {
+                                                                              "type": "text",
+                                                                              "value": "L8\n- too deep"
+                                                                            }
+                                                                          ]
+                                                                        }
+                                                                      ]
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

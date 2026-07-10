@@ -1,0 +1,96 @@
+[
+  {
+    "name": "directives/container",
+    "marquee": ":::section slot=nav\nWelcome!\n:::\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "directive", "name": "section", "attrs": {"slot": "nav"}, "children": [
+        {"type": "paragraph", "children": [{"type": "text", "value": "Welcome!"}]}
+      ]}
+    ]}
+  },
+  {
+    "name": "directives/leaf",
+    "marquee": ":::counter theme=retro:::\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "directive", "name": "counter", "attrs": {"theme": "retro"}, "children": []}
+    ]}
+  },
+  {
+    "name": "directives/meta-with-quoted-values",
+    "marquee": ":::meta title=\"House of Leaves\" date=2025-01-27:::\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "directive", "name": "meta", "attrs": {"date": "2025-01-27", "title": "House of Leaves"}, "children": []}
+    ]}
+  },
+  {
+    "name": "directives/duplicate-key-first-writer-wins",
+    "marquee": ":::meta title=first title=second:::\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "directive", "name": "meta", "attrs": {"title": "first"}, "children": []}
+    ]}
+  },
+  {
+    "name": "directives/auto-close-at-eof",
+    "marquee": ":::section\nwords\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "directive", "name": "section", "attrs": {}, "children": [
+        {"type": "paragraph", "children": [{"type": "text", "value": "words"}]}
+      ]}
+    ]}
+  },
+  {
+    "name": "directives/named-close-mismatch-flagged-at-line",
+    "marquee": ":::page\n:::section\n::: page\n:::\n:::\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "directive", "name": "page", "attrs": {}, "children": [
+        {"type": "directive", "name": "section", "attrs": {}, "children": [
+          {"type": "invalid_directive", "reason": "mismatched_close", "children": []}
+        ]}
+      ]}
+    ]}
+  },
+  {
+    "name": "directives/stray-close",
+    "marquee": ":::\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "invalid_directive", "reason": "stray_close", "children": []}
+    ]}
+  },
+  {
+    "name": "directives/depth-exceeded",
+    "marquee": ":::a\n:::b\n:::c\n:::d\n:::e\n:::\n:::\n:::\n:::\n:::\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "directive", "name": "a", "attrs": {}, "children": [
+        {"type": "directive", "name": "b", "attrs": {}, "children": [
+          {"type": "directive", "name": "c", "attrs": {}, "children": [
+            {"type": "directive", "name": "d", "attrs": {}, "children": [
+              {"type": "invalid_directive", "reason": "depth_exceeded", "children": []}
+            ]}
+          ]}
+        ]}
+      ]},
+      {"type": "invalid_directive", "reason": "stray_close", "children": []}
+    ]}
+  },
+  {
+    "name": "directives/empty-bare-value-is-bad",
+    "marquee": ":::x k= v\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "invalid_directive", "reason": "bad_attribute", "children": []}
+    ]}
+  },
+  {
+    "name": "directives/uppercase-name-is-bad",
+    "marquee": ":::Section\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "invalid_directive", "reason": "bad_name", "children": []}
+    ]}
+  },
+  {
+    "name": "directives/leaf-quoted-colons-are-safe",
+    "marquee": ":::x k=\":::\":::\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "directive", "name": "x", "attrs": {"k": ":::"}, "children": []}
+    ]}
+  }
+]

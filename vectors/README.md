@@ -27,9 +27,27 @@ normative in SPEC.md ("Conformance"); in short:
 
 ## Workflow
 
-Vectors are **blessed, not hand-typed**: the Rust implementation generates candidate ASTs, a
-human reviews the diff against intent, and the blessed output is committed. The TypeScript
-implementation then consumes the same files as a pure conformance suite. Hand-authoring ASTs
-in advance invites subtle serialization drift; reviewing generated output pins behavior just
-as hard without it. The `examples/*.mq` documents get vectorized the same way once the Rust
-parser exists.
+Vectors enter the corpus two ways, at two different times:
+
+1. **Seed vectors are hand-authored, before any parser exists.** Every deliberate ruling in
+   SPEC.md (the emphasis worked example, off-grid list flooring, balanced-paren targets, each
+   `invalid_directive` reason, each cap) gets its input and expected AST written by hand, from
+   the spec text alone. These are TDD fixtures: the Rust implementation is written *to* them,
+   not the other way around. A case that turns out to be hard to hand-author is a spec
+   ambiguity discovered at the cheapest possible moment.
+2. **The long tail is blessed.** Once Rust passes the seeds, candidate vectors are generated
+   from new inputs (starting with `examples/*.mq`), human-reviewed against intent, and
+   committed. Blessing grows the corpus; it never silently rewrites an existing vector —
+   changing one is a spec decision, not a re-bless. The tool:
+
+   ```
+   cd rust/parser && cargo run --bin bless -- ../../examples/*.mq > ../../vectors/examples.json
+   ```
+
+   `examples.json` is exactly that: the six example documents, blessed (reviewed structure
+   summaries against the examples README's intent notes; the two count discrepancies were
+   `%%`-commented mapping notes, correctly unparsed).
+
+Independence never came from where a vector originated: it comes from the TypeScript
+implementation being held to files it had no hand in producing, from human review at bless
+time, and from differential fuzzing at the end.

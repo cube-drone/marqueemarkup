@@ -10,8 +10,8 @@ version together, because they are one conformance unit.
 - `SPEC.md` — the language specification (grammar, AST contract, conformance rules)
 - `examples/` — hand-written `.mq` documents; the ergonomics testbed and vector seed corpus
 - `vectors/` — published conformance vectors (`*.json`, input → exact AST); see `vectors/README.md`
-- `rust/parser/` — reference parser, Rust (validation / authoring-gate side) *(planned)*
-- `ts/parser/` — reference parser, TypeScript (rendering side) *(planned)*
+- `rust/parser/` — reference parser, Rust (`cargo test` runs the vectors; `cargo run --bin bless` grows them)
+- `ts/parser/` — reference parser, TypeScript (`npm test` runs the same vectors; `npm run check` typechecks)
 
 Renderers land beside the parsers as they come (`rust/html_renderer`, `ts/html_renderer`,
 `ts/preact_interactive_renderer`, ...): one parser per language, many renderers, per the

@@ -1,0 +1,43 @@
+[
+  {
+    "name": "smoke/empty-document",
+    "marquee": "",
+    "ast": {"type": "document", "version": 0, "children": []}
+  },
+  {
+    "name": "smoke/one-paragraph",
+    "marquee": "hello world\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "hello world"}]}
+    ]}
+  },
+  {
+    "name": "smoke/version-line-stripped",
+    "marquee": "#!marquee 0\nhi\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "hi"}]}
+    ]}
+  },
+  {
+    "name": "smoke/heading-and-paragraph",
+    "marquee": "# Title\n\nBody text.\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "heading", "level": 1, "children": [{"type": "text", "value": "Title"}]},
+      {"type": "paragraph", "children": [{"type": "text", "value": "Body text."}]}
+    ]}
+  },
+  {
+    "name": "smoke/seven-hashes-are-prose",
+    "marquee": "####### nope\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "####### nope"}]}
+    ]}
+  },
+  {
+    "name": "smoke/hash-without-space-is-prose",
+    "marquee": "#nope\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "#nope"}]}
+    ]}
+  }
+]

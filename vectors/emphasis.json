@@ -1,0 +1,83 @@
+[
+  {
+    "name": "emphasis/simple",
+    "marquee": "*hi*\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "emphasis", "children": [{"type": "text", "value": "hi"}]}
+      ]}
+    ]}
+  },
+  {
+    "name": "emphasis/strong-nests-emphasis",
+    "marquee": "**bold and *italic* too**\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "strong", "children": [
+          {"type": "text", "value": "bold and "},
+          {"type": "emphasis", "children": [{"type": "text", "value": "italic"}]},
+          {"type": "text", "value": " too"}
+        ]}
+      ]}
+    ]}
+  },
+  {
+    "name": "emphasis/wrong-kind-closer-goes-literal",
+    "marquee": "*a **b* c**\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "text", "value": "*a "},
+        {"type": "strong", "children": [{"type": "text", "value": "b* c"}]}
+      ]}
+    ]}
+  },
+  {
+    "name": "emphasis/triple-stars-are-literal",
+    "marquee": "***three***\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "***three***"}]}
+    ]}
+  },
+  {
+    "name": "emphasis/underscore-is-always-literal",
+    "marquee": "snake_case_names\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "snake_case_names"}]}
+    ]}
+  },
+  {
+    "name": "emphasis/unmatched-opener-reverts",
+    "marquee": "*alone\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "*alone"}]}
+    ]}
+  },
+  {
+    "name": "emphasis/strikethrough-rides-the-same-rule",
+    "marquee": "~~gone~~ but ~one~ stays\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "strikethrough", "children": [{"type": "text", "value": "gone"}]},
+        {"type": "text", "value": " but ~one~ stays"}
+      ]}
+    ]}
+  },
+  {
+    "name": "emphasis/space-flanked-stars-are-literal",
+    "marquee": "a * b * c\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "a * b * c"}]}
+    ]}
+  },
+  {
+    "name": "emphasis/unicode-space-is-content-not-whitespace",
+    "marquee": "a *\u00a0x\u00a0* b\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "text", "value": "a "},
+        {"type": "emphasis", "children": [{"type": "text", "value": "\u00a0x\u00a0"}]},
+        {"type": "text", "value": " b"}
+      ]}
+    ]}
+  }
+]

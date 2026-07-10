@@ -1,0 +1,65 @@
+[
+  {
+    "name": "turbolink/https",
+    "marquee": "https://example.org/post\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "turbolink", "target": "https://example.org/post"}
+    ]}
+  },
+  {
+    "name": "turbolink/registered-scheme",
+    "marquee": "ringtome://identity/doc\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "turbolink", "target": "ringtome://identity/doc"}
+    ]}
+  },
+  {
+    "name": "turbolink/bare-word-is-prose",
+    "marquee": "hello\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "hello"}]}
+    ]}
+  },
+  {
+    "name": "turbolink/relative-path-is-prose",
+    "marquee": "../up.png\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "../up.png"}]}
+    ]}
+  },
+  {
+    "name": "turbolink/blob-is-prose",
+    "marquee": "blob:abc\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "blob:abc"}]}
+    ]}
+  },
+  {
+    "name": "turbolink/note-colon-is-prose",
+    "marquee": "Note:this\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "Note:this"}]}
+    ]}
+  },
+  {
+    "name": "turbolink/directive-explicit-form",
+    "marquee": ":::turbolink target=../up.png level=title:::\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "directive", "name": "turbolink", "attrs": {"level": "title", "target": "../up.png"}, "children": []}
+    ]}
+  },
+  {
+    "name": "turbolink/second-line-defeats-sugar",
+    "marquee": "https://example.org\nmore\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "https://example.org\nmore"}]}
+    ]}
+  },
+  {
+    "name": "turbolink/trailing-prose-defeats-sugar",
+    "marquee": "https://example.org and more\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "https://example.org and more"}]}
+    ]}
+  }
+]

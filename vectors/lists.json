@@ -1,0 +1,144 @@
+[
+  {
+    "name": "lists/simple",
+    "marquee": "- a\n- b\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "list", "ordered": false, "children": [
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "a"}]}
+        ]},
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "b"}]}
+        ]}
+      ]}
+    ]}
+  },
+  {
+    "name": "lists/mixed-markers-one-list",
+    "marquee": "- a\n* b\n+ c\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "list", "ordered": false, "children": [
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "a"}]}
+        ]},
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "b"}]}
+        ]},
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "c"}]}
+        ]}
+      ]}
+    ]}
+  },
+  {
+    "name": "lists/ordered-digits-not-significant",
+    "marquee": "7. a\n3. b\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "list", "ordered": true, "children": [
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "a"}]}
+        ]},
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "b"}]}
+        ]}
+      ]}
+    ]}
+  },
+  {
+    "name": "lists/kind-switch-splits",
+    "marquee": "- a\n1. b\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "list", "ordered": false, "children": [
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "a"}]}
+        ]}
+      ]},
+      {"type": "list", "ordered": true, "children": [
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "b"}]}
+        ]}
+      ]}
+    ]}
+  },
+  {
+    "name": "lists/nested-two-spaces",
+    "marquee": "- a\n  - b\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "list", "ordered": false, "children": [
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "a"}]},
+          {"type": "list", "ordered": false, "children": [
+            {"type": "list_item", "children": [
+              {"type": "paragraph", "children": [{"type": "text", "value": "b"}]}
+            ]}
+          ]}
+        ]}
+      ]}
+    ]}
+  },
+  {
+    "name": "lists/three-spaces-floor-to-nested",
+    "marquee": "- a\n   - b\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "list", "ordered": false, "children": [
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "a"}]},
+          {"type": "list", "ordered": false, "children": [
+            {"type": "list_item", "children": [
+              {"type": "paragraph", "children": [{"type": "text", "value": "b"}]}
+            ]}
+          ]}
+        ]}
+      ]}
+    ]}
+  },
+  {
+    "name": "lists/one-space-floors-to-sibling",
+    "marquee": "- a\n - b\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "list", "ordered": false, "children": [
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "a"}]}
+        ]},
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "b"}]}
+        ]}
+      ]}
+    ]}
+  },
+  {
+    "name": "lists/item-with-two-paragraphs",
+    "marquee": "- a\n\n  second\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "list", "ordered": false, "children": [
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "a"}]},
+          {"type": "paragraph", "children": [{"type": "text", "value": "second"}]}
+        ]}
+      ]}
+    ]}
+  },
+  {
+    "name": "lists/column-zero-block-ends-list",
+    "marquee": "- a\n\nplain\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "list", "ordered": false, "children": [
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "a"}]}
+        ]}
+      ]},
+      {"type": "paragraph", "children": [{"type": "text", "value": "plain"}]}
+    ]}
+  },
+  {
+    "name": "lists/wrapped-item-text",
+    "marquee": "- a line\n  wrapped\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "list", "ordered": false, "children": [
+        {"type": "list_item", "children": [
+          {"type": "paragraph", "children": [{"type": "text", "value": "a line\nwrapped"}]}
+        ]}
+      ]}
+    ]}
+  }
+]

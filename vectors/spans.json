@@ -1,0 +1,75 @@
+[
+  {
+    "name": "spans/simple",
+    "marquee": "[blink]still open[/blink]\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "span", "name": "blink", "attrs": {}, "children": [
+          {"type": "text", "value": "still open"}
+        ]}
+      ]}
+    ]}
+  },
+  {
+    "name": "spans/default-parameter-idiom",
+    "marquee": "[color=red]hp low[/color]\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "span", "name": "color", "attrs": {"color": "red"}, "children": [
+          {"type": "text", "value": "hp low"}
+        ]}
+      ]}
+    ]}
+  },
+  {
+    "name": "spans/nested",
+    "marquee": "[marquee][blink]3am[/blink][/marquee]\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "span", "name": "marquee", "attrs": {}, "children": [
+          {"type": "span", "name": "blink", "attrs": {}, "children": [
+            {"type": "text", "value": "3am"}
+          ]}
+        ]}
+      ]}
+    ]}
+  },
+  {
+    "name": "spans/mismatched-closer-all-literal",
+    "marquee": "[blink]a[/marquee]b\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "[blink]a[/marquee]b"}]}
+    ]}
+  },
+  {
+    "name": "spans/sidenote",
+    "marquee": "note[sidenote]the aside[/sidenote] continues\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "text", "value": "note"},
+        {"type": "span", "name": "sidenote", "attrs": {}, "children": [
+          {"type": "text", "value": "the aside"}
+        ]},
+        {"type": "text", "value": " continues"}
+      ]}
+    ]}
+  },
+  {
+    "name": "spans/unclosed-opener-reverts",
+    "marquee": "[blink]oops\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "[blink]oops"}]}
+    ]}
+  },
+  {
+    "name": "spans/attribute",
+    "marquee": "[typewriter speed=30]slow reveal[/typewriter]\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "span", "name": "typewriter", "attrs": {"speed": "30"}, "children": [
+          {"type": "text", "value": "slow reveal"}
+        ]}
+      ]}
+    ]}
+  }
+]

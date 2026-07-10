@@ -51,7 +51,11 @@ one more syntax" is how markup languages die.
 
 Blocks, separated by blank lines:
 
-- **Paragraph** - the default block.
+- **Paragraph** - the default block. A paragraph ends at a blank line, at its container's end,
+  or at any line that begins another block construct (a heading, a fence, a list marker, `>`,
+  `%%`, `---`, `:::`) - jamming a list against your prose works, markdown-style; escape the
+  leading character (`\- `) to keep such a line in prose. Block constructs are recognized at
+  column 0 of their container.
 - **Heading** - ATX only: 1-6 `#` + space + **inline content** (emphasis, spans, color, emoji,
   embeds - the full inline grammar; a blinking heading is fair game). No setext underlines.
   Seven-plus `#`s, or `#` without its space, is a paragraph - prose degrades, never guesses.
@@ -73,7 +77,9 @@ Blocks, separated by blank lines:
   budget, and a list that silently isn't a list is worse than any extra grammar line); `1. `
   ordered (renderer numbers; author's digits not significant). **Marker choice never carries
   meaning** - adjacent items with different markers are one list; there is no
-  CommonMark-style split-on-marker-switch. Canonical AST records the list, not the spelling.
+  CommonMark-style split-on-marker-switch. (Ordered and unordered are different *kinds*, not
+  marker spellings: a `1. ` line at the same column ends a bullet list and starts an ordered
+  one.) Canonical AST records the list, not the spelling.
   Nesting by exactly two spaces per level, capped depth. Item text that wraps, and any block
   content *inside* an item (an image, a paragraph), must be indented to the item's content column
   (no lazy continuation, as blockquotes). A column-0 block ends the list - cosmetically invisible
@@ -151,11 +157,12 @@ vocabulary): cozy pages rarely want them, and the body model is an open fork.
 
 **Caps are spec, not implementation** - an implementation-defined depth limit is a manufactured
 parser differential (input parses on one client, blows the stack on another), so the limits are
-conformance rules with vectors: list nesting ≤ 8, directive nesting ≤ 4, inline nesting
+conformance rules with vectors: list nesting ≤ 8, blockquote nesting ≤ 8, directive nesting ≤ 4, inline nesting
 (spans and delimiters) ≤ 8, targets ≤ 2048 bytes, attribute values ≤ 1024 bytes, emoji slugs
 ≤ 64 bytes (an over-cap slug is a non-match: literal text). Document size is deliberately the embedder's, not the
 language's. Behavior at a cap follows the prose/construct split: over-deep list indentation
-stays inside the deepest item as literal text (prose degrades); over-deep directives are
+stays inside the deepest item as literal text (prose degrades), and a ninth `>` is likewise
+literal text inside the deepest quote; over-deep directives are
 `invalid_directive` nodes (constructs error, visibly for authors, fail-closed for strangers).
 
 ### The inline algorithm
@@ -282,7 +289,10 @@ Names and attributes are the strict half of the language, so the grammar is spel
 
 Spans reuse this grammar verbatim for `[name key=value]` openers, but their failure mode is
 the inline one: a span opener that doesn't parse falls back to literal text - it never becomes
-an `invalid_directive` (blocks get nodes, inlines get their characters back).
+an `invalid_directive` (blocks get nodes, inlines get their characters back). One idiom on
+top: a span name immediately followed by `=value` records that pair under its own name -
+`[color=red]` is span `color` with attrs `{color: red}` - BBCode's default-parameter idiom,
+zero extra grammar.
 
 ### Layout: pages, sections, slots
 
@@ -619,7 +629,10 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   UTF-16 units; positions in vectors would make every emoji a conformance bug. Implementations
   may carry positions out-of-band; vector comparison excludes them.
 - **Input normalization at the front door:** `\r\n` and `\r` → `\n` before anything else; tabs
-  never count as indentation (a tab in content is content). Text nodes preserve content
+  never count as indentation (a tab in content is content). **Whitespace, wherever this grammar
+  says it, means ASCII space, tab, or newline** - exotic Unicode spaces are content, not
+  structure (Rust's and JavaScript's Unicode-whitespace tables disagree at the fringes, and a
+  flanking rule that consults them is a parser differential wearing a NBSP). Text nodes preserve content
   verbatim - no unicode normalization of prose. Paragraph-internal newlines stay literal `\n`
   in text nodes (no softbreak node); the renderer presents a lone `\n` as a soft space/wrap and
   a trailing-`\` hard break as a line break (see Line breaks).
@@ -627,9 +640,9 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   order), the same rule everywhere it can occur. Vectors serialize maps with sorted keys
   (determinism is manual).
 - **Node inventory (v0, snake_case, children arrays):** blocks - `document{version}`,
-  `paragraph`, `heading{level}`, `code_block{info?}`, `blockquote`, `list{ordered}`,
+  `paragraph`, `heading{level}`, `code_block{info?, text}`, `blockquote`, `list{ordered}`,
   `list_item`, `thematic_break`, `directive{name, attrs}`, `invalid_directive{reason}`;
-  inlines - `text`, `emphasis`, `strong`, `strikethrough`, `code_span`, `link{target}`,
+  inlines - `text`, `emphasis`, `strong`, `strikethrough`, `code_span{text}`, `link{target}`,
   `embed{target, alt}` (media of any kind; the kind is a render-time concern, not a node type),
   `turbolink{target}`, `span{name, attrs}`, `emoji{slug}`, `hard_break`, and the block
   `comment{text}`. Twenty-two types. Plus one **advisory** node - `diagnostic{severity, reason}`
@@ -663,7 +676,9 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   container nodes always carry `children` (possibly `[]`); `text` nodes are `{type, value}`;
   `attrs` is a JSON object. Optional fields (`code_block`'s `info`) are omitted when absent,
   never `null`. Keys sort lexicographically at every level; comparison is structural equality,
-  but sorted keys keep diffs and blessing deterministic.
+  but sorted keys keep diffs and blessing deterministic. Text is canonical: adjacent literals
+  merge into one `text` node and empty text nodes do not exist - the vectors' text segmentation
+  is normative structure, not an implementation accident.
 - Vectors prove *parsers*. Renderer obligations (the contractual shrug, the animation
   contract) are spec text enforced by review - dignity is not byte-comparable.
 - **Error recovery is conformance, not latitude - the HTML lesson, learned both ways.** Every

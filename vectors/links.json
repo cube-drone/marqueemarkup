@@ -1,0 +1,77 @@
+[
+  {
+    "name": "links/simple",
+    "marquee": "See [here](https://example.org) now\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "text", "value": "See "},
+        {"type": "link", "target": "https://example.org", "children": [
+          {"type": "text", "value": "here"}
+        ]},
+        {"type": "text", "value": " now"}
+      ]}
+    ]}
+  },
+  {
+    "name": "links/balanced-parens-ride-along",
+    "marquee": "[wiki](https://en.wikipedia.org/wiki/Hat_(disambiguation))\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "link", "target": "https://en.wikipedia.org/wiki/Hat_(disambiguation)", "children": [
+          {"type": "text", "value": "wiki"}
+        ]}
+      ]}
+    ]}
+  },
+  {
+    "name": "links/unbalanced-paren-ends-target",
+    "marquee": "[x](foo)bar)\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "link", "target": "foo", "children": [{"type": "text", "value": "x"}]},
+        {"type": "text", "value": "bar)"}
+      ]}
+    ]}
+  },
+  {
+    "name": "links/embed",
+    "marquee": "![alt text](blob:abc123)\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "embed", "alt": "alt text", "target": "blob:abc123"}
+      ]}
+    ]}
+  },
+  {
+    "name": "links/whitespace-in-target-is-not-a-link",
+    "marquee": "[x](a b)\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "[x](a b)"}]}
+    ]}
+  },
+  {
+    "name": "links/emoji",
+    "marquee": "cool :tophat: hat\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "text", "value": "cool "},
+        {"type": "emoji", "slug": "tophat"},
+        {"type": "text", "value": " hat"}
+      ]}
+    ]}
+  },
+  {
+    "name": "links/single-colon-never-matches",
+    "marquee": "meet at 3:30, ok\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "meet at 3:30, ok"}]}
+    ]}
+  },
+  {
+    "name": "links/escaped-bracket-stays-prose",
+    "marquee": "\\[not a span]\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "[not a span]"}]}
+    ]}
+  }
+]
