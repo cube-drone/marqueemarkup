@@ -1,0 +1,37 @@
+#!marquee 0
+
+Shopping list:
+- interrupts the paragraph above
+ - one-space floors to sibling
+   - three-space floors to nested
+- back to top level
+
+1. first
+1. all ones - the renderer numbers
+- kind switch splits the list
+
+plain column-0 text restarts everything
+
+1. numbering restarted here (visible, fixable)
+
+- item with
+
+  a second paragraph
+
+  ```
+  fenced code in a bullet
+  ```
+
+- -this second dash is content, not a marker
+
+> - a quoted list
+> - stays in the quote
+>   - nested inside both
+
+-not a list, \- escaped dash, and three break-alikes:
+
+---
+
+ ---
+
+--- x

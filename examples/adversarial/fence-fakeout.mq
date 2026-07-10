@@ -1,0 +1,29 @@
+#!marquee 0
+
+%% fences are raw: the "structure" inside them is pigment, not grammar
+
+```text
+:::page layout=basic
+- not a list
+%% not a comment
+> not a quote
+```
+
+Four backticks quote three:
+
+````
+```
+still inside
+```
+````
+
+:::section scheme=terminal
+```
+::: this close line is code; the real closers follow
+```
+:::
+
+The next fence never closes - it swallows to EOF and auto-closes there:
+
+```
+these final words are code forever

@@ -46,7 +46,9 @@ Vectors enter the corpus two ways, at two different times:
 
    `examples.json` is exactly that: the six example documents, blessed (reviewed structure
    summaries against the examples README's intent notes; the two count discrepancies were
-   `%%`-commented mapping notes, correctly unparsed).
+   `%%`-commented mapping notes, correctly unparsed). `adversarial.json` is the
+   `examples/adversarial/` torture corpus blessed the same way, reviewed node-by-node against
+   hand-predicted degradations.
 
 Independence never came from where a vector originated: it comes from the TypeScript
 implementation being held to files it had no hand in producing, from human review at bless

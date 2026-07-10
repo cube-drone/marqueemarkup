@@ -1,0 +1,41 @@
+#!marquee 0
+
+:::meta title="maze \"quoted\" title" title=ignored-duplicate:::
+
+:::page layout=basic
+:::section slot=main
+::: page
+%% ^ that named close doesn't match `section` - flagged at that line; section continues
+
+words survive every fence mistake
+:::
+:::
+
+:::
+%% ^ stray close, nothing open
+
+:::9lives
+:::Nope
+::: also not-a-name!
+:::ok but="unterminated
+:::x k= v
+:::x k=v extra="fine" k=duplicate-ignored:::
+
+:::a
+:::b
+:::c
+:::d
+:::e depth=five
+:::
+:::
+:::
+:::
+
+:::x constructor=alpha valueof=beta:::
+
+%% ^ attribute keys are just keys - no javascript object traps
+
+:::x __proto__=nope:::
+
+%% ^ and __proto__ cannot even be written: keys start with a lowercase letter
+%% comments hold broken sketches raw: :::half [/open ** ```

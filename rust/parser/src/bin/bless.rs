@@ -29,9 +29,15 @@ fn main() {
             eprintln!("{path}: {e}");
             std::process::exit(1);
         });
-        let stem = Path::new(path).file_stem().unwrap().to_string_lossy();
+        let p = Path::new(path);
+        let stem = p.file_stem().unwrap().to_string_lossy();
+        let group = p
+            .parent()
+            .and_then(|d| d.file_name())
+            .map(|s| s.to_string_lossy().into_owned())
+            .unwrap_or_else(|| "vectors".to_string());
         cases.push(serde_json::json!({
-            "name": format!("examples/{stem}"),
+            "name": format!("{group}/{stem}"),
             "marquee": normalized,
             "ast": serde_json::to_value(&doc).unwrap(),
         }));

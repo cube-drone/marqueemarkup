@@ -1,0 +1,20 @@
+#!marquee 0
+
+%% every line here degrades identically everywhere, or the language has failed
+
+*a **b* c** and the mirror **a *b** c*
+
+***three are literal*** but **two *nest* fine**
+
+intraword: 2*3*4 and snake_case_names and a * spaced * out
+
+`*stars in code*` and ``a literal ` inside doubles`` and `unclosed
+
+~~struck~~ ~single~ ~~~triple~~~
+
+*emphasis may not cross [blink]a span* boundary[/blink]
+
+escaped \*stars\* and \~~tildes\~~ stay prose
+
+a hard break\
+lands here, and this paragraph ends in a lone backslash\

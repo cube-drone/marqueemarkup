@@ -1,0 +1,28 @@
+#!marquee 0
+
+%% brackets: every failure hands the characters back
+
+[wiki](https://en.wikipedia.org/wiki/Hat_(disambiguation)) and deeper [n](a(b(c))) and cut short [x](foo)bar)
+
+[x](a b) never links, and [unclosed](drifts across
+the newline without linking
+
+![alt with \] bracket](blob:pic) and ![**alt is plain text**](blob:p2)
+
+[/orphan] first, then [blink]a[/marquee] mismatch survives[/blink]
+
+[color=red]classic[/color] but [color=]is literal and [color="hot pink"]quoted[/color]
+
+:smile: but not :no space:, not ::, and :3:30 is an emoji named "3" hugging "30"
+
+%% one-token paragraphs: which are turbolinks?
+
+Note:this
+
+/shrug
+
+a://b
+
+HTTPS://SHOUTING.example/LOUD
+
+blob:pinned-forever

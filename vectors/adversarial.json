@@ -1,0 +1,904 @@
+[
+  {
+    "ast": {
+      "children": [
+        {
+          "text": "brackets: every failure hands the characters back",
+          "type": "comment"
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "wiki"
+                }
+              ],
+              "target": "https://en.wikipedia.org/wiki/Hat_(disambiguation)",
+              "type": "link"
+            },
+            {
+              "type": "text",
+              "value": " and deeper "
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "n"
+                }
+              ],
+              "target": "a(b(c))",
+              "type": "link"
+            },
+            {
+              "type": "text",
+              "value": " and cut short "
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "x"
+                }
+              ],
+              "target": "foo",
+              "type": "link"
+            },
+            {
+              "type": "text",
+              "value": "bar)"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "[x](a b) never links, and [unclosed](drifts across\nthe newline without linking"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "alt": "alt with ] bracket",
+              "target": "blob:pic",
+              "type": "embed"
+            },
+            {
+              "type": "text",
+              "value": " and "
+            },
+            {
+              "alt": "**alt is plain text**",
+              "target": "blob:p2",
+              "type": "embed"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "[/orphan] first, then "
+            },
+            {
+              "attrs": {},
+              "children": [
+                {
+                  "type": "text",
+                  "value": "a[/marquee] mismatch survives"
+                }
+              ],
+              "name": "blink",
+              "type": "span"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "attrs": {
+                "color": "red"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "value": "classic"
+                }
+              ],
+              "name": "color",
+              "type": "span"
+            },
+            {
+              "type": "text",
+              "value": " but [color=]is literal and "
+            },
+            {
+              "attrs": {
+                "color": "hot pink"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "value": "quoted"
+                }
+              ],
+              "name": "color",
+              "type": "span"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "slug": "smile",
+              "type": "emoji"
+            },
+            {
+              "type": "text",
+              "value": " but not :no space:, not ::, and "
+            },
+            {
+              "slug": "3",
+              "type": "emoji"
+            },
+            {
+              "type": "text",
+              "value": "30 is an emoji named \"3\" hugging \"30\""
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "text": "one-token paragraphs: which are turbolinks?",
+          "type": "comment"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "Note:this"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "/shrug"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "target": "a://b",
+          "type": "turbolink"
+        },
+        {
+          "target": "HTTPS://SHOUTING.example/LOUD",
+          "type": "turbolink"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "blob:pinned-forever"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    },
+    "marquee": "#!marquee 0\n\n%% brackets: every failure hands the characters back\n\n[wiki](https://en.wikipedia.org/wiki/Hat_(disambiguation)) and deeper [n](a(b(c))) and cut short [x](foo)bar)\n\n[x](a b) never links, and [unclosed](drifts across\nthe newline without linking\n\n![alt with \\] bracket](blob:pic) and ![**alt is plain text**](blob:p2)\n\n[/orphan] first, then [blink]a[/marquee] mismatch survives[/blink]\n\n[color=red]classic[/color] but [color=]is literal and [color=\"hot pink\"]quoted[/color]\n\n:smile: but not :no space:, not ::, and :3:30 is an emoji named \"3\" hugging \"30\"\n\n%% one-token paragraphs: which are turbolinks?\n\nNote:this\n\n/shrug\n\na://b\n\nHTTPS://SHOUTING.example/LOUD\n\nblob:pinned-forever\n",
+    "name": "adversarial/bracket-bedlam"
+  },
+  {
+    "ast": {
+      "children": [
+        {
+          "text": "every line here degrades identically everywhere, or the language has failed",
+          "type": "comment"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "*a "
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "b* c"
+                }
+              ],
+              "type": "strong"
+            },
+            {
+              "type": "text",
+              "value": " and the mirror **a "
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "b** c"
+                }
+              ],
+              "type": "emphasis"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "***three are literal*** but "
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "two "
+                },
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "nest"
+                    }
+                  ],
+                  "type": "emphasis"
+                },
+                {
+                  "type": "text",
+                  "value": " fine"
+                }
+              ],
+              "type": "strong"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "intraword: 2"
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "3"
+                }
+              ],
+              "type": "emphasis"
+            },
+            {
+              "type": "text",
+              "value": "4 and snake_case_names and a * spaced * out"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "text": "*stars in code*",
+              "type": "code_span"
+            },
+            {
+              "type": "text",
+              "value": " and "
+            },
+            {
+              "text": "a literal ` inside doubles",
+              "type": "code_span"
+            },
+            {
+              "type": "text",
+              "value": " and `unclosed"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "struck"
+                }
+              ],
+              "type": "strikethrough"
+            },
+            {
+              "type": "text",
+              "value": " ~single~ ~~~triple~~~"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "*emphasis may not cross "
+            },
+            {
+              "attrs": {},
+              "children": [
+                {
+                  "type": "text",
+                  "value": "a span* boundary"
+                }
+              ],
+              "name": "blink",
+              "type": "span"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "escaped *stars* and ~~tildes~~ stay prose"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "a hard break"
+            },
+            {
+              "type": "hard_break"
+            },
+            {
+              "type": "text",
+              "value": "lands here, and this paragraph ends in a lone backslash\\"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    },
+    "marquee": "#!marquee 0\n\n%% every line here degrades identically everywhere, or the language has failed\n\n*a **b* c** and the mirror **a *b** c*\n\n***three are literal*** but **two *nest* fine**\n\nintraword: 2*3*4 and snake_case_names and a * spaced * out\n\n`*stars in code*` and ``a literal ` inside doubles`` and `unclosed\n\n~~struck~~ ~single~ ~~~triple~~~\n\n*emphasis may not cross [blink]a span* boundary[/blink]\n\nescaped \\*stars\\* and \\~~tildes\\~~ stay prose\n\na hard break\\\nlands here, and this paragraph ends in a lone backslash\\\n",
+    "name": "adversarial/delimiter-soup"
+  },
+  {
+    "ast": {
+      "children": [
+        {
+          "attrs": {
+            "title": "maze \"quoted\" title"
+          },
+          "children": [],
+          "name": "meta",
+          "type": "directive"
+        },
+        {
+          "attrs": {
+            "layout": "basic"
+          },
+          "children": [
+            {
+              "attrs": {
+                "slot": "main"
+              },
+              "children": [
+                {
+                  "children": [],
+                  "reason": "mismatched_close",
+                  "type": "invalid_directive"
+                },
+                {
+                  "text": "^ that named close doesn't match `section` - flagged at that line; section continues",
+                  "type": "comment"
+                },
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "words survive every fence mistake"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "name": "section",
+              "type": "directive"
+            }
+          ],
+          "name": "page",
+          "type": "directive"
+        },
+        {
+          "children": [],
+          "reason": "stray_close",
+          "type": "invalid_directive"
+        },
+        {
+          "text": "^ stray close, nothing open",
+          "type": "comment"
+        },
+        {
+          "children": [],
+          "reason": "bad_name",
+          "type": "invalid_directive"
+        },
+        {
+          "children": [],
+          "reason": "bad_name",
+          "type": "invalid_directive"
+        },
+        {
+          "children": [],
+          "reason": "bad_name",
+          "type": "invalid_directive"
+        },
+        {
+          "children": [],
+          "reason": "bad_attribute",
+          "type": "invalid_directive"
+        },
+        {
+          "children": [],
+          "reason": "bad_attribute",
+          "type": "invalid_directive"
+        },
+        {
+          "attrs": {
+            "extra": "fine",
+            "k": "v"
+          },
+          "children": [],
+          "name": "x",
+          "type": "directive"
+        },
+        {
+          "attrs": {},
+          "children": [
+            {
+              "attrs": {},
+              "children": [
+                {
+                  "attrs": {},
+                  "children": [
+                    {
+                      "attrs": {},
+                      "children": [
+                        {
+                          "children": [],
+                          "reason": "depth_exceeded",
+                          "type": "invalid_directive"
+                        }
+                      ],
+                      "name": "d",
+                      "type": "directive"
+                    }
+                  ],
+                  "name": "c",
+                  "type": "directive"
+                }
+              ],
+              "name": "b",
+              "type": "directive"
+            }
+          ],
+          "name": "a",
+          "type": "directive"
+        },
+        {
+          "attrs": {
+            "constructor": "alpha",
+            "valueof": "beta"
+          },
+          "children": [],
+          "name": "x",
+          "type": "directive"
+        },
+        {
+          "text": "^ attribute keys are just keys - no javascript object traps",
+          "type": "comment"
+        },
+        {
+          "children": [],
+          "reason": "bad_attribute",
+          "type": "invalid_directive"
+        },
+        {
+          "text": "^ and __proto__ cannot even be written: keys start with a lowercase letter\ncomments hold broken sketches raw: :::half [/open ** ```",
+          "type": "comment"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    },
+    "marquee": "#!marquee 0\n\n:::meta title=\"maze \\\"quoted\\\" title\" title=ignored-duplicate:::\n\n:::page layout=basic\n:::section slot=main\n::: page\n%% ^ that named close doesn't match `section` - flagged at that line; section continues\n\nwords survive every fence mistake\n:::\n:::\n\n:::\n%% ^ stray close, nothing open\n\n:::9lives\n:::Nope\n::: also not-a-name!\n:::ok but=\"unterminated\n:::x k= v\n:::x k=v extra=\"fine\" k=duplicate-ignored:::\n\n:::a\n:::b\n:::c\n:::d\n:::e depth=five\n:::\n:::\n:::\n:::\n\n:::x constructor=alpha valueof=beta:::\n\n%% ^ attribute keys are just keys - no javascript object traps\n\n:::x __proto__=nope:::\n\n%% ^ and __proto__ cannot even be written: keys start with a lowercase letter\n%% comments hold broken sketches raw: :::half [/open ** ```\n",
+    "name": "adversarial/directive-maze"
+  },
+  {
+    "ast": {
+      "children": [
+        {
+          "text": "fences are raw: the \"structure\" inside them is pigment, not grammar",
+          "type": "comment"
+        },
+        {
+          "info": "text",
+          "text": ":::page layout=basic\n- not a list\n%% not a comment\n> not a quote",
+          "type": "code_block"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "Four backticks quote three:"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "text": "```\nstill inside\n```",
+          "type": "code_block"
+        },
+        {
+          "attrs": {
+            "scheme": "terminal"
+          },
+          "children": [
+            {
+              "text": "::: this close line is code; the real closers follow",
+              "type": "code_block"
+            }
+          ],
+          "name": "section",
+          "type": "directive"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "The next fence never closes - it swallows to EOF and auto-closes there:"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "text": "these final words are code forever",
+          "type": "code_block"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    },
+    "marquee": "#!marquee 0\n\n%% fences are raw: the \"structure\" inside them is pigment, not grammar\n\n```text\n:::page layout=basic\n- not a list\n%% not a comment\n> not a quote\n```\n\nFour backticks quote three:\n\n````\n```\nstill inside\n```\n````\n\n:::section scheme=terminal\n```\n::: this close line is code; the real closers follow\n```\n:::\n\nThe next fence never closes - it swallows to EOF and auto-closes there:\n\n```\nthese final words are code forever\n",
+    "name": "adversarial/fence-fakeout"
+  },
+  {
+    "ast": {
+      "children": [
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "Shopping list:"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "interrupts the paragraph above"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "list_item"
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "one-space floors to sibling"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "children": [
+                            {
+                              "type": "text",
+                              "value": "three-space floors to nested"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "list_item"
+                    }
+                  ],
+                  "ordered": false,
+                  "type": "list"
+                }
+              ],
+              "type": "list_item"
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "back to top level"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "list_item"
+            }
+          ],
+          "ordered": false,
+          "type": "list"
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "first"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "list_item"
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "all ones - the renderer numbers"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "list_item"
+            }
+          ],
+          "ordered": true,
+          "type": "list"
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "kind switch splits the list"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "list_item"
+            }
+          ],
+          "ordered": false,
+          "type": "list"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "plain column-0 text restarts everything"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "numbering restarted here (visible, fixable)"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "list_item"
+            }
+          ],
+          "ordered": true,
+          "type": "list"
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "item with"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "a second paragraph"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "text": "fenced code in a bullet",
+                  "type": "code_block"
+                }
+              ],
+              "type": "list_item"
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "-this second dash is content, not a marker"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "list_item"
+            }
+          ],
+          "ordered": false,
+          "type": "list"
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "a quoted list"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "list_item"
+                },
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "stays in the quote"
+                        }
+                      ],
+                      "type": "paragraph"
+                    },
+                    {
+                      "children": [
+                        {
+                          "children": [
+                            {
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "value": "nested inside both"
+                                }
+                              ],
+                              "type": "paragraph"
+                            }
+                          ],
+                          "type": "list_item"
+                        }
+                      ],
+                      "ordered": false,
+                      "type": "list"
+                    }
+                  ],
+                  "type": "list_item"
+                }
+              ],
+              "ordered": false,
+              "type": "list"
+            }
+          ],
+          "type": "blockquote"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "-not a list, - escaped dash, and three break-alikes:"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "type": "thematic_break"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": " ---"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "--- x"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    },
+    "marquee": "#!marquee 0\n\nShopping list:\n- interrupts the paragraph above\n - one-space floors to sibling\n   - three-space floors to nested\n- back to top level\n\n1. first\n1. all ones - the renderer numbers\n- kind switch splits the list\n\nplain column-0 text restarts everything\n\n1. numbering restarted here (visible, fixable)\n\n- item with\n\n  a second paragraph\n\n  ```\n  fenced code in a bullet\n  ```\n\n- -this second dash is content, not a marker\n\n> - a quoted list\n> - stays in the quote\n>   - nested inside both\n\n-not a list, \\- escaped dash, and three break-alikes:\n\n---\n\n ---\n\n--- x\n",
+    "name": "adversarial/list-labyrinth"
+  }
+]
