@@ -120,34 +120,83 @@ stays inside the deepest item as literal text (prose degrades); over-deep direct
 :::
 ```
 
-- Names and attribute keys are a **closed, versioned vocabulary**; attribute grammar is strict.
-- Nesting is allowed to a fixed depth cap.
+- **Scope is containment, never siblings.** A directive *wraps* the blocks it applies to; its
+  scope is that subtree (`directive{name, attrs, children}`), exactly as an inline span wraps its
+  children. A directive never affects its siblings or "everything after it" - there is no flat
+  marker that sets state for the rest of the level. (Flat state makes scope position-dependent
+  and re-derived at render, a differential hazard; containment makes it an explicit,
+  deterministic subtree.)
+- **Delimiting:** `:::name attrs` opens; a `:::` line (optionally `::: name`, checked - a
+  mismatch is a strict error) closes the nearest open directive, LIFO like brackets, depth-capped.
+  Unclosed at EOF is a strict error (`invalid_directive`).
+- **Leaf directives** (a counter, a media player, a computed slot - no body) self-close on the
+  open line: `:::counter theme=retro:::` (the trailing `:::` is a token *after* the attributes;
+  quoted values containing colons are safe).
+- **A directive body is parsed** as blocks - unlike comments and code, which are raw. That is
+  why a body can carry markup and nested directives.
+- Attribute grammar is strict; directive *names* and attribute *values* are vocabulary resolved
+  downstream: the parser accepts any well-formed name and emits the node, and the
+  validator/embedder decides which names and values are real.
 - **Unknown directive names render as an inert placeholder** ("this page uses a widget your
-  client doesn't know") - that is the additive-evolution mechanism: new vocabulary degrades
-  gracefully on old renderers, and the document version tag says which dialect to expect.
+  client doesn't know") - the additive-evolution mechanism: new vocabulary degrades gracefully on
+  old renderers, and the document version tag says which dialect to expect.
 
 ### Layout: pages, sections, slots
 
-Page layout is *picked, not authored* - the Geocities move, and the anti-CSS firewall:
+Page layout is *picked, not authored* - the Geocities move, and the anti-CSS firewall. The page
+wrapper is **opt-in**: a plain document (a note, a message, most posts) is just a flow of blocks -
+single column, default theme, no ceremony. A fancy page opts in by wrapping sections, and because
+scope is containment (above), the wrapping is explicit:
 
 ```
 :::page layout=two-column-nav-footer background=tile:blob:HASH
-:::section slot=nav        ...
-:::section slot=main       ...
-:::section slot=right      ...
-:::section slot=footer     ...
+:::section slot=nav
+Welcome to my page!
+:::
+:::section slot=main
+...content blocks...
+:::
+:::section slot=footer
+webring stuff
+:::
+:::
 ```
 
 - `layout` is an enum; each layout defines its named slots. v0 set: `basic`,
   `nav-footer`, `two-column-nav-footer`, `three-column-nav-footer`.
 - Duplicate slot claims are a strict error; unclaimed slots collapse.
-- Style attributes are a **closed set of knobs** (`background`, `cursor`, `scheme`, `color`),
-  versioned with the vocabulary - CSS-the-capability behind a counter. The one rule worth
-  stating: *what* you can style is closed; `color` is the single knob whose *value* is open
-  (hex or named palette), because color is the one continuous space users genuinely reach for.
-  Everything else takes tokens from a list (backgrounds are named patterns or `tile:blob:HASH`;
-  cursors and schemes are enums). No positioning, no freeform fonts, no per-element layout - the
-  anti-CSS firewall. (The exact palette/pattern/cursor/scheme lists grow from the corpus.)
+- Style attributes (`background`, `scheme`, `color`, `cursor`, ...) attach here and to sections
+  and spans; the full model is one section down (Styling).
+
+### Styling
+
+Style is where the spec says "no" most, so here is the positive model, in one place.
+
+- **Closed knobs declared on a node - no selectors.** `:::page`, `:::section`, and style-bearing
+  spans carry style attributes; the style applies to the node it is written on. You never write
+  a rule that matches other nodes from afar ("all paragraphs red"). Killing selectors kills
+  specificity, cascade-precedence, `!important`, and action-at-a-distance in one stroke - most
+  of CSS's size, gone by omission.
+- **Containment inheritance - the one thing taken from CSS.** A node's effective style is its
+  own knobs layered over its parent's effective style; walk the shallow (depth ≤ 4) tree, layer.
+  `:::page scheme=hotdog-stand` themes the page; an inner `:::section` inherits and may override
+  a knob. That is the entire cascade - tree containment, deterministic, nothing else.
+- **Schemes are named knob-bundles; individual knobs refine them.** A scheme sets many knobs at
+  once (pick-a-theme); a knob written alongside overrides that scheme's value. Scheme *names*
+  are spec vocabulary (closed, additive) so a scheme looks the same everywhere; an unknown
+  scheme degrades to unstyled.
+- **Tiny closed knob set; only `color`'s value is open.** Color (text/background/link - hex or a
+  palette token; inline via `[color=red]`, block via a knob), background (color / named pattern
+  / `tile:blob:HASH`), scheme, cursor, at most a named font-*family* enum. Exact lists grow from
+  the corpus. Layout knobs (slots, columns) live on layout directives, not here.
+- **Knobs are data mapped into the renderer's own styling, never CSS handed to a renderer.** The
+  renderer applies "text = #00ff00" however it draws - the data/code boundary again. The *model*
+  is convergent (every renderer computes the same effective knobs); the *rendering* varies by
+  capability (a client that can't tile a background shrugs). Everything degrades to readable.
+- **Not this** (so the boundary is legible, not mysterious): selectors, specificity,
+  `!important`, positioning (absolute/flex/grid), per-element dimensions beyond closed tokens,
+  media queries, freeform fonts, raw CSS. It is themes-and-local-overrides - Geocities meets the
+  Windows control panel - bounded on purpose.
 
 ### Includes: shared nav, footers, mix-ins
 
@@ -217,7 +266,7 @@ parameters, composition, degradation. They apply inline (effect spans, above) an
 (`:::marquee` as a directive wraps its blocks). Draft v0 vocabulary, grown from use like all
 vocabulary: animated - `marquee` (direction, speed), `blink` (rate), `rainbow`,
 `bounce`, `jitter`, `wave`, `typewriter` (speed); typographic - `sup`, `sub`,
-`color=<token|hex>` (the hex question belongs to the style-enum open item). Effects nest freely - marquee and blink at
+`color` (hex or palette token - the color model is settled in Styling). Effects nest freely - marquee and blink at
 the same time is not an edge case, it is the point. (Godot's RichTextLabel speaks BBCode with
 effect tags natively; a game-engine Marquee renderer for RPG dialogue is an intended
 out-of-Ringtome embedder, and the effect set is chosen with it in mind.)
