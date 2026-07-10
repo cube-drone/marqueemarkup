@@ -10,8 +10,16 @@
 // rule) and inlined as data: URIs, so the output stays one portable file
 // with the pictures showing and the songs playable. Pass --bare for the
 // strict bareWebProfile instead (placeholders and literal :slugs: on display).
+//
+// For big files (or many references to one file), skip the inlining:
+//
+//     npm run preview -- --media-dir media ../../WRITING.mq > tour.html
+//
+// copies each referenced file into ./media once and links it by path. The
+// page is no longer single-file: save the HTML where the media dir's path
+// resolves (here, next to ./media).
 
-import { existsSync, readFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { bareWebProfile, renderMarquee, type Profile } from "../src/index.ts";
@@ -43,8 +51,8 @@ function placeholderBox(label: string) {
 /** Data-URI memo: each file is read and encoded once per run. The *output*
  * still repeats the bytes per reference - a static single-file page has no
  * define-once mechanism without scripting, and this tool's output is a
- * document, not a program. (Blob-URL dedup belongs to the interactive
- * renderer; on a real server, N references to one URL fetch once anyway.) */
+ * document, not a program. (Use --media-dir when that cost bites; on a real
+ * server, N references to one URL fetch once anyway.) */
 const dataUris = new Map<string, string>();
 
 function dataUri(path: string, mime: string): string {
@@ -56,9 +64,33 @@ function dataUri(path: string, mime: string): string {
   return uri;
 }
 
+/** --media-dir mode: copy each referenced file in once (dedup by source
+ * path, basename collisions get a counter) and link it by relative path. */
+const copied = new Map<string, string>();
+const usedNames = new Set<string>();
+
+function mediaDirUrl(path: string, mediaDir: string): string {
+  let name = copied.get(path);
+  if (name === undefined) {
+    name = basename(path);
+    for (let n = 2; usedNames.has(name); n += 1) {
+      const dot = basename(path).lastIndexOf(".");
+      name =
+        dot <= 0
+          ? `${basename(path)}-${n}`
+          : `${basename(path).slice(0, dot)}-${n}${basename(path).slice(dot)}`;
+    }
+    usedNames.add(name);
+    mkdirSync(mediaDir, { recursive: true });
+    copyFileSync(path, resolve(mediaDir, name));
+    copied.set(path, name);
+  }
+  return `${mediaDir.replaceAll("\\", "/").replace(/\/+$/, "")}/${encodeURIComponent(name)}`;
+}
+
 /** The preview profile for one source file: relative media resolve against
  * that file's directory, per the base-URI rule. */
-function previewProfile(sourceDir: string): Profile {
+function previewProfile(sourceDir: string, mediaDir: string | null): Profile {
   return {
     ...bareWebProfile,
     linkAllowed: (t) => bareWebProfile.linkAllowed(t) || /^(blob|ringtome):/.test(t),
@@ -72,7 +104,8 @@ function previewProfile(sourceDir: string): Profile {
         const ext = path.includes(".") ? path.slice(path.lastIndexOf(".") + 1).toLowerCase() : "";
         const mime = MIME[ext];
         if (mime !== undefined && existsSync(path)) {
-          return { kind: kindOf(mime), url: dataUri(path, mime) };
+          const url = mediaDir === null ? dataUri(path, mime) : mediaDirUrl(path, mediaDir);
+          return { kind: kindOf(mime), url };
         }
         return placeholderBox(t); // wired but not landed yet
       }
@@ -84,16 +117,32 @@ function previewProfile(sourceDir: string): Profile {
 
 const args = process.argv.slice(2);
 const bare = args.includes("--bare");
-const files = args.filter((a) => a !== "--bare");
+let mediaDir: string | null = null;
+const files: string[] = [];
+for (let i = 0; i < args.length; i += 1) {
+  const arg = args[i]!;
+  if (arg === "--bare") {
+    continue;
+  }
+  if (arg === "--media-dir") {
+    mediaDir = args[++i] ?? null;
+    if (mediaDir === null) {
+      console.error("--media-dir needs a directory");
+      process.exit(2);
+    }
+    continue;
+  }
+  files.push(arg);
+}
 if (files.length === 0) {
-  console.error("usage: npm run preview -- [--bare] <file.mq>...");
+  console.error("usage: npm run preview -- [--bare] [--media-dir <dir>] <file.mq>...");
   process.exit(2);
 }
 
 const css = readFileSync(fileURLToPath(new URL("../../../css/marquee.css", import.meta.url)), "utf8");
 
 const sections = files.map((path) => {
-  const profile = bare ? bareWebProfile : previewProfile(dirname(resolve(path)));
+  const profile = bare ? bareWebProfile : previewProfile(dirname(resolve(path)), mediaDir);
   const html = renderMarquee(readFileSync(path, "utf8"), profile);
   const label = files.length > 1 ? `<h2 class="preview-label">${basename(path)}</h2>\n` : "";
   return label + html;
