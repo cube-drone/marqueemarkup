@@ -195,6 +195,61 @@ Fonts are picked from a closed list, never uploaded: [font=orbitron]SPACE STATIO
 (Thirty-one real, self-hosted faces live in `fonts/`, each with its license riding along —
 your host serves them itself; no reader ever pings a font CDN.)
 
+The full menu makes a fine specimen chart — and a fine use of a nested list. Every name
+renders as itself:
+
+```marquee
+- pixel
+  - [font=press-start]press-start[/font]
+  - [font=silkscreen]silkscreen[/font]
+  - [font=bitcount]bitcount[/font]
+```
+
+- standard stacks (no files needed)
+  - [font=sans]sans[/font]
+  - [font=serif]serif[/font]
+  - [font=mono]mono[/font]
+  - [font=comic]comic[/font]
+- clean sans
+  - [font=radio-canada]radio-canada[/font]
+  - [font=atkinson-hyperlegible]atkinson-hyperlegible[/font]
+  - [font=lexend]lexend[/font]
+  - [font=quicksand]quicksand[/font]
+- serif & slab
+  - [font=playfair-display]playfair-display[/font]
+  - [font=cormorant]cormorant[/font]
+  - [font=zilla-slab]zilla-slab[/font]
+- old book & gothic
+  - [font=im-fell-english]im-fell-english[/font]
+  - [font=uncial-antiqua]uncial-antiqua[/font]
+  - [font=unifraktur]unifraktur[/font]
+- mono & terminal
+  - [font=jetbrains-mono]jetbrains-mono[/font]
+  - [font=vt323]vt323[/font]
+  - [font=major-mono]major-mono[/font]
+  - [font=special-elite]special-elite[/font]
+- pixel
+  - [font=press-start]press-start[/font]
+  - [font=silkscreen]silkscreen[/font]
+  - [font=bitcount]bitcount[/font]
+- display & neon
+  - [font=orbitron]orbitron[/font]
+  - [font=audiowide]audiowide[/font]
+  - [font=bungee]bungee[/font]
+  - [font=monoton]monoton[/font]
+  - [font=creepster]creepster[/font]
+- loud & weird
+  - [font=kablammo]kablammo[/font]
+  - [font=oi]oi[/font]
+  - [font=henny-penny]henny-penny[/font]
+  - [font=rye]rye[/font]
+- script & hand
+  - [font=lobster]lobster[/font]
+  - [font=pacifico]pacifico[/font]
+  - [font=caveat]caveat[/font]
+  - [font=fredericka]fredericka[/font]
+  - [font=comic-neue]comic-neue[/font]
+
 ## Effects
 
 ```marquee
