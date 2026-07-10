@@ -79,7 +79,11 @@ lone * asterisk just sits there. Escapes work too: \*not emphasis\*, and a line 
 A [plain link](https://example.org), a [relative link](other-page), and a
 [parenthetical Wikipedia link](https://en.wikipedia.org/wiki/Hat_(disambiguation)).
 
-![a picture, by description](blob:sunset-photo)
+![a picture, by description](example-media/picture.jpg)
+
+![the demo song](example-media/song.mp3)
+
+![a tiny film](example-media/clip.mp4)
 
 A bare URL alone in a paragraph becomes a turbolink:
 
@@ -91,7 +95,13 @@ https://example.org/interesting-post
 A [plain link](https://example.org), a [relative link](other-page), and a
 [parenthetical Wikipedia link](https://en.wikipedia.org/wiki/Hat_(disambiguation)).
 
-![a picture, by description](blob:sunset-photo)
+One embed syntax — the file's own type decides whether it's a picture, a song, or a film:
+
+![a picture, by description](example-media/picture.jpg)
+
+![the demo song](example-media/song.mp3)
+
+![a tiny film](example-media/clip.mp4)
 
 A bare URL alone in a paragraph becomes a turbolink:
 
