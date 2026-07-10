@@ -54,14 +54,19 @@ Blocks, separated by blank lines:
 - **Paragraph** - the default block.
 - **Heading** - ATX only: 1-6 `#` + space + **inline content** (emphasis, spans, color, emoji,
   embeds - the full inline grammar; a blinking heading is fair game). No setext underlines.
-- **Fenced code** - triple-backtick fences; the optional **info string** (the `python` after the
-  opening fence) is captured *opaquely* - the parser records it, never interprets it (same family
-  as directive
+  Seven-plus `#`s, or `#` without its space, is a paragraph - prose degrades, never guesses.
+- **Fenced code** - backtick fences: an opening fence is three or more backticks; it closes on
+  a line of at least that many backticks and nothing else (longer fences exist to quote literal
+  triple-backticks - a document *about* Marquee needs them), and an unclosed fence auto-closes
+  at EOF like a directive (the words survive; a diagnostic may note it). The optional **info
+  string** (the `python` after the opening fence) is captured *opaquely* - the parser records
+  it, never interprets it (same family as directive
   names, emoji slugs, and computed queries). A renderer MAY use it (syntax highlighting) but MUST
   fall back to plain monospace: highlighting is a renderer *enhancement*, never a language
   obligation - mandating it would force every client to embed highlight grammars for N languages,
   CSS-scale overreach Marquee declines. No indentation-based code.
-- **Blockquote** - `>` prefix on *every* line. No lazy continuation (a wrapped quote line still
+- **Blockquote** - `>` prefix on *every* line (an optional single space after each `>` is
+  stripped). No lazy continuation (a wrapped quote line still
   carries its `>`; an unprefixed line leaves the quote - CommonMark's lazy rule is an ambiguity
   source, deliberately cut).
 - **List** - `- `, `* `, or `+ ` unordered (pure synonyms: markdown muscle memory is the UX
@@ -74,7 +79,13 @@ Blocks, separated by blank lines:
   (no lazy continuation, as blockquotes). A column-0 block ends the list - cosmetically invisible
   between unordered bullets, but it **restarts numbering** in an ordered list, so the failure is
   visible-and-fixable (you see `1. 2. 1.`), never silent. To keep an image in a bullet, indent it.
-- **Thematic break** - `---` alone on a line.
+  Off-grid indentation **floors to the nearest valid column at or below it** (valid columns:
+  0, 2, 4, ... to one level deeper than the innermost open item, within the depth cap) -
+  markdown's 3- and 4-space nesting habits still nest, and the rule is one subtraction, not a
+  scan. Inside a fenced code block in an item, up to the item's content column of leading
+  spaces is stripped per line; anything deeper is the code's own.
+- **Thematic break** - `---` alone on a line (exactly three; trailing whitespace tolerated;
+  `----` is prose).
 - **Comment** - `%%` at line start; consecutive `%%` lines form one comment block. **Raw
   content** (never parsed - a comment may hold broken sketch markup without spawning errors),
   which is why comments are grammar, not vocabulary: the vocabulary-blind parser cannot give
@@ -84,8 +95,11 @@ Blocks, separated by blank lines:
 
 Inlines:
 
-- `\` escapes the next punctuation character (renders it literal).
-- `` `code` `` spans; `*emphasis*`; `**strong**`. **The whole emphasis rule:** asterisk runs of
+- `\` escapes the next **ASCII punctuation** character (renders it literal); `\` before
+  anything else is a literal backslash, and `\` at end of line is the hard break (Line breaks).
+- `` `code` `` spans - a run of N backticks opens, the nearest later run of exactly N closes,
+  content verbatim (N > 1 quotes literal backticks, markdown's own trick); an unclosed run is
+  literal text. `*emphasis*`; `**strong**`. **The whole emphasis rule:** asterisk runs of
   length 1 (emphasis) or 2 (strong) are delimiters; runs of 3+ are literal asterisks (bold
   italic nests: `**bold and *italic* too**`). An opener is followed by non-whitespace, a closer
   preceded by non-whitespace; pairs match nearest-first without crossing; unmatched delimiters
@@ -105,17 +119,27 @@ Inlines:
   `[marquee][blink]still open at 3am[/blink][/marquee]`, `[color=red]hp low[/color]`,
   `[typewriter speed=30]...[/typewriter]`. Explicit closers make nesting unambiguous (no
   emphasis-style matching rules); an opener without its closer renders as literal text (total
-  prose); links are distinguished by their immediate `(` - `[text](target)` is a link,
+  prose), and a closer must name the **innermost** open span - mismatched or orphan closers
+  are literal text too; links are distinguished by their immediate `(` - `[text](target)` is a link,
   `[name ...]` is a span opener. The parser accepts any well-formed span name (grammar, not
   vocabulary); effect names are vocabulary, validated by the embedder layer like directives.
-- A paragraph consisting of exactly one bare target is a **turbolink** node (a hyperlink, but
-  more - a link the renderer MAY enrich into a rich preview; Discourse calls its version a
-  "onebox," Slack an "unfurl"). Marquee owns only the node; **where the summary comes from is
-  entirely render/embedder-side** - OpenGraph/meta tags fetched from a web URL, native metadata
-  (title, etc.) for a `ringtome://` target - and because enriching a web link means *fetching*
-  it, that obeys the fetch-policy/care-modes dial (a privacy-max reader gets a plain link, not a
-  fetched preview). Degrades to a plain link always. `:::turbolink` configures the level (full /
-  title / bare).
+- A paragraph consisting of exactly one bare **authority-form absolute URI** - `scheme://`
+  plus at least one more character, the scheme an ASCII letter then letters/digits/`+`/`-`/`.`
+  - is a **turbolink** node (a hyperlink, but more - a link the renderer MAY enrich into a rich
+  preview; Discourse calls its version a "onebox," Slack an "unfurl"). The authority form is
+  required because *every bare word is a valid relative URI reference* - without it, each
+  one-word paragraph turbolinks to a sibling document. So the sugar takes full-fat URLs only;
+  everything else - a relative path, a root path, a pinned `blob:` - uses the explicit form,
+  the **`:::turbolink` leaf directive**: `:::turbolink target=../two_floors_up.png
+  level=title:::` - any target, plus the level knob (`full` / `title` / `bare`). The bare
+  paragraph is zero-config sugar over it, exactly the media pattern (`![]()` vs `:::media`);
+  parser-side, `:::turbolink` is ordinary vocabulary (a `directive` node, like `:::meta`), and
+  the `turbolink{target}` core node comes only from the sugar. Marquee owns only the node;
+  **where the summary comes from is entirely render/embedder-side** - OpenGraph/meta tags
+  fetched from a web URL, native metadata (title, etc.) for a `ringtome://` target - and
+  because enriching a web link means *fetching* it, that obeys the fetch-policy/care-modes dial
+  (a privacy-max reader gets a plain link, not a fetched preview). Degrades to a plain link
+  always.
 - Line breaks: a single newline inside a paragraph is **soft** - it and any surrounding
   horizontal whitespace collapse to one space, so hard-wrapping a paragraph at any column is
   render-invariant (the source breaks vanish). A **hard** break is a trailing backslash; a blank
@@ -128,10 +152,39 @@ vocabulary): cozy pages rarely want them, and the body model is an open fork.
 **Caps are spec, not implementation** - an implementation-defined depth limit is a manufactured
 parser differential (input parses on one client, blows the stack on another), so the limits are
 conformance rules with vectors: list nesting ≤ 8, directive nesting ≤ 4, inline nesting
-(spans and delimiters) ≤ 8, targets ≤ 2048 bytes, attribute values ≤ 1024 bytes. Document size is deliberately the embedder's, not the
+(spans and delimiters) ≤ 8, targets ≤ 2048 bytes, attribute values ≤ 1024 bytes, emoji slugs
+≤ 64 bytes (an over-cap slug is a non-match: literal text). Document size is deliberately the embedder's, not the
 language's. Behavior at a cap follows the prose/construct split: over-deep list indentation
 stays inside the deepest item as literal text (prose degrades); over-deep directives are
 `invalid_directive` nodes (constructs error, visibly for authors, fail-closed for strangers).
+
+### The inline algorithm
+
+Two implementations degrading *identically* on confusing input is the whole point, so the
+inline pass is an algorithm, not a vibe. It runs once, left to right, per **container** (a
+paragraph's or heading's content, and, recursively, the body of each span and the text of each
+link). Whichever construct starts first wins its characters; at the same position the order is:
+escape, code span, bracket construct, emoji, delimiter run.
+
+- **Escapes** are consumed first and never reconsidered.
+- **Code spans** bind next: from an opening backtick run, content is verbatim (no escapes, no
+  nesting) to the closer; no closer, and the run is literal text.
+- **Brackets**: at `[` (or `![`), find the matching `]`. If `(` follows immediately, it is a
+  link/embed and the target lexes per Targets (balanced parens); otherwise, if the bracket's
+  interior parses as a span name + attributes it opens a span, and `[/name]` closes the
+  innermost open span; otherwise the characters are literal. A span's body is parsed as its own
+  container.
+- **Delimiter runs** (`*` of length 1 or 2, `~~`; runs of any other length are literal): a run
+  *can close* if preceded by non-whitespace, *can open* if followed by non-whitespace. If it
+  can close and the **innermost** unmatched opener in this container is the same kind, it
+  closes it; otherwise, if it can open, it opens; otherwise it is literal. At container end,
+  still-open openers revert to literal text. Matching never crosses a container boundary, a
+  code span, or a bracket construct.
+
+Worked example: `*a **b* c**` - the middle `*` can close (preceded by `b`) but the innermost
+opener is `**` (wrong kind), and it cannot open (followed by a space), so it is literal; the
+final `**` closes strong; the opening `*` reverts to literal at end. Result: literal `*a `,
+then strong containing `b* c`. Visible asterisks, identically everywhere.
 
 ## Document metadata
 
@@ -206,6 +259,30 @@ two things that make front matter a wart.
 - **Unknown directive names render as an inert placeholder** ("this page uses a widget your
   client doesn't know") - the additive-evolution mechanism: new vocabulary degrades gracefully on
   old renderers, and the document version tag says which dialect to expect.
+
+### The attribute grammar
+
+Names and attributes are the strict half of the language, so the grammar is spelled out:
+
+- **Names** (directive names, span names, attribute keys): `[a-z][a-z0-9_-]*` - lowercase
+  ASCII starting with a letter. No case-folding anywhere (case insensitivity is a differential
+  factory).
+- **Open line shape:** `:::name`, then attributes separated by runs of spaces/tabs. If the
+  line's last non-whitespace token is `:::`, the directive is a **leaf**: that closer is
+  recognized and stripped *before* attribute parsing - which is why a quoted value may contain
+  `:::` safely, and why a bare value cannot end a leaf line (quote it).
+- **Attributes** are `key=value`, no whitespace around `=`. A **bare value** is one or more
+  characters with no whitespace and no `"`. A **quoted value** is `"..."` with exactly two
+  escapes, `\"` and `\\`; any other use of `\` inside quotes is malformed. Empty values must
+  be quoted (`key=""`).
+- Any deviation - a bad name, whitespace around `=`, an unterminated quote, trailing garbage
+  after a leaf's closer - makes the whole directive an `invalid_directive` (strictness as
+  promised); a value over 1024 bytes likewise (`attribute_too_long`). Duplicate keys are
+  *well-formed* and resolve first-writer-wins (see The AST).
+
+Spans reuse this grammar verbatim for `[name key=value]` openers, but their failure mode is
+the inline one: a span opener that doesn't parse falls back to literal text - it never becomes
+an `invalid_directive` (blocks get nodes, inlines get their characters back).
 
 ### Layout: pages, sections, slots
 
@@ -448,8 +525,12 @@ mechanism - the web's own, adopted whole:
 - **Live vs. pinned is per-scheme**: relative references and location-addressed schemes are
   *live* (resolution yields the current version); hash-addressed schemes (`blob:`) are *pinned*
   (this exact content forever). Choose per reference.
-- Grammar-side, a target is a lexable token: no unescaped whitespace or `)`; the parser decides
-  where a target ends, never what it means.
+- Grammar-side, a target is a lexable token: no whitespace, ever. In the `[text](target)` form,
+  parentheses inside the target must be **balanced** -
+  `[wiki](https://en.wikipedia.org/wiki/Hat_(disambiguation))` lexes whole - and an unbalanced
+  `)` ends the target (one integer counter, vectored). There are no backslash escapes inside
+  targets: the URI's own percent-encoding (`%29`, `%20`) is the spelling for awkward bytes. The
+  parser decides where a target ends, never what it means.
 
 ## Embedder profiles
 
@@ -508,12 +589,18 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
 - **Parse is total, so every document renders - there is no invalid *document*.** Recovery is
   always deterministic and readable: duplicate keys resolve first-writer-wins, fences auto-close
   at EOF, unknown vocabulary shrugs, unmatched inline delimiters fall to literal text. Genuinely
-  malformed *syntax* (an unclosed fence, an unparseable attribute) becomes an `invalid_directive`
+  malformed *syntax* (a mismatched close, an unparseable attribute) becomes an `invalid_directive`
   node that still renders inertly (content preserved / placeholder); its `reason` is a **closed,
   spec'd enum** so that *parsers agree on what is malformed* - it is conformance surface for the
   vectors, not an author-facing error screen. An editor may lint off that reason; that is an
   editor being helpful, not a concept the language formalizes. "Error"/"strict"/"invalid" in this
   spec name that malformed-construct case, never a render failure.
+- **The `reason` enum (closed, v0):** `bad_name` (a `:::` line with a missing or ill-formed
+  name), `bad_attribute` (attribute text that doesn't parse, including trailing garbage after
+  a leaf's closer), `attribute_too_long` (a value over the 1024-byte cap), `depth_exceeded`
+  (a directive opened past depth 4), `mismatched_close` (a named close that doesn't name the
+  nearest open directive), `stray_close` (a close line with nothing open). Six values; growing
+  the list is a spec change with vectors, exactly like node types.
 - **Blocks vs inlines - the whole malformed-syntax split.** A malformed *block* becomes an
   `invalid_directive` (its effect dropped, children still rendered as plain blocks; a
   stranger-render drops the effect too, which is the fail-closed safety). A malformed *inline*
@@ -570,6 +657,13 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   no separate rejection format: an error case is a vector whose AST contains
   `invalid_directive` nodes with their exact spec'd reasons. Maps serialize with sorted keys;
   both implementations run the same files, bless-pattern guarded.
+- **Vector serialization, concretely:** a vector file is a JSON array of `{name, marquee, ast}`
+  objects; `marquee` is the input after front-door normalization (`\n` line endings). An AST
+  node is a JSON object with a `type` field plus that node's fields from the inventory;
+  container nodes always carry `children` (possibly `[]`); `text` nodes are `{type, value}`;
+  `attrs` is a JSON object. Optional fields (`code_block`'s `info`) are omitted when absent,
+  never `null`. Keys sort lexicographically at every level; comparison is structural equality,
+  but sorted keys keep diffs and blessing deterministic.
 - Vectors prove *parsers*. Renderer obligations (the contractual shrug, the animation
   contract) are spec text enforced by review - dignity is not byte-comparable.
 - **Error recovery is conformance, not latitude - the HTML lesson, learned both ways.** Every
@@ -586,8 +680,10 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   known version* renders placeholders.
 - **Version declaration.** Embedders supply the dialect version out-of-band (Ringtome: the
   payload type / the `format` field - its type registry already owns this). Standalone files
-  may declare in-band with a shebang-shaped first line, `#!marquee 0` - grammatically free
-  (`#!` is not a heading), stripped at the front door into `document{version}`, never a node.
+  may declare in-band with a shebang-shaped first line, `#!marquee 0` - exactly `#!marquee`,
+  one space, a decimal integer, recognized on line 1 only; grammatically free (`#!` is not a
+  heading, and any other `#!` line is prose), stripped at the front door into
+  `document{version}`, never a node.
   **Precedence: embedder-supplied over in-band over the default - and the default is version 0,
   forever.** An undeclared document means what it meant the day the language shipped, in any
   year (assume-latest is meaning drift, the disease versioning exists to cure); an author using
