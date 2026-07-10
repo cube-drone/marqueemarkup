@@ -160,12 +160,26 @@ Known shortcodes resolve — :tophat: :sparkles: :blobcat: — unknown ones stay
 E = mc[sup]2[/sup], H[sub]2[/sub]O, [small]the fine print[/small], colors by
 [color=goldenrod]name[/color] or [color=#f06]hex[/color], and margin
 notes[sidenote]like this aside[/sidenote] that never interrupt the sentence.
+
+The size dial goes [size=1]one[/size] [size=2]two[/size] [size=3]three[/size]
+[size=4]four[/size] [size=5]five[/size] [size=6]six[/size] [size=7]SEVEN[/size],
+and [big]big[/big] is [small]small[/small]'s mirror.
+
+When numbers feel cold, the rungs have names: [miniscule]miniscule[/miniscule],
+[tiny]tiny[/tiny], [huge]huge[/huge], [enormous]ENORMOUS[/enormous].
 ```
 
 E = mc[sup]2[/sup], H[sub]2[/sub]O, [small]the fine print[/small], colors by
 [color=goldenrod]name[/color] or [color=#f06]hex[/color], and margin
 notes[sidenote]like this aside, which floats beside the text on a wide screen and becomes a
 parenthetical on a narrow one[/sidenote] that never interrupt the sentence.
+
+The size dial goes [size=1]one[/size] [size=2]two[/size] [size=3]three[/size]
+[size=4]four[/size] [size=5]five[/size] [size=6]six[/size] [size=7]SEVEN[/size],
+and [big]big[/big] is [small]small[/small]'s mirror.
+
+When numbers feel cold, the rungs have names: [miniscule]miniscule[/miniscule],
+[tiny]tiny[/tiny], [huge]huge[/huge], [enormous]ENORMOUS[/enormous].
 
 ## Effects
 
@@ -177,6 +191,15 @@ parenthetical on a narrow one[/sidenote] that never interrupt the sentence.
 [typewriter speed=30]typewriter[/typewriter]
 
 Nesting is the point: [marquee][blink]still open at 3am[/blink][/marquee]
+
+[rainbow by=letter]EVERY LETTER ITS OWN HUE[/rainbow] ·
+[wave by=letter]a true undulating wave[/wave] ·
+[bounce by=word]each word takes its turn[/bounce] ·
+[jitter by=letter]scattered nerves[/jitter]
+
+[rainbow by=letter phase=scatter]CONFETTI HUES[/rainbow] ·
+[bounce by=letter phase=scatter]popcorn letters[/bounce] ·
+[jitter by=letter phase=ramp]an orderly shudder[/jitter]
 ```
 
 [marquee]THE CLASSIC — scrolling since 1995, stoppable since Marquee[/marquee]
@@ -186,6 +209,20 @@ Nesting is the point: [marquee][blink]still open at 3am[/blink][/marquee]
 [typewriter speed=30]typewriter (types itself out on scripted clients; appears whole here)[/typewriter]
 
 Nesting is the point: [marquee][blink]still open at 3am[/blink][/marquee]
+
+And `by=letter` / `by=word` give every unit its own offset cycle:
+
+[rainbow by=letter]EVERY LETTER ITS OWN HUE[/rainbow] ·
+[wave by=letter]a true undulating wave[/wave] ·
+[bounce by=word]each word takes its turn[/bounce] ·
+[jitter by=letter]scattered nerves[/jitter]
+
+Offsets sweep smoothly by default; `phase=scatter` scrambles them (and `phase=ramp` can
+smooth even jitter):
+
+[rainbow by=letter phase=scatter]CONFETTI HUES[/rainbow] ·
+[bounce by=letter phase=scatter]popcorn letters[/bounce] ·
+[jitter by=letter phase=ramp]an orderly shudder[/jitter]
 
 If your reduced-motion setting is on, everything above is calmly standing still. That's
 contractual.
@@ -386,6 +423,28 @@ destructive":
 ```
 
 :::oops key = broken
+
+## The abomination
+
+You have now seen each effect alone: polite, purposeful, stoppable. The spec says effects nest
+freely — that this "is not an edge case, it is the point." We are therefore obligated to
+conclude that the following is the point. All seven effects, one heading, riding the inline
+nesting cap *exactly* (an eighth level is legal; a ninth would fall to literal text, which
+would frankly be a relief):
+
+```marquee
+:::section scheme=terminal
+# [marquee][blink][wave][bounce][jitter][typewriter][rainbow by=letter phase=scatter]**WELCOME TO MY HOMEPAGE**[/rainbow][/typewriter][/jitter][/bounce][/wave][/blink][/marquee]
+:::
+```
+
+:::section scheme=terminal
+# [marquee][blink][wave][bounce][jitter][typewriter][rainbow by=letter phase=scatter]**WELCOME TO MY HOMEPAGE**[/rainbow][/typewriter][/jitter][/bounce][/wave][/blink][/marquee]
+:::
+
+(The typewriter is in there too, dormant, waiting for a scripted client. And if your
+reduced-motion setting is on, the abomination is a perfectly still green-on-black heading —
+the exit is contractual, even from this.)
 
 ---
 

@@ -50,6 +50,21 @@
   object-fit: cover;
 }
 
+/* ---- the size dial: seven closed steps, 3 is normal (font-element scale;
+ * the size attribute on the same element is the no-stylesheet floor) ---- */
+
+.mq-size-1 { font-size: x-small; }
+.mq-size-2 { font-size: small; }
+.mq-size-3 { font-size: medium; }
+.mq-size-4 { font-size: large; }
+.mq-size-5 { font-size: x-large; }
+.mq-size-6 { font-size: xx-large; }
+.mq-size-7 { font-size: xxx-large; }
+
+big {
+  font-size: larger;
+}
+
 /* ---- placeholders and affordances (the contractual shrug, visibly) ---- */
 
 .mq-placeholder,
@@ -157,7 +172,40 @@
   color: #ff004c;
 }
 
+/* by=letter / by=word: units carry the animation, phase-shifted per unit */
+
+.mq-split .mq-l {
+  display: inline-block;
+}
+
 @media (prefers-reduced-motion: no-preference) {
+  .mq-rainbow.mq-split,
+  .mq-bounce.mq-split,
+  .mq-jitter.mq-split,
+  .mq-wave.mq-split {
+    animation: none;
+  }
+
+  .mq-rainbow.mq-split .mq-l {
+    animation: mq-rainbow 3s linear infinite;
+    animation-delay: calc(var(--mq-o, 0) * -3s);
+  }
+
+  .mq-bounce.mq-split .mq-l {
+    animation: mq-bounce 0.6s ease-in-out infinite alternate;
+    animation-delay: calc(var(--mq-o, 0) * -1.2s);
+  }
+
+  .mq-jitter.mq-split .mq-l {
+    animation: mq-jitter 0.18s steps(2) infinite;
+    animation-delay: calc(var(--mq-o, 0) * -0.18s);
+  }
+
+  .mq-wave.mq-split .mq-l {
+    animation: mq-wave 1.4s ease-in-out infinite;
+    animation-delay: calc(var(--mq-o, 0) * -1.4s);
+  }
+
   .mq-marquee-inner {
     animation: mq-marquee calc(16s / max(var(--mq-speed, 1), 1)) linear infinite;
   }

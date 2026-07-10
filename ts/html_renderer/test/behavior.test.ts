@@ -124,6 +124,46 @@ test("media sizing: knobs land in slots, invalid values degrade", () => {
   assert.ok(!bogus.includes("69420") && !bogus.includes("12px"), "invalid values never emitted");
 });
 
+test("by=letter splits into offset units; spaces ride along", () => {
+  const html = renderMarquee("[wave by=letter]hi there[/wave]\n");
+  assert.ok(html.includes('class="mq-wave mq-split"'));
+  assert.equal(html.split('class="mq-l"').length - 1, 7, "7 letters wrapped, space not");
+  assert.ok(html.includes("--mq-o:0.125"), "sequential offsets present");
+  const again = renderMarquee("[wave by=letter]hi there[/wave]\n");
+  assert.equal(html, again, "offsets are deterministic");
+});
+
+test("by=word wraps word-like segments only", () => {
+  const html = renderMarquee("[bounce by=word]each word bounces![/bounce]\n");
+  assert.equal(html.split('class="mq-l"').length - 1, 3, "3 words wrapped, punctuation not");
+  assert.ok(html.includes(">each</span>"));
+});
+
+test("phase knob: scatter scrambles, ramp smooths, both deterministic", () => {
+  const ramp = renderMarquee("[rainbow by=letter]abcd[/rainbow]\n");
+  const scatter = renderMarquee("[rainbow by=letter phase=scatter]abcd[/rainbow]\n");
+  assert.notEqual(ramp, scatter, "scatter must differ from the default sweep");
+  assert.equal(
+    scatter,
+    renderMarquee("[rainbow by=letter phase=scatter]abcd[/rainbow]\n"),
+    "scatter is deterministic",
+  );
+  const jitterRamp = renderMarquee("[jitter by=letter phase=ramp]abcd[/jitter]\n");
+  assert.ok(jitterRamp.includes("--mq-o:0.125"), "ramped jitter sweeps sequentially");
+  const bogus = renderMarquee("[wave by=letter phase=chaos]abcd[/wave]\n");
+  assert.equal(bogus, renderMarquee("[wave by=letter]abcd[/wave]\n"), "invalid phase -> default");
+});
+
+test("size dial: seven steps, presentational floor, off-dial degrades", () => {
+  const html = renderMarquee("[size=6]loud[/size] [big]up[/big] [size=12]off the dial[/size]\n");
+  assert.ok(html.includes('<font class="mq-size-6" size="6">loud</font>'));
+  assert.ok(html.includes("<big>up</big>"));
+  assert.ok(html.includes("off the dial") && !html.includes("12"), "invalid size degrades");
+  const named = renderMarquee("[enormous]yes[/enormous] [tiny]no[/tiny]\n");
+  assert.ok(named.includes('<font class="mq-size-7" size="7">yes</font>'));
+  assert.ok(named.includes('<font class="mq-size-2" size="2">no</font>'));
+});
+
 test("unknown span shrugs but children survive styled context", () => {
   const html = renderMarquee("[spiral]still here[/spiral]\n");
   assert.ok(html.includes("still here"));

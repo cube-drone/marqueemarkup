@@ -154,6 +154,9 @@ fun lives.
 | `[sup]2[/sup]` | superscript |
 | `[sub]2[/sub]` | subscript |
 | `[small]fine print[/small]` | smaller text |
+| `[big]a step up[/big]` | bigger text — small's mirror |
+| `[size=6]the dial[/size]` | the classic seven-step size scale, `1`–`7` (`3` is normal) |
+| `[miniscule]` `[tiny]` `[huge]` `[enormous]` | named rungs of that dial (1, 2, 6, 7) — unnecessary given the numbers, and yet |
 | `[color=goldenrod]shiny[/color]` | colored text — a CSS color name or hex (`#f06`, `#ff0066`) |
 | `[sidenote]a witty aside[/sidenote]` | a margin note — floats beside the text on wide screens, becomes a parenthetical on narrow ones |
 
@@ -163,11 +166,18 @@ fun lives.
 |---|---|---|
 | `[marquee]...[/marquee]` | scrolling text, the classic | `direction=right`, `speed=2` |
 | `[blink]...[/blink]` | blinks | `rate=2` |
-| `[rainbow]...[/rainbow]` | color-cycles | |
-| `[bounce]...[/bounce]` | bounces | |
-| `[jitter]...[/jitter]` | nervous energy | |
-| `[wave]...[/wave]` | gentle undulation | |
+| `[rainbow]...[/rainbow]` | color-cycles | `by=letter/word`, `phase=scatter/ramp` |
+| `[bounce]...[/bounce]` | bounces | `by=letter/word`, `phase=scatter/ramp` |
+| `[jitter]...[/jitter]` | nervous energy | `by=letter/word`, `phase=scatter/ramp` |
+| `[wave]...[/wave]` | gentle undulation | `by=letter/word`, `phase=scatter/ramp` |
 | `[typewriter]...[/typewriter]` | types itself out (on clients with scripting; otherwise appears whole) | `speed=30` |
+
+`by=letter` gives each letter its own offset cycle — `[rainbow by=letter]` is the classic
+every-letter-its-own-hue gradient, `[wave by=letter]` a true undulating ripple. `by=word`
+does the same word by word. Offsets sweep smoothly by default (jitter scatters instead);
+`phase=scatter` scrambles any effect and `phase=ramp` smooths any, so confetti rainbows and
+rippling shudders are both on the menu. Best at headline scale: every letter becomes its own
+moving part.
 
 Effects nest freely — `[marquee][blink]still open at 3am[/blink][/marquee]` is not an edge
 case, it is the point. (Nesting is capped at 8 deep, which is already deeper than taste.)

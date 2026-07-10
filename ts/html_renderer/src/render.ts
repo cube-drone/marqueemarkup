@@ -86,6 +86,14 @@ function isToken(v: string | undefined): v is string {
   return v !== undefined && TOKEN.test(v);
 }
 
+/** One rung of the font-element seven-step dial: presentational floor
+ * (works with no stylesheet, under any CSP), stylesheet class as ceiling.
+ * The named rungs - miniscule, tiny, huge, enormous - are unnecessary
+ * given the dial, and yet. */
+function sizeRung(value: string, inner: string): string {
+  return `<font class="mq-size-${value}" size="${value}">${inner}</font>`;
+}
+
 const MEDIA_SIZE_TOKENS: Record<string, string> = {
   small: "10rem",
   medium: "20rem",
@@ -237,6 +245,23 @@ function span(name: string, attrs: Attrs, nodes: Node[], profile: Profile): stri
       return `<sub>${inner}</sub>`;
     case "small":
       return `<small>${inner}</small>`;
+    case "big":
+      return `<big>${inner}</big>`; // obsolete and eternal, like <font>
+    case "size": {
+      const value = attrs["size"];
+      if (value !== undefined && /^[1-7]$/.test(value)) {
+        return sizeRung(value, inner);
+      }
+      return inner; // off the dial: the effect degrades, the words survive
+    }
+    case "miniscule":
+      return sizeRung("1", inner);
+    case "tiny":
+      return sizeRung("2", inner);
+    case "huge":
+      return sizeRung("6", inner);
+    case "enormous":
+      return sizeRung("7", inner);
     case "color": {
       const value = attrs["color"];
       if (isColorValue(value)) {
@@ -263,10 +288,141 @@ function span(name: string, attrs: Attrs, nodes: Node[], profile: Profile): stri
     case "bounce":
     case "jitter":
     case "wave":
+      if (attrs["by"] === "letter" || attrs["by"] === "word") {
+        return bySegments(name, attrs["by"], attrs["phase"], nodes, profile);
+      }
+      return `<span class="mq-${name}">${inner}</span>`;
     case "typewriter":
       return `<span class="mq-${name}">${inner}</span>`;
   }
   return inner; // unknown span: pure shrug, children as plain content
+}
+
+// -- per-unit effects (by=letter / by=word): each unit in its own span with
+// a phase offset in --mq-o; the stylesheet replays the effect's keyframes
+// through a negative animation-delay. Pure markup - the document stays a
+// document. Locale pinned so segmentation (and thus output) is stable.
+
+const SEGMENTERS = {
+  letter: new Intl.Segmenter("en", { granularity: "grapheme" }),
+  word: new Intl.Segmenter("en", { granularity: "word" }),
+};
+
+type SplitBy = keyof typeof SEGMENTERS;
+
+/** DOM-weight discipline: past this many units, the run animates whole. */
+const MAX_SPLIT_UNITS = 400;
+
+type Phase = "ramp" | "scatter";
+
+interface SplitState {
+  effect: string;
+  by: SplitBy;
+  phase: Phase;
+  i: number;
+  total: number;
+}
+
+function bySegments(
+  effect: string,
+  by: SplitBy,
+  phaseAttr: string | undefined,
+  nodes: Node[],
+  profile: Profile,
+): string {
+  // Each effect has a natural phase order (jitter scatters, the rest sweep);
+  // the knob overrides it either way. Invalid values degrade to the default.
+  const phase: Phase =
+    phaseAttr === "scatter" || phaseAttr === "ramp"
+      ? phaseAttr
+      : effect === "jitter"
+        ? "scatter"
+        : "ramp";
+  const state: SplitState = { effect, by, phase, i: 0, total: 0 };
+  state.total = countUnits(nodes, by);
+  if (state.total === 0 || state.total > MAX_SPLIT_UNITS) {
+    return `<span class="mq-${effect}">${children(nodes, profile)}</span>`;
+  }
+  return `<span class="mq-${effect} mq-split">${splitRender(nodes, profile, state)}</span>`;
+}
+
+/** A segment gets wrapped if it's animatable: for words, word-like segments
+ * (spaces and bare punctuation ride along); for letters, anything that
+ * isn't whitespace. */
+function isUnit(seg: Intl.SegmentData, by: SplitBy): boolean {
+  return by === "word" ? seg.isWordLike === true : !/^\s+$/.test(seg.segment);
+}
+
+/** Offsets are deterministic (goldens exist; a document renders the same
+ * twice) in both phase orders: ramp sweeps, scatter scrambles by a fixed
+ * integer hash - randomness-shaped, never random. */
+function unitOffset(state: SplitState): string {
+  let o: number;
+  if (state.phase === "scatter") {
+    o = ((state.i * 7919) % 101) / 101;
+  } else {
+    switch (state.effect) {
+      case "rainbow":
+        o = state.i / state.total; // gradient across the whole run
+        break;
+      case "wave":
+        o = (state.i % 8) / 8; // fixed ripple wavelength
+        break;
+      case "bounce":
+        o = (state.i % 6) / 6;
+        break;
+      default:
+        o = (state.i % 8) / 8; // jitter in ramp mode: a rippling shudder
+        break;
+    }
+  }
+  return String(Math.round(o * 1000) / 1000);
+}
+
+function countUnits(nodes: Node[], by: SplitBy): number {
+  let n = 0;
+  for (const node of nodes) {
+    if (node.type === "text") {
+      for (const seg of SEGMENTERS[by].segment(node.value)) {
+        if (isUnit(seg, by)) {
+          n += 1;
+        }
+      }
+    } else if (
+      node.type === "emphasis" ||
+      node.type === "strong" ||
+      node.type === "strikethrough"
+    ) {
+      n += countUnits(node.children, by);
+    }
+  }
+  return n;
+}
+
+function splitRender(nodes: Node[], profile: Profile, state: SplitState): string {
+  let out = "";
+  for (const node of nodes) {
+    if (node.type === "text") {
+      for (const seg of SEGMENTERS[state.by].segment(node.value)) {
+        if (!isUnit(seg, state.by)) {
+          out += escapeText(seg.segment); // spaces/punctuation ride along
+          continue;
+        }
+        const o = unitOffset(state);
+        state.i += 1;
+        out += `<span class="mq-l" style="--mq-o:${o}">${escapeText(seg.segment)}</span>`;
+      }
+    } else if (node.type === "emphasis") {
+      out += `<em>${splitRender(node.children, profile, state)}</em>`;
+    } else if (node.type === "strong") {
+      out += `<strong>${splitRender(node.children, profile, state)}</strong>`;
+    } else if (node.type === "strikethrough") {
+      out += `<del>${splitRender(node.children, profile, state)}</del>`;
+    } else {
+      out += render(node, profile); // anything else renders whole, un-split
+    }
+  }
+  return out;
 }
 
 // -- escaping (the only paths author bytes may take into markup)
