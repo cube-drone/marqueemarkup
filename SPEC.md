@@ -62,6 +62,11 @@ Blocks, separated by blank lines:
   CommonMark-style split-on-marker-switch. Canonical AST records the list, not the spelling.
   Nesting by exactly two spaces per level, capped depth.
 - **Thematic break** - `---` alone on a line.
+- **Comment** - `%%` at line start; consecutive `%%` lines form one comment block. **Raw
+  content** (never parsed - a comment may hold broken sketch markup without spawning errors),
+  which is why comments are grammar, not vocabulary: the vocabulary-blind parser cannot give
+  raw treatment to a directive it does not recognize by name. `\%%` escapes a literal
+  line-leading `%%` (vanishingly rare in prose).
 - **Directive block** - see below.
 
 Inlines:
@@ -76,7 +81,12 @@ Inlines:
   Three, and its second delimiter character. Confusing input degrades to visible literal
   asterisks - total prose - never to a clever surprise.) `~~strikethrough~~` rides the same
   rule verbatim: tilde runs of length 2 are delimiters, any other length is literal.
-- `[text](target)` links; `![alt](target)` media embeds.
+- `[text](target)` links; `![alt](target)` media embeds (image/audio/video/MIDI - kind resolved
+  at render, see Media).
+- `:slug:` is an **emoji** node (two colons hugging word-chars: `[a-z0-9_+-]+`). Parser is
+  slug-blind - emits `emoji{slug}`, resolved downstream (see Emoji); a non-matching run or an
+  unknown slug renders as literal `:slug:` text. Prose-safe: `3:30` and `https://` don't match
+  (one colon or none). Natural UTF-8 emoji need no syntax - they are just text.
 - **Spans** - BBCode-shaped, explicitly closed, arbitrarily nestable - one inline mechanism
   carrying both *animated* vocabulary (effects) and *typographic* vocabulary (`[sup]`, `[sub]`):
   `[marquee][blink]still open at 3am[/blink][/marquee]`, `[color=red]hp low[/color]`,
@@ -91,8 +101,8 @@ Inlines:
 - Hard line break: trailing backslash.
 
 Deliberately absent, forever or until a version bump: embedded HTML, setext headings,
-reference-style links, lazy continuation, indented code blocks. Tables arrive later as a
-directive, not syntax.
+reference-style links, lazy continuation, indented code blocks. Tables are deferred from v0, but the name `:::table` is **reserved** (see Reserved
+vocabulary): cozy pages rarely want them, and the body model is an open fork.
 
 **Caps are spec, not implementation** - an implementation-defined depth limit is a manufactured
 parser differential (input parses on one client, blows the stack on another), so the limits are
@@ -131,8 +141,13 @@ Page layout is *picked, not authored* - the Geocities move, and the anti-CSS fir
 - `layout` is an enum; each layout defines its named slots. v0 set: `basic`,
   `nav-footer`, `two-column-nav-footer`, `three-column-nav-footer`.
 - Duplicate slot claims are a strict error; unclaimed slots collapse.
-- Style attributes (`background`, `cursor`, `scheme`, ...) are a closed enum per directive,
-  versioned with the vocabulary. CSS-the-capability behind a counter.
+- Style attributes are a **closed set of knobs** (`background`, `cursor`, `scheme`, `color`),
+  versioned with the vocabulary - CSS-the-capability behind a counter. The one rule worth
+  stating: *what* you can style is closed; `color` is the single knob whose *value* is open
+  (hex or named palette), because color is the one continuous space users genuinely reach for.
+  Everything else takes tokens from a list (backgrounds are named patterns or `tile:blob:HASH`;
+  cursors and schemes are enums). No positioning, no freeform fonts, no per-element layout - the
+  anti-CSS firewall. (The exact palette/pattern/cursor/scheme lists grow from the corpus.)
 
 ### Includes: shared nav, footers, mix-ins
 
@@ -152,17 +167,47 @@ Page layout is *picked, not authored* - the Geocities move, and the anti-CSS fir
   is the feature (shared nav) and the hazard (what moderation saw ≠ what readers see later);
   embedders choose their exposure via trust scope and pin policies.
 
-### Computed slots: the client fills in the blank
+### Resolved directives: the renderer fills in the blank
+
+Some directives' content is not in the document - it is obtained at render time from the
+embedder (a guestbook's entries, a webcomic's "next" link). This is not a distinct mechanism:
+a resolved directive and a stateful widget are one species (host-provided behavior), and the
+parser is as blind to it as to every other directive name.
 
 ```
-:::computed role=next-in-stream stream=STREAM_ID
-:::computed role=prev-in-stream stream=STREAM_ID
+:::computed lang=ringtome-tql query="..."      (opaque: Marquee neither parses nor understands the query)
+:::computed lang=sql query="SELECT ..."         (equally valid syntactically - Marquee has no opinion)
 ```
 
-The webcomic "next" button: the *author* declares intent, the *client* computes the content at
-render time (from a stream/taxonomy artifact the role names). Roles are vocabulary; a client
-without the role renders the placeholder. This is "interactivity as platform widgets, never
-user code" - behavior lives in the client, state lives in the host protocol.
+Marquee owns the **resolution contract**, never the query semantics (the same split as
+animation and targets: contract yes, meaning no):
+
+- The query string and its language are **opaque** - passed through to the embedder's resolver.
+  Marquee defines no query language, no role vocabulary, no taxonomy shapes. Those belong to the
+  embedder's own system (for Ringtome, a future taxonomy query language - out of scope here).
+- **Resolved content is content, never authority** (derived-not-signed): it is not in the
+  document's signed bytes, it may change between renders, it cannot smuggle privilege, and it is
+  subject to the same rendering rules as any content.
+- **What may be queried, and against what, is embedder policy** (mechanism 4) - the resolver is
+  where capability and its limits live. Marquee carrying `SELECT *` is not Marquee permitting
+  it.
+- **Resolution is read-only and side-effect-free.** A resolver answers questions; it never
+  mutates state. This is the line that keeps a resolved directive from being `<script>`: the
+  danger of embedded script is *viewed content taking actions in the reader's context*, and a
+  resolver that can only *retrieve* cannot take actions. (Combined with inert results above: a
+  maximally-powerful read-only resolver returning private data merely shows you your own data on
+  your own screen - inert content has no network to exfiltrate through.)
+- **The query should retrieve, not compute - a discipline, not a mechanism.** Marquee cannot
+  enforce this: the query is opaque, so the parser cannot see (let alone evaluate) whether a
+  query language is Turing-complete. The guard is a decision the resolver author makes, exactly
+  as HTML's safety from scripting was never HTML's parser refusing script - it was the choice of
+  whether to build and wire in an interpreter at all. So the rule is stated as what it is: *do
+  not grow the query language into a programming language.* Real scripting is a separate,
+  explicitly-sandboxed capability (no network, no ambient UI, budgeted, capabilities-only - the
+  deferred "user scripting" rung), built as itself if ever, never smuggled through a resolver.
+  A well-behaved resolved directive is data→resolver→inert content, full stop.
+- Renderers handle loading / empty / failure uniformly; a renderer with no resolver for a
+  directive renders the inert placeholder, like any unknown vocabulary.
 
 ### Text effects (language-defined) and the animation contract
 
@@ -187,6 +232,53 @@ out-of-Ringtome embedder, and the effect set is chosen with it in mind.)
    never marquee; it was marquee without an exit.
 4. A renderer that doesn't implement an effect renders the text unstyled - degradation is
    always to plain, readable content.
+
+### Media: one embed, kind resolved at render
+
+`![alt](target)` embeds any media - image, audio, video, MIDI. There is **no per-kind syntax
+and no codec fallback list**: the author writes one embed pointing at one file, and the *kind*
+is resolved at render time from the content's type (the parser stays type-blind, emitting a
+generic `embed` node, so the AST is identical across implementations). HTML's stacked
+`<source>` ladders exist only because HTML cannot mandate a codec baseline across vendors;
+Marquee's conformance model can, so it does not need them:
+
+- **Allowed formats are a closed set** (embedder policy - Ringtome's media-type admission test
+  decides what may enter as a blob at all). One known-good file, never a fallback ladder.
+- **Renderers decode what they can and degrade to a link/placeholder otherwise** - the
+  contractual shrug applied to media: a text-only client renders `[video: trailer.mp4]` as a
+  link, a capable one plays it, nobody is nonconforming.
+- **Configuration lives on `:::media`, an open, growing attribute vocabulary** (not a closed
+  list - a bare `![]()` is the zero-config common case, exactly as a bare link is a onebox but
+  `:::onebox` configures it). The attribute *set* grows additively across versions like all
+  vocabulary; each attribute is a **closed knob** (`width=small|medium|large|full`, `fit=...`),
+  never freeform CSS - the same closed-knobs discipline as page styling, so "size this image"
+  never becomes "author arbitrary layout." Known categories, list deferred to the corpus:
+  - *Playback* (autoplay/loop - the MIDI move, kept behind a small friction): the
+    autoplay-but-always-stoppable, reduced-motion-honored rule from the animation contract
+    applies.
+  - *Layout* (size, fit, alignment): closed tokens, capped.
+  - *Render-time processing* (dither, grayscale, scanlines - the crunch-filter aesthetic as an
+    opt-in): spec-blessed like effects, degrading via the shrug (a renderer that cannot dither
+    shows the plain image). Distinct from *author-time* processing, where the author bakes the
+    effect into the blob before embedding and Marquee neither knows nor cares.
+  - Video/audio knobs not yet imagined - the vocabulary is meant to grow here.
+
+### Emoji resolution
+
+The grammar gives one thing: the `emoji{slug}` node. What a slug *becomes* is layered and
+entirely downstream - Marquee owns none of it:
+
+- **Standard shortcodes** (`:smile:` → 😀) resolve against a **referenced standard table**
+  (CLDR / gemoji), not a list Marquee invents and maintains - a contested 3,000-entry table is
+  not the language's to own.
+- **Custom emoji** resolve against a **slug → image-blob map** - which is the document slug
+  register (Ringtome, Addressing) with image blobs as values instead of doc ids. Custom emoji
+  is named indirection over an inline image; the indirection is existing machinery.
+- **Whose map** is the same anti-global-namespace answer as every naming question here: a
+  published artifact scoped to an identity or community, resolved like any other slug (a
+  message's `:blobcat:` resolves against the *sender's* map - expression travels with identity;
+  no global emoji namespace, no squatting). Unknown slug → literal text, so a client without the
+  map shrugs exactly as chat apps already do.
 
 ### Stateful widgets (host-provided vocabulary)
 
@@ -236,6 +328,13 @@ An embedder (Ringtome, a static-site generator, anything) declares:
 - **Include trust scope** and pin requirements.
 - **Onebox default** (full card / title / bare link) and its fetch rules.
 
+**Messaging is Marquee under a restrictive profile**, not a separate format: a message is a
+short document (one renderer for pages, posts, notes, *and* messages - the old-internet norm
+where posting and chatting shared markup). The profile permits inline formatting, embeds, and
+emoji while forbidding page layout, includes, and resolved directives (no `:::page` in a text
+bubble). It is also the first *inter-identity* Marquee - content crossing between people - which
+is where the private "tell them" disclosure lane grows into direct messages.
+
 The **Ringtome profile** (maintained in the Ringtome repo, not here): a document's base URI is
 its own `ringtome://root/...` address, so a bare relative `id` resolves within the authoring
 identity (the id being the store layer's stable `doc_id`: the private register key for notes,
@@ -243,6 +342,24 @@ the reserved payload field for posts) and cross-identity references are fully qu
 embeds `blob:` + `ringtome://` natively; `https:` media allowed with node-proxy fetch as default and care modes
 present; includes same-identity only; the cozy widget set; oneboxes on by default for
 `ringtome://` targets and title-only for the web.
+
+## Reserved vocabulary
+
+A **reserved name** is a directive name claimed for a future spec-blessed meaning, so embedders
+do not repurpose it and documents port. Reservation is a promise to implementers, **not a
+parser feature**: until implemented, a reserved directive is unknown vocabulary and renders the
+inert placeholder like any other. Reserving a name pre-decides *what it means*, never *how it is
+built*.
+
+Discipline (so this never becomes a graveyard of ghost names): reserve only names that are
+near-certain to be wanted, where a collision would misrender real documents, and whose meaning
+is unambiguous. Today that is exactly one:
+
+- **`table`** - tabular data. Body model deliberately undecided, and the fork matters:
+  structured children (`:::row` / `:::cell`) would be pure vocabulary; a pipe body (`| a | b |`)
+  is *raw content*, which - like comments - a vocabulary-blind parser cannot grant to a name it
+  does not recognize, so pipe-tables would be a small future *grammar* addition, not just
+  vocabulary. Reserving `table` commits to neither; it does not reopen the closed grammar.
 
 ## The AST (the contract)
 
@@ -272,12 +389,21 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   `paragraph`, `heading{level}`, `code_block{info?}`, `blockquote`, `list{ordered}`,
   `list_item`, `thematic_break`, `directive{name, attrs}`, `invalid_directive{reason}`;
   inlines - `text`, `emphasis`, `strong`, `strikethrough`, `code_span`, `link{target}`,
-  `image{target, alt}`, `onebox{target}`, `span{name, attrs}`, `hard_break`. Twenty types.
+  `embed{target, alt}` (media of any kind; the kind is a render-time concern, not a node type),
+  `onebox{target}`, `span{name, attrs}`, `emoji{slug}`, `hard_break`, and the block
+  `comment{text}`. Twenty-two types.
   Deliberately absent: `page`/`section` nodes (layout is directive *vocabulary*, checked by
   the validator layer on a parsed tree - the parser knows shapes, never names).
 - **The renderer's shrug is contractual:** an unknown `span` renders its children as plain
   text (the words always survive); an unknown `directive` renders the inert placeholder (the
   reader learns something was there). Dropping unknown content silently is nonconforming.
+- **`comment` is the anti-shrug** - the one core node whose correct rendering is *absence*: it
+  MUST render nothing, in every renderer. It stays in the AST (authoring tools show and edit
+  your notes-to-self), never in the reader's view. **Comments are invisible to readers, never
+  secret from them:** the bytes travel, view-source is real, and thirty years of leaked HTML
+  comments are the fable. The Ringtome profile therefore *strips comments at the publication
+  act* (free - publication already re-encodes, copy-don't-flip); standalone bare-web files ship
+  their comments in the file, exactly like HTML, and the spec says so plainly.
 
 ## Conformance
 
@@ -291,15 +417,28 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   contract) are spec text enforced by review - dignity is not byte-comparable.
 - Version tag on every document; unknown *versions* are refused, unknown *vocabulary within a
   known version* renders placeholders.
+- **Version declaration.** Embedders supply the dialect version out-of-band (Ringtome: the
+  payload type / the `format` field - its type registry already owns this). Standalone files
+  may declare in-band with a shebang-shaped first line, `#!marquee 0` - grammatically free
+  (`#!` is not a heading), stripped at the front door into `document{version}`, never a node.
+  **Precedence: embedder-supplied over in-band over the default - and the default is version 0,
+  forever.** An undeclared document means what it meant the day the language shipped, in any
+  year (assume-latest is meaning drift, the disease versioning exists to cure); an author using
+  new features without declaring gets v0's total-prose parse of their text - degraded, visible,
+  fixable.
 
 ## Open questions (v0)
 
-- [ ] Video/audio as embed types: grammar is ready (targets), vocabulary + host admission
-  stories are not (see Ringtome's media-type admission test).
-- [ ] Tables directive design.
-- [ ] The style-attribute enum's v0 cut (including whether `color` takes palette tokens only
-  or tokens + hex).
-- [ ] Version declaration for standalone files: Ringtome supplies the dialect version via its
-  type registry, but a bare `.mq` file on the plain web needs a convention (shebang-style first
-  line? assume-latest?).
-- [ ] Whether `:::computed` roles beyond stream-nav make the first cut.
+The grammar is closed. What remains is **vocabulary cuts** - the exact contents of closed lists,
+which grow from the plaintext-era corpus, not from a priori design - plus one item that belongs
+to a different system entirely:
+
+- [ ] Exact vocabulary lists: the style knobs' values (palettes, patterns, cursors, schemes),
+  the effect set, the widget set, the audio/video attribute lists (blocked on media blobs
+  existing to test against). Shapes are settled; contents wait on use.
+- [ ] Tables (`:::table` name reserved, see Reserved vocabulary): if the corpus asks, decide the
+  body-model fork - structured children (vocabulary) vs. pipe body (a raw-content grammar addition).
+- [ ] **Not Marquee's** (named so nobody hunts for them here): the taxonomy query language
+  resolved directives carry; the custom-emoji map artifact and the messaging vocabulary profile.
+  All belong to the embedder (Ringtome). Marquee owns the `emoji`/`directive`/`embed` grammar
+  and treats their contents as opaque.
