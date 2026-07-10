@@ -8,6 +8,7 @@ This is a monorepo: the spec, the conformance vectors, and every reference imple
 version together, because they are one conformance unit.
 
 - `WRITING.md` — **start here to write Marquee**: the authoring guide, every tag with examples
+  (`WRITING.mq` is its live twin — preview it to see everything running)
 - `SPEC.md` — the language specification (grammar, AST contract, conformance rules)
 - `examples/` — hand-written `.mq` documents; the ergonomics testbed and vector seed corpus
 - `vectors/` — published conformance vectors (`*.json`, input → exact AST); see `vectors/README.md`

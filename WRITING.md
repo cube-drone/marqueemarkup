@@ -8,6 +8,9 @@ like, `ts/html_renderer` has a preview tool — see [Previewing your work](#prev
 The one rule that shapes everything: **you cannot break the page.** Anything you type renders.
 If you get syntax wrong, the worst outcome is that your characters show up literally.
 
+This guide has a live twin: [WRITING.mq](WRITING.mq) demos everything described below in one
+previewable document — including a deliberate mistake, so you can see what "wrong" looks like.
+
 ## Paragraphs and line breaks
 
 Text separated by blank lines forms paragraphs. Single line breaks *inside* a paragraph don't

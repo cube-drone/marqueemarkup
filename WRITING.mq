@@ -1,0 +1,350 @@
+#!marquee 0
+
+:::meta title="Writing Marquee, live" date=2026-07-10 tags="guide, demo":::
+
+%% This comment never renders. If you can read it, you're in view-source —
+%% which is the point: comments are invisible to readers, never secret from them.
+
+# Writing [rainbow]Marquee[/rainbow], as itself
+
+This page is [WRITING.md](WRITING.md) turned inside out: **every demo comes twice — first the
+markup you'd type (in a code fence), then the same markup, live.** The source of this very
+document is the full worked example. Preview it from `ts/html_renderer`:
+
+```
+npm run preview -- ../../WRITING.mq > tour.html
+```
+
+## Paragraphs and line breaks
+
+```marquee
+This paragraph is written
+across several source lines,
+and none of those breaks survive — it flows.
+
+Roses are red\
+violets are blue,\
+these lines end in backslashes\
+so each one renders new.
+```
+
+This paragraph is written
+across several source lines,
+and none of those breaks survive — it flows.
+
+Roses are red\
+violets are blue,\
+these lines end in backslashes\
+so each one renders new.
+
+## Headings
+
+```marquee
+### A heading with *emphasis*, [color=goldenrod]color[/color], and [blink]blink[/blink]
+
+####### Seven hashes is just a paragraph, rendered literally.
+```
+
+### A heading with *emphasis*, [color=goldenrod]color[/color], and [blink]blink[/blink]
+
+####### Seven hashes is just a paragraph, rendered literally.
+
+## Emphasis and friends
+
+```marquee
+*emphasis*, **strong**, **strong with *emphasis* inside**, ~~struck through~~, and
+`inline code with *stars* nobody parses`.
+
+Underscores are safe in snake_case_names, ***three stars are literal***, and a
+lone * asterisk just sits there. Escapes work too: \*not emphasis\*, and a line that starts with
+
+\- an escaped dash, which is not a list.
+
+[blink]forgot the closer — so this whole run renders literally, brackets and all.
+```
+
+*emphasis*, **strong**, **strong with *emphasis* inside**, ~~struck through~~, and
+`inline code with *stars* nobody parses`.
+
+Underscores are safe in snake_case_names, ***three stars are literal***, and a
+lone * asterisk just sits there. Escapes work too: \*not emphasis\*, and a line that starts with
+
+\- an escaped dash, which is not a list.
+
+[blink]forgot the closer — so this whole run renders literally, brackets and all.
+
+## Links, embeds, turbolinks
+
+```marquee
+A [plain link](https://example.org), a [relative link](other-page), and a
+[parenthetical Wikipedia link](https://en.wikipedia.org/wiki/Hat_(disambiguation)).
+
+![a picture, by description](blob:sunset-photo)
+
+A bare URL alone in a paragraph becomes a turbolink:
+
+https://example.org/interesting-post
+
+:::turbolink target=other-page level=title:::
+```
+
+A [plain link](https://example.org), a [relative link](other-page), and a
+[parenthetical Wikipedia link](https://en.wikipedia.org/wiki/Hat_(disambiguation)).
+
+![a picture, by description](blob:sunset-photo)
+
+A bare URL alone in a paragraph becomes a turbolink:
+
+https://example.org/interesting-post
+
+And the explicit form takes any target, including relative ones:
+
+:::turbolink target=other-page level=title:::
+
+## Emoji
+
+```marquee
+Known shortcodes resolve — :tophat: :sparkles: :blobcat: — unknown ones stay literal, like
+:thisoneisnotreal:, typed emoji 🎩 are just text, and 3:30 is just a time.
+```
+
+Known shortcodes resolve — :tophat: :sparkles: :blobcat: — unknown ones stay literal, like
+:thisoneisnotreal:, typed emoji 🎩 are just text, and 3:30 is just a time.
+
+## Typography spans
+
+```marquee
+E = mc[sup]2[/sup], H[sub]2[/sub]O, [small]the fine print[/small], colors by
+[color=goldenrod]name[/color] or [color=#f06]hex[/color], and margin
+notes[sidenote]like this aside[/sidenote] that never interrupt the sentence.
+```
+
+E = mc[sup]2[/sup], H[sub]2[/sub]O, [small]the fine print[/small], colors by
+[color=goldenrod]name[/color] or [color=#f06]hex[/color], and margin
+notes[sidenote]like this aside, which floats beside the text on a wide screen and becomes a
+parenthetical on a narrow one[/sidenote] that never interrupt the sentence.
+
+## Effects
+
+```marquee
+[marquee]THE CLASSIC — scrolling since 1995, stoppable since Marquee[/marquee]
+
+[blink]blink[/blink] · [rainbow]rainbow[/rainbow] · [bounce]bounce[/bounce] ·
+[jitter]jitter[/jitter] · [wave]wave[/wave] ·
+[typewriter speed=30]typewriter[/typewriter]
+
+Nesting is the point: [marquee][blink]still open at 3am[/blink][/marquee]
+```
+
+[marquee]THE CLASSIC — scrolling since 1995, stoppable since Marquee[/marquee]
+
+[blink]blink[/blink] · [rainbow]rainbow[/rainbow] · [bounce]bounce[/bounce] ·
+[jitter]jitter[/jitter] · [wave]wave[/wave] ·
+[typewriter speed=30]typewriter (types itself out on scripted clients; appears whole here)[/typewriter]
+
+Nesting is the point: [marquee][blink]still open at 3am[/blink][/marquee]
+
+If your reduced-motion setting is on, everything above is calmly standing still. That's
+contractual.
+
+## Lists
+
+```marquee
+- unordered
+* with mixed markers (same list)
++ because markers are synonyms
+
+1. ordered
+7. with numbers that don't matter —
+3. the renderer counts
+
+- outer
+  - inner
+    - deeper (three or four spaces would also have worked)
+
+- an item with a second paragraph
+
+  which is indented to stay inside the bullet, image included:
+
+  ![indented, so it stays in the bullet](blob:bullet-pic)
+
+- and a normal next item
+
+1. this ordered list is about to be interrupted
+2. by an unindented line
+oops — this line ends the list
+1. and the numbering restarts, which is how you *see* the mistake
+```
+
+- unordered
+* with mixed markers (same list)
++ because markers are synonyms
+
+1. ordered
+7. with numbers that don't matter —
+3. the renderer counts
+
+- outer
+  - inner
+    - deeper (three or four spaces would also have worked)
+
+Items hold whole paragraphs — even images — as long as they stay indented:
+
+- an item with a second paragraph
+
+  which is indented to stay inside the bullet, image included:
+
+  ![indented, so it stays in the bullet](blob:bullet-pic)
+
+- and a normal next item
+
+1. this ordered list is about to be interrupted
+2. by an unindented line
+oops — this line ends the list
+1. and the numbering restarts, which is how you *see* the mistake
+
+## Quotes
+
+```marquee
+> Every line of the quote is marked,
+> line by line — no lazy continuation.
+> > And quotes nest.
+```
+
+> Every line of the quote is marked,
+> line by line — no lazy continuation.
+> > And quotes nest.
+
+## Code
+
+````marquee
+```python
+for hat in attic.hats():
+    print(hat.vibe, hat.dampness)
+```
+
+```
+:::page layout=basic
+*none of this* is parsed [blink]in here[/blink] — fences are raw
+:::
+```
+````
+
+```python
+for hat in attic.hats():
+    print(hat.vibe, hat.dampness)
+```
+
+```
+:::page layout=basic
+*none of this* is parsed [blink]in here[/blink] — fences are raw
+:::
+```
+
+Need literal triple-backticks *inside* a block? Fence with four:
+
+`````marquee
+````
+``` even literal triple-backticks, inside a longer fence ```
+````
+`````
+
+````
+``` even literal triple-backticks, inside a longer fence ```
+````
+
+## Comments and metadata
+
+```marquee
+%% notes to self — readers never see this
+%% consecutive comment lines merge into one comment
+
+:::meta title="Writing Marquee, live" date=2026-07-10 tags="guide, demo":::
+```
+
+There is a live comment in this very spot — and rendering it as nothing *is* the demo:
+
+%% told you.
+
+The live `:::meta` is at the top of this file, describing the document to any tool that asks,
+rendering nothing.
+
+## Layout, sections, schemes
+
+```marquee
+:::section scheme=terminal
+sys.status: [color=#33ff66]COZY[/color] · uptime 11,315 days
+:::
+```
+
+:::section scheme=terminal
+sys.status: [color=#33ff66]COZY[/color] · uptime 11,315 days
+:::
+
+:::section scheme=parchment
+Hark — the same markup, an entirely different mood (this one says `scheme=parchment`).
+:::
+
+:::section scheme=hotdog-stand
+THE CONDIMENT KING'S OWN COLORWAY (`scheme=hotdog-stand`)
+:::
+
+And a whole page-in-miniature, wrapping slotted sections:
+
+```marquee
+:::page layout=nav-footer scheme=noir
+:::section slot=nav
+**a tiny demo page** — layout picked from a list, never authored
+:::
+:::section slot=main
+Nav above, footer below, this in the middle.
+:::
+:::section slot=footer
+[small]est. 2026 · probably part of a webring[/small]
+::: section
+:::
+```
+
+:::page layout=nav-footer scheme=noir
+:::section slot=nav
+**a tiny demo page** — layout picked from a list, never authored
+:::
+:::section slot=main
+Nav above, footer below, this in the middle. On a real site this wrapper would be the whole
+document.
+:::
+:::section slot=footer
+[small]est. 2026 · probably part of a webring[/small]
+::: section
+:::
+
+## Widgets and placeholders
+
+These depend on where you're posting — here they render labeled placeholder boxes, the
+graceful deal that lets old clients meet new vocabulary:
+
+```marquee
+:::counter theme=retro:::
+
+:::webring ring=cozy-comics:::
+```
+
+:::counter theme=retro:::
+
+:::webring ring=cozy-comics:::
+
+:::construction:::
+
+And one deliberate mistake — spaces around `=` — so you can see "strict but never
+destructive":
+
+```marquee
+:::oops key = broken
+```
+
+:::oops key = broken
+
+---
+
+[small]This document is CC0, like everything in `vectors/` — copy it, break it, preview what
+happens. You cannot hurt it. :sparkles:[/small]
