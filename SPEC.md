@@ -126,9 +126,17 @@ stays inside the deepest item as literal text (prose degrades); over-deep direct
   marker that sets state for the rest of the level. (Flat state makes scope position-dependent
   and re-derived at render, a differential hazard; containment makes it an explicit,
   deterministic subtree.)
-- **Delimiting:** `:::name attrs` opens; a `:::` line (optionally `::: name`, checked - a
-  mismatch is a strict error) closes the nearest open directive, LIFO like brackets, depth-capped.
-  Unclosed at EOF is a strict error (`invalid_directive`).
+- **Delimiting:** `:::name attrs` opens; a `:::` line closes the nearest open directive (LIFO,
+  depth-capped). A close may name its directive (`::: section`) for readable nesting and *local*
+  error-catching - a named close that doesn't match the nearest open is flagged at that line
+  (`invalid_directive`), not mysteriously later.
+- **Fence mistakes never eat content - the effect is lost, never the words.** Directives still
+  open at EOF auto-close at the document boundary (a valid close point), so trailing closers are
+  optional and a forgotten one is no catastrophe. A misplaced or missing *inner* closer
+  mis-arranges the layout (content lands in the wrong slot) but every word still renders -
+  visibly wrong and fixable, never a placeholder where your essay was. Fence-balancing is also an
+  authoring-client job: you no longer hand-count `:::` any more than `}` in an editor, and most
+  documents (notes, messages, plain posts - no opt-in page wrapper) have no fences at all.
 - **Leaf directives** (a counter, a media player, a computed slot - no body) self-close on the
   open line: `:::counter theme=retro:::` (the trailing `:::` is a token *after* the attributes;
   quoted values containing colons are safe).
@@ -422,9 +430,12 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   "error case" vector is just a vector whose AST contains invalid nodes. `reason` values are a
   **closed, spec'd enum** - diagnostics are conformance surface (two clients disagreeing about
   validity is a fail-closed disagreement), never freeform text.
-- **Blocks error; inlines degrade.** Directives (block constructs) are strict → `invalid_directive`.
-  Spans and delimiters (inline constructs) are total → malformed input renders as the literal
-  text typed. One sentence of error philosophy for the whole language.
+- **Blocks flag, inlines degrade, neither hides content.** A malformed block directive becomes
+  `invalid_directive`: its *effect* is dropped and it is flagged (authoring tools warn; a
+  stranger-render fails closed on the effect), but its children still render as plain blocks. A
+  malformed inline (unmatched delimiter, unclosed span) renders as the literal text typed,
+  silently. Both preserve authored content - "strict" means the failure is *detected*, never that
+  words are *punished*.
 - **No source positions in the conformance AST.** Rust counts UTF-8 bytes, JavaScript counts
   UTF-16 units; positions in vectors would make every emoji a conformance bug. Implementations
   may carry positions out-of-band; vector comparison excludes them.
@@ -443,9 +454,11 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   `comment{text}`. Twenty-two types.
   Deliberately absent: `page`/`section` nodes (layout is directive *vocabulary*, checked by
   the validator layer on a parsed tree - the parser knows shapes, never names).
-- **The renderer's shrug is contractual:** an unknown `span` renders its children as plain
-  text (the words always survive); an unknown `directive` renders the inert placeholder (the
-  reader learns something was there). Dropping unknown content silently is nonconforming.
+- **The renderer's shrug is contractual, and never hides content:** an unknown `span` renders
+  its children as plain text; an unknown *container* directive renders its children as plain
+  content (with an affordance that an unknown directive wrapped them); a *leaf* directive with no
+  body shows the inert placeholder. Dropping authored content behind a placeholder is
+  nonconforming - a directive may fail to *do* its thing, never *eat* your thing.
 - **`comment` is the anti-shrug** - the one core node whose correct rendering is *absence*: it
   MUST render nothing, in every renderer. It stays in the AST (authoring tools show and edit
   your notes-to-self), never in the reader's view. **Comments are invisible to readers, never
@@ -464,6 +477,16 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   both implementations run the same files, bless-pattern guarded.
 - Vectors prove *parsers*. Renderer obligations (the contractual shrug, the animation
   contract) are spec text enforced by review - dignity is not byte-comparable.
+- **Error recovery is conformance, not latitude - the HTML lesson, learned both ways.** Every
+  recovery (auto-close at EOF innermost-first, unmatched delimiter → literal, mismatched close →
+  `invalid_directive`) is specified and vectored, so all implementations recover *identically*.
+  HTML proved both halves of this: forgiving recovery is right (never punish content), and
+  *unspecified* recovery is the parser-differential disease - two decades of "works in one
+  browser," then a tree-construction algorithm so complex few can reimplement it. Marquee keeps
+  the forgiveness and pays neither cost, because the grammar is bracket-LIFO and vocabulary-blind:
+  there are no per-element implicit-close rules (HTML's entire source of complexity), so recovery
+  is trivial to specify and trivial to match. The sin was never that HTML recovered - it is that
+  everyone recovered differently.
 - Version tag on every document; unknown *versions* are refused, unknown *vocabulary within a
   known version* renders placeholders.
 - **Version declaration.** Embedders supply the dialect version out-of-band (Ringtome: the
