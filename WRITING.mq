@@ -89,6 +89,12 @@ A bare URL alone in a paragraph becomes a turbolink:
 
 https://example.org/interesting-post
 
+https://commons.wikimedia.org/wiki/Special:FilePath/Cat03.jpg
+
+https://commons.wikimedia.org/wiki/Special:FilePath/Meow.ogg
+
+https://www.youtube.com/watch?v=kiTpHaShznE
+
 :::turbolink target=other-page level=title:::
 ```
 
@@ -107,9 +113,23 @@ A bare URL alone in a paragraph becomes a turbolink:
 
 https://example.org/interesting-post
 
+Link kinds get their own expanders, plugged in by the host. An image link unfurls into the
+picture, a sound into play controls, a video link arrives playable:
+
+https://commons.wikimedia.org/wiki/Special:FilePath/Cat03.jpg
+
+https://commons.wikimedia.org/wiki/Special:FilePath/Meow.ogg
+
+https://www.youtube.com/watch?v=kiTpHaShznE
+
 And the explicit form takes any target, including relative ones:
 
 :::turbolink target=other-page level=title:::
+
+(The summary card is the preview host feeding demo data for the example.org link; the cat,
+the meow, and the video are the stock expanders recognizing the link kind — hotlinked from
+Wikimedia Commons, which welcomes it. A host with nothing to say about a link leaves the
+plain link. Always.)
 
 ## Sizing media
 

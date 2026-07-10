@@ -15,7 +15,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Node } from "../../parser/src/index.ts";
-import { escapeText, render, renderMarquee } from "../src/index.ts";
+import { bareWebProfile, escapeText, render, renderMarquee } from "../src/index.ts";
 
 interface Collected {
   visible: string[];
@@ -172,6 +172,21 @@ test("font list: closed names render floor+ceiling, off-list degrades", () => {
   assert.ok(block.includes("mq-font-vt323"), "block knob lands as a class");
   const bogus = renderMarquee(":::section font=wingdings\nwords\n:::\n");
   assert.ok(!bogus.includes("mq-font-"), "off-list block knob emits nothing");
+});
+
+test("turbolink socket: rich plugins wrap, the floor is always reachable", () => {
+  const profile = {
+    ...bareWebProfile,
+    turbolink: (_t: string, level: string) => (level === "full" ? "<b>RICH</b>" : null),
+  };
+  const full = renderMarquee("https://e.x/post\n", profile);
+  assert.ok(full.includes('<div class="mq-turbolink mq-turbolink-rich"><b>RICH</b></div>'));
+  const title = renderMarquee(":::turbolink target=https://e.x/post level=title:::\n", profile);
+  assert.ok(title.includes('<p class="mq-turbolink"><a'), "plugin declined title: the floor");
+  const bare = renderMarquee(":::turbolink target=https://e.x/post level=bare:::\n", profile);
+  assert.ok(!bare.includes("mq-turbolink-rich"), "bare never consults plugins");
+  const floor = renderMarquee("https://e.x/post\n");
+  assert.ok(floor.includes('<p class="mq-turbolink"><a href="https://e.x/post">'), "no plugins: the floor");
 });
 
 test("unknown span shrugs but children survive styled context", () => {

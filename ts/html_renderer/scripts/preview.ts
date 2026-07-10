@@ -18,11 +18,22 @@
 // copies each referenced file into ./media once and links it by path. The
 // page is no longer single-file: save the HTML where the media dir's path
 // resolves (here, next to ./media).
+//
+// Some embeds (YouTube, since late 2025) refuse to play on pages with no
+// origin - view tours over http rather than file:// when that matters:
+// `npx serve` in the output directory does the job.
 
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { FONTS, bareWebProfile, renderMarquee, type Profile } from "../src/index.ts";
+import {
+  composeTurbolinks,
+  defaultPlugins,
+  renderCard,
+  turbolinkStyles,
+  type TurbolinkPlugin,
+} from "../../turbolink/src/index.ts";
 
 const EMOJI: Record<string, string> = {
   tophat: "🎩", smile: "😀", sparkles: "✨", blobcat: "🐱", wave: "👋",
@@ -112,8 +123,30 @@ function previewProfile(sourceDir: string, mediaDir: string | null): Profile {
       return bareWebProfile.media(t);
     },
     emoji: (slug) => EMOJI[slug] ?? null,
+    // The default plugin chain (fetchless), plus a demo plugin standing in
+    // for the OpenGraph fetch a real embedder would have done.
+    turbolink: composeTurbolinks(PREVIEW_PLUGINS),
   };
 }
+
+const demoSummaryPlugin: TurbolinkPlugin = {
+  name: "demo-summary",
+  match: (t) => t.startsWith("https://example.org") || t.startsWith("ringtome://"),
+  render(target, { level }) {
+    const summary = target.startsWith("ringtome://")
+      ? { title: "A Native Document", site: "ringtome" }
+      : {
+          title: "An Interesting Post",
+          description:
+            "Demo summary data, stood in by the preview host - a real embedder would have fetched OpenGraph here, care-modes permitting.",
+          image: "https://placehold.co/240x240/1a1a2e/9ecbff?text=og%3Aimage",
+          site: "example.org",
+        };
+    return renderCard(target, summary, level);
+  },
+};
+
+const PREVIEW_PLUGINS = [demoSummaryPlugin, ...defaultPlugins];
 
 const args = process.argv.slice(2);
 const bare = args.includes("--bare");
@@ -139,7 +172,11 @@ if (files.length === 0) {
   process.exit(2);
 }
 
-const css = readFileSync(fileURLToPath(new URL("../../../css/marquee.css", import.meta.url)), "utf8");
+const css =
+  readFileSync(fileURLToPath(new URL("../../../css/marquee.css", import.meta.url)), "utf8") +
+  // The composed plugins' skins, collected from the same list we composed -
+  // one artifact, nothing to forget.
+  turbolinkStyles(PREVIEW_PLUGINS);
 
 /** Inline @font-face (as data URIs) for exactly the grab-bag faces the
  * rendered pages actually use - real pixels, still one self-contained file,

@@ -10,6 +10,8 @@ export interface MediaResolution {
   url: string;
 }
 
+export type TurbolinkLevel = "full" | "title" | "bare";
+
 export interface Profile {
   /** May this target become a hyperlink? Disallowed links render their
    * children without an anchor (content survives, capability doesn't). */
@@ -19,8 +21,16 @@ export interface Profile {
   media(target: string): MediaResolution | null;
   /** Resolve an emoji slug to replacement text, or null → literal `:slug:`. */
   emoji(slug: string): string | null;
-  /** Full-HTML override for a turbolink (rich preview); null → plain link. */
-  turbolink(target: string): string | null;
+  /** Rendered turbolink content for a target, or null → the plain-link
+   * floor. Embedders compose this from plugins (see marquee-turbolink: an
+   * image in a box, play controls, a YouTube embed, Ringtome-native
+   * displays). Trusted embedder code, like `directive`: author bytes only
+   * enter as the target string. MUST be sync and fetchless - gathering
+   * happens in a plugin's resolve() phase, never mid-render. */
+  turbolink(target: string, level: TurbolinkLevel): string | null;
+  /** The default enrichment level for a target (spec: per-scheme embedder
+   * policy); an explicit `level=` on `:::turbolink` wins over this. */
+  turbolinkLevel(target: string): TurbolinkLevel;
   /** Embedder directive vocabulary (widgets, includes, computed). Return
    * rendered HTML, or null to fall through to the built-in handling. */
   directive(name: string, attrs: Attrs, renderedChildren: string): string | null;
@@ -59,6 +69,7 @@ export const bareWebProfile: Profile = {
   },
   emoji: () => null,
   turbolink: () => null,
+  turbolinkLevel: () => "full",
   directive: () => null,
   span: () => null,
 };

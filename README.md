@@ -16,6 +16,11 @@ version together, because they are one conformance unit.
 - `ts/parser/` — reference parser, TypeScript (`npm test` runs the same vectors; `npm run check` typechecks)
 - `ts/html_renderer/` — reference static HTML renderer (fragment out, embedder policy via `Profile`;
   behavioral suite encodes the spec's renderer obligations, self-goldens catch regressions)
+- `ts/turbolink/` — pluggable turbolink rendering: link expanders as plugins (YouTube, Spotify, media,
+  OpenGraph-fetch-ahead), composed by the embedder into `Profile.turbolink`; each plugin declares the
+  CSS for the markup it emits, and `turbolinkStyles()` collects the composed chain's skins into one artifact
+- `ts/turbolink-example-plugin/` — the worked example for plugin authors, paired with the
+  "Writing a plugin" guide in `ts/turbolink/README.md`
 - `css/marquee.css` — the reference stylesheet: the `mq-*` class contract renderers target, effects
   under `prefers-reduced-motion`, layouts, schemes
 - differential fuzzer — `cargo run --release --bin diff_fuzz` (in `rust/parser/`, needs `node` on PATH):

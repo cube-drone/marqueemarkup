@@ -5,7 +5,7 @@
 // nothing; invalid constructs render inert placeholders.
 
 import type { Attrs, Node } from "../../parser/src/index.ts";
-import { bareWebProfile, type Profile } from "./profile.ts";
+import { bareWebProfile, type Profile, type TurbolinkLevel } from "./profile.ts";
 
 export function render(node: Node, profile: Profile = bareWebProfile): string {
   switch (node.type) {
@@ -56,7 +56,7 @@ export function render(node: Node, profile: Profile = bareWebProfile): string {
     case "embed":
       return embed(node.target, node.alt, profile);
     case "turbolink":
-      return turbolink(node.target, profile);
+      return turbolink(node.target, undefined, profile);
     case "span":
       return span(node.name, node.attrs, node.children, profile);
     case "emoji": {
@@ -196,15 +196,24 @@ function embed(target: string, alt: string, profile: Profile): string {
     : `<span class="mq-embed-fallback">${label}</span>`;
 }
 
-function turbolink(target: string, profile: Profile): string {
-  const enriched = profile.turbolink(target);
-  if (enriched !== null) {
-    return enriched;
+const TURBOLINK_LEVELS = new Set<TurbolinkLevel>(["full", "title", "bare"]);
+
+function turbolink(target: string, levelAttr: string | undefined, profile: Profile): string {
+  if (!profile.linkAllowed(target)) {
+    return `<p class="mq-turbolink">${escapeText(target)}</p>`;
   }
-  const text = escapeText(target);
-  return profile.linkAllowed(target)
-    ? `<p class="mq-turbolink"><a href="${escapeAttr(target)}">${text}</a></p>`
-    : `<p class="mq-turbolink">${text}</p>`;
+  const level =
+    levelAttr !== undefined && TURBOLINK_LEVELS.has(levelAttr as TurbolinkLevel)
+      ? (levelAttr as TurbolinkLevel)
+      : profile.turbolinkLevel(target);
+  if (level !== "bare") {
+    const rich = profile.turbolink(target, level);
+    if (rich !== null) {
+      return `<div class="mq-turbolink mq-turbolink-rich">${rich}</div>`;
+    }
+  }
+  // The contractual floor: a plain link, always reachable.
+  return `<p class="mq-turbolink"><a href="${escapeAttr(target)}">${escapeText(target)}</a></p>`;
 }
 
 /** Style knobs on a block node: validated values into --mq-* slots; the
@@ -251,7 +260,7 @@ function directive(name: string, attrs: Attrs, nodes: Node[], profile: Profile):
     case "turbolink": {
       const target = attrs["target"];
       if (target !== undefined) {
-        return turbolink(target, profile);
+        return turbolink(target, attrs["level"], profile);
       }
       break; // malformed use: fall through to the placeholder
     }

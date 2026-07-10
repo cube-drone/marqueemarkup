@@ -145,16 +145,17 @@ big {
   text-decoration: underline dotted;
 }
 
-/* ---- turbolinks (the bare rung; enrichment is embedder-side) ---- */
-
-.mq-turbolink {
-  border: 1px solid rgba(136, 136, 136, 0.33);
-  border-radius: 0.375rem;
-  padding: 0.5rem 0.75rem;
-}
+/* ---- turbolinks: the renderer emits only the plain-link floor and the
+ * rich wrapper, so only those are styled here. Plugin bodies (the summary
+ * card, players, frames) are the plugins' markup and bring their own
+ * stylesheet - ts/turbolink/turbolink.css for the default set. ---- */
 
 .mq-turbolink a {
   text-decoration: none;
+}
+
+.mq-turbolink-rich {
+  margin: 0.75rem 0;
 }
 
 /* ---- sidenotes: margin aside when wide, parenthetical when narrow ---- */

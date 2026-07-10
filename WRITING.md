@@ -127,8 +127,10 @@ word. For a relative link or a pinned document, use the explicit form:
 :::turbolink target=../two-floors-up level=title:::
 ```
 
-`level` is `full`, `title`, or `bare`. Whether a preview is actually fetched is up to the
-reader's client and privacy settings; a turbolink always degrades to a plain link.
+`level` is `full`, `title`, or `bare`. What a turbolink *becomes* is up to your host's link
+expanders — an image link unfurls into the picture, an mp3 into play controls, a YouTube link
+into a playable embed, and hosts add their own kinds. Whether anything is fetched is up to
+the reader's client and privacy settings; a turbolink always degrades to a plain link.
 
 ## Emoji
 
