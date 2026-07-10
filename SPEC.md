@@ -519,6 +519,15 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   stranger-render drops the effect too, which is the fail-closed safety). A malformed *inline*
   (unmatched delimiter, unclosed span) falls to the literal text typed. Blocks get a node,
   inlines get their characters back; both preserve every authored word.
+- **Diagnostics are advisory `diagnostic` nodes, carried in the AST and routed - not content.**
+  A parser MAY attach a `diagnostic{severity, reason}` node where something was off (a duplicate
+  key ignored, unknown vocabulary shrugged, a fence auto-closed) - reader-invisible like a
+  `comment`, but where `comment` is the author's deliberate note, a `diagnostic` is the parser's
+  observation. Renderers **route** them to the platform's error surface (browser console, Godot's
+  error log, a CLI lint panel or stderr), never into the reader's view. They are **non-normative**:
+  a parser need not emit any and a richer one emits more, so they are *not* in the conformance
+  vectors - content converges bit-for-bit, author-help varies by tool. In-AST (not just stderr)
+  makes them durable and portable: a consumer sees a document's diagnostics without re-parsing.
 - **No source positions in the conformance AST.** Rust counts UTF-8 bytes, JavaScript counts
   UTF-16 units; positions in vectors would make every emoji a conformance bug. Implementations
   may carry positions out-of-band; vector comparison excludes them.
@@ -536,7 +545,8 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   inlines - `text`, `emphasis`, `strong`, `strikethrough`, `code_span`, `link{target}`,
   `embed{target, alt}` (media of any kind; the kind is a render-time concern, not a node type),
   `turbolink{target}`, `span{name, attrs}`, `emoji{slug}`, `hard_break`, and the block
-  `comment{text}`. Twenty-two types.
+  `comment{text}`. Twenty-two types. Plus one **advisory** node - `diagnostic{severity, reason}`
+  (above) - not counted here: it is not content and not vectored.
   Deliberately absent: `page`/`section` nodes (layout is directive *vocabulary*, checked by
   the validator layer on a parsed tree - the parser knows shapes, never names).
 - **The renderer's shrug is contractual, and never hides content:** an unknown `span` renders
