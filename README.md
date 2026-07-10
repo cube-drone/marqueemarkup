@@ -12,6 +12,8 @@ version together, because they are one conformance unit.
 - `vectors/` — published conformance vectors (`*.json`, input → exact AST); see `vectors/README.md`
 - `rust/parser/` — reference parser, Rust (`cargo test` runs the vectors; `cargo run --bin bless` grows them)
 - `ts/parser/` — reference parser, TypeScript (`npm test` runs the same vectors; `npm run check` typechecks)
+- `tools/diff_fuzz.py` — differential fuzzer: seeded generated documents through both parsers, byte-identical
+  ASTs demanded (`cargo build --release` first; found its first real bug at seed 1)
 
 Renderers land beside the parsers as they come (`rust/html_renderer`, `ts/html_renderer`,
 `ts/preact_interactive_renderer`, ...): one parser per language, many renderers, per the

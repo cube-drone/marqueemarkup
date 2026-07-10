@@ -143,7 +143,7 @@ fn parse_container(cur: &mut Cursor, ctx: Ctx, open_dir: Option<&str>) -> Vec<No
             continue;
         }
 
-        if line.trim_end() == "---" {
+        if line.trim_end_matches([' ', '\t']) == "---" {
             cur.pos += 1;
             out.push(Node::ThematicBreak);
             continue;
@@ -199,7 +199,7 @@ fn is_block_start(line: &str, ctx: Ctx) -> bool {
         || heading_line(line).is_some()
         || fence_open(line).is_some()
         || (line.starts_with('>') && ctx.quote_depth < MAX_QUOTE_DEPTH)
-        || line.trim_end() == "---"
+        || line.trim_end_matches([' ', '\t']) == "---"
         || (ctx.list_depth < MAX_LIST_DEPTH && marker(line).is_some())
 }
 

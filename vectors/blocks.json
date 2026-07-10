@@ -77,6 +77,13 @@
     ]}
   },
   {
+    "name": "blocks/thematic-break-nbsp-tail-is-prose",
+    "marquee": "---\u00a0\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "---\u00a0"}]}
+    ]}
+  },
+  {
     "name": "blocks/four-dashes-are-prose",
     "marquee": "----\n",
     "ast": {"type": "document", "version": 0, "children": [

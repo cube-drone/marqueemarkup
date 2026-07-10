@@ -44,6 +44,13 @@ impl Frame {
 }
 
 pub fn parse_inlines(text: &str) -> Vec<Node> {
+    parse_inlines_at(text, 0)
+}
+
+/// `base` is the inline depth already spent by enclosing link text: spans,
+/// delimiters, and link nesting share the one ≤ 8 cap (a per-construct cap
+/// would let composition multiply past it).
+fn parse_inlines_at(text: &str, base: usize) -> Vec<Node> {
     let chars: Vec<char> = text.chars().collect();
     let mut frames: Vec<Frame> = vec![Frame::root()];
     let mut i = 0;
@@ -79,8 +86,10 @@ pub fn parse_inlines(text: &str) -> Vec<Node> {
                     }
                 }
             }
-            '[' => i = bracket(&chars, i, false, &mut frames),
-            '!' if chars.get(i + 1) == Some(&'[') => i = bracket(&chars, i + 1, true, &mut frames),
+            '[' => i = bracket(&chars, i, false, &mut frames, base),
+            '!' if chars.get(i + 1) == Some(&'[') => {
+                i = bracket(&chars, i + 1, true, &mut frames, base)
+            }
             ':' => {
                 let mut k = i + 1;
                 while k < chars.len() && is_slug_char(chars[k]) {
@@ -101,8 +110,8 @@ pub fn parse_inlines(text: &str) -> Vec<Node> {
             '*' => {
                 let n = run_len(&chars, i, '*');
                 match n {
-                    1 => i = delimiter(&chars, i, n, DelimKind::Em, "*", &mut frames),
-                    2 => i = delimiter(&chars, i, n, DelimKind::Strong, "**", &mut frames),
+                    1 => i = delimiter(&chars, i, n, DelimKind::Em, "*", &mut frames, base),
+                    2 => i = delimiter(&chars, i, n, DelimKind::Strong, "**", &mut frames, base),
                     _ => {
                         push_str(&mut frames, &"*".repeat(n));
                         i += n;
@@ -112,7 +121,7 @@ pub fn parse_inlines(text: &str) -> Vec<Node> {
             '~' => {
                 let n = run_len(&chars, i, '~');
                 if n == 2 {
-                    i = delimiter(&chars, i, n, DelimKind::Strike, "~~", &mut frames);
+                    i = delimiter(&chars, i, n, DelimKind::Strike, "~~", &mut frames, base);
                 } else {
                     push_str(&mut frames, &"~".repeat(n));
                     i += n;
@@ -197,10 +206,11 @@ fn delimiter(
     kind: DelimKind,
     raw: &'static str,
     frames: &mut [Frame],
+    base: usize,
 ) -> usize {
     let can_close = i > 0 && !is_ws(chars[i - 1]);
     let can_open = chars.get(i + n).is_some_and(|&c| !is_ws(c));
-    let deep = total_depth(frames) >= MAX_INLINE_DEPTH;
+    let deep = base + total_depth(frames) >= MAX_INLINE_DEPTH;
     let frame = frames.last_mut().unwrap();
     if can_close && frame.delims.last().is_some_and(|d| d.kind == kind) {
         let delim = frame.delims.pop().unwrap();
@@ -222,7 +232,7 @@ fn delimiter(
 
 /// Handle a bracket construct starting at `chars[open]` (which is `[`).
 /// `embed` means a `!` sits just before it. Returns the new position.
-fn bracket(chars: &[char], open: usize, embed: bool, frames: &mut Vec<Frame>) -> usize {
+fn bracket(chars: &[char], open: usize, embed: bool, frames: &mut Vec<Frame>, base: usize) -> usize {
     let bang = if embed { open - 1 } else { open };
     let fallback = |frames: &mut Vec<Frame>| {
         push_char(frames, chars[bang]);
@@ -253,11 +263,17 @@ fn bracket(chars: &[char], open: usize, embed: bool, frames: &mut Vec<Frame>) ->
 
     // Link / embed: `](` with a lexable target.
     if chars.get(k + 1) == Some(&'(') {
+        // A link's text is one nesting level (embeds don't recurse: alt is
+        // a plain string). Over the shared inline cap, fall back to literal.
+        if !embed && base + total_depth(frames) >= MAX_INLINE_DEPTH {
+            return fallback(frames);
+        }
         if let Some((target, end)) = lex_target(chars, k + 2) {
             let node = if embed {
                 Node::Embed { target, alt: resolve_escapes(&interior) }
             } else {
-                Node::Link { target, children: parse_inlines(&interior) }
+                let depth = base + total_depth(frames) + 1;
+                Node::Link { target, children: parse_inlines_at(&interior, depth) }
             };
             frames.last_mut().unwrap().children.push(node);
             return end;
@@ -288,7 +304,7 @@ fn bracket(chars: &[char], open: usize, embed: bool, frames: &mut Vec<Frame>) ->
     // Span opener: `[name ...]`, with the BBCode default-parameter idiom
     // (`[color=red]` puts `color=red` in the span's own attrs).
     if let Some((name, attrs)) = parse_span_opener(&interior) {
-        if total_depth(frames) >= MAX_INLINE_DEPTH {
+        if base + total_depth(frames) >= MAX_INLINE_DEPTH {
             let raw: String = chars[open..=k].iter().collect();
             push_str(frames, &raw);
         } else {

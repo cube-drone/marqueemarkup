@@ -47,6 +47,13 @@ function isSlugChar(c: string): boolean {
 }
 
 export function parseInlines(text: string): Node[] {
+  return parseInlinesAt(text, 0);
+}
+
+/** `base` is the inline depth already spent by enclosing link text: spans,
+ * delimiters, and link nesting share the one <= 8 cap (a per-construct cap
+ * would let composition multiply past it). */
+function parseInlinesAt(text: string, base: number): Node[] {
   const chars = Array.from(text);
   const frames: Frame[] = [rootFrame()];
   let i = 0;
@@ -76,9 +83,9 @@ export function parseInlines(text: string): Node[] {
         i += n;
       }
     } else if (c === "[") {
-      i = bracket(chars, i, false, frames);
+      i = bracket(chars, i, false, frames, base);
     } else if (c === "!" && chars[i + 1] === "[") {
-      i = bracket(chars, i + 1, true, frames);
+      i = bracket(chars, i + 1, true, frames, base);
     } else if (c === ":") {
       let k = i + 1;
       while (k < chars.length && isSlugChar(chars[k]!)) {
@@ -95,9 +102,9 @@ export function parseInlines(text: string): Node[] {
     } else if (c === "*") {
       const n = runLen(chars, i, "*");
       if (n === 1) {
-        i = delimiter(chars, i, n, "em", "*", frames);
+        i = delimiter(chars, i, n, "em", "*", frames, base);
       } else if (n === 2) {
-        i = delimiter(chars, i, n, "strong", "**", frames);
+        i = delimiter(chars, i, n, "strong", "**", frames, base);
       } else {
         pushStr(frames, "*".repeat(n));
         i += n;
@@ -105,7 +112,7 @@ export function parseInlines(text: string): Node[] {
     } else if (c === "~") {
       const n = runLen(chars, i, "~");
       if (n === 2) {
-        i = delimiter(chars, i, n, "strike", "~~", frames);
+        i = delimiter(chars, i, n, "strike", "~~", frames, base);
       } else {
         pushStr(frames, "~".repeat(n));
         i += n;
@@ -184,11 +191,12 @@ function delimiter(
   kind: DelimKind,
   raw: string,
   frames: Frame[],
+  base: number,
 ): number {
   const canClose = i > 0 && !isWs(chars[i - 1]!);
   const next = chars[i + n];
   const canOpen = next !== undefined && !isWs(next);
-  const deep = totalDepth(frames) >= MAX_INLINE_DEPTH;
+  const deep = base + totalDepth(frames) >= MAX_INLINE_DEPTH;
   const frame = top(frames);
   const innermost = frame.delims[frame.delims.length - 1];
   if (canClose && innermost !== undefined && innermost.kind === kind) {
@@ -211,7 +219,13 @@ function delimiter(
 
 /** Handle a bracket construct starting at `chars[open]` (which is `[`).
  * `embed` means a `!` sits just before it. Returns the new position. */
-function bracket(chars: string[], open: number, embed: boolean, frames: Frame[]): number {
+function bracket(
+  chars: string[],
+  open: number,
+  embed: boolean,
+  frames: Frame[],
+  base: number,
+): number {
   const bang = embed ? open - 1 : open;
   const fallback = (): number => {
     pushStr(frames, chars[bang]!);
@@ -242,12 +256,18 @@ function bracket(chars: string[], open: number, embed: boolean, frames: Frame[])
 
   // Link / embed: `](` with a lexable target.
   if (chars[k + 1] === "(") {
+    // A link's text is one nesting level (embeds don't recurse: alt is a
+    // plain string). Over the shared inline cap, fall back to literal.
+    if (!embed && base + totalDepth(frames) >= MAX_INLINE_DEPTH) {
+      return fallback();
+    }
     const lexed = lexTarget(chars, k + 2);
     if (lexed !== null) {
+      const depth = base + totalDepth(frames) + 1;
       top(frames).children.push(
         embed
           ? { type: "embed", target: lexed.target, alt: resolveEscapes(interior) }
-          : { type: "link", target: lexed.target, children: parseInlines(interior) },
+          : { type: "link", target: lexed.target, children: parseInlinesAt(interior, depth) },
       );
       return lexed.end;
     }
@@ -275,7 +295,7 @@ function bracket(chars: string[], open: number, embed: boolean, frames: Frame[])
   // (`[color=red]` puts `color=red` in the span's own attrs).
   const opener = parseSpanOpener(interior);
   if (opener !== null) {
-    if (totalDepth(frames) >= MAX_INLINE_DEPTH) {
+    if (base + totalDepth(frames) >= MAX_INLINE_DEPTH) {
       pushStr(frames, chars.slice(open, k + 1).join(""));
     } else {
       frames.push({

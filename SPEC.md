@@ -158,8 +158,9 @@ vocabulary): cozy pages rarely want them, and the body model is an open fork.
 **Caps are spec, not implementation** - an implementation-defined depth limit is a manufactured
 parser differential (input parses on one client, blows the stack on another), so the limits are
 conformance rules with vectors: list nesting ≤ 8, blockquote nesting ≤ 8, directive nesting ≤ 4, inline nesting
-(spans and delimiters) ≤ 8, targets ≤ 2048 bytes, attribute values ≤ 1024 bytes, emoji slugs
-≤ 64 bytes (an over-cap slug is a non-match: literal text). Document size is deliberately the embedder's, not the
+(spans, delimiters, and link text - one shared depth) ≤ 8, targets ≤ 2048 bytes, attribute
+values ≤ 1024 bytes, emoji slugs ≤ 64 bytes (an over-cap slug is a non-match: literal text; a
+ninth-deep span opener or link falls back to literal the same way). Document size is deliberately the embedder's, not the
 language's. Behavior at a cap follows the prose/construct split: over-deep list indentation
 stays inside the deepest item as literal text (prose degrades), and a ninth `>` is likewise
 literal text inside the deepest quote; over-deep directives are

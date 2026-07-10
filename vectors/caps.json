@@ -318,5 +318,72 @@
         }
       ]
     }
+  },
+  {
+    "name": "caps/ninth-link-is-literal",
+    "marquee": "[[[[[[[[[x](t)](t)](t)](t)](t)](t)](t)](t)](t)\n",
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "link",
+              "target": "t",
+              "children": [
+                {
+                  "type": "link",
+                  "target": "t",
+                  "children": [
+                    {
+                      "type": "link",
+                      "target": "t",
+                      "children": [
+                        {
+                          "type": "link",
+                          "target": "t",
+                          "children": [
+                            {
+                              "type": "link",
+                              "target": "t",
+                              "children": [
+                                {
+                                  "type": "link",
+                                  "target": "t",
+                                  "children": [
+                                    {
+                                      "type": "link",
+                                      "target": "t",
+                                      "children": [
+                                        {
+                                          "type": "link",
+                                          "target": "t",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "value": "[x](t)"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   }
 ]
