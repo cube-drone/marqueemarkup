@@ -473,14 +473,22 @@ Marquee's conformance model can, so it does not need them:
   link, a capable one plays it, nobody is nonconforming.
 - **Configuration lives on `:::media`, an open, growing attribute vocabulary** (not a closed
   list - a bare `![]()` is the zero-config common case, exactly as a bare link is a turbolink but
-  `:::turbolink` configures it). The attribute *set* grows additively across versions like all
+  `:::turbolink` configures it). `:::media` is a **container**: it wraps blocks, and its knobs
+  apply to every embed in that subtree - scope is containment, exactly as with sections and
+  style knobs, so one wrapper can size a whole gallery. The attribute *set* grows additively across versions like all
   vocabulary; each attribute is a **closed knob** (`width=small|medium|large|full`, `fit=...`),
   never freeform CSS - the same closed-knobs discipline as page styling, so "size this image"
   never becomes "author arbitrary layout." Known categories, list deferred to the corpus:
   - *Playback* (autoplay/loop - the MIDI move, kept behind a small friction): the
     autoplay-but-always-stoppable, reduced-motion-honored rule from the animation contract
     applies.
-  - *Layout* (size, fit, alignment): closed tokens, capped.
+  - *Layout* (size, fit, alignment): v0 defines `width` and `height`, whose values are a size
+    token (`small` | `medium` | `large` | `full`) or a capped integer of pixels (1-4096). The
+    integer is a closed value grammar like a hex color, not a step toward author CSS: it sizes
+    a media box, it cannot position anything. One dimension scales the media
+    (aspect ratio preserved); both dimensions author a frame the media fills (cover-cropped,
+    never distorted). Invalid values degrade to natural sizing.
+    `fit` and alignment wait on the corpus.
   - *Render-time processing* (dither, grayscale, scanlines - the crunch-filter aesthetic as an
     opt-in): spec-blessed like effects, degrading via the shrug (a renderer that cannot dither
     shows the plain image). Distinct from *author-time* processing, where the author bakes the

@@ -86,6 +86,32 @@ function isToken(v: string | undefined): v is string {
   return v !== undefined && TOKEN.test(v);
 }
 
+const MEDIA_SIZE_TOKENS: Record<string, string> = {
+  small: "10rem",
+  medium: "20rem",
+  large: "32rem",
+  full: "100%",
+};
+
+/** Media width/height: a size token or a capped integer of pixels (SPEC.md,
+ * "Media"). Anything else degrades to natural sizing. */
+function mediaSize(v: string | undefined): string | null {
+  if (v === undefined) {
+    return null;
+  }
+  const token = MEDIA_SIZE_TOKENS[v];
+  if (token !== undefined) {
+    return token;
+  }
+  if (/^[0-9]{1,4}$/.test(v)) {
+    const n = Number(v);
+    if (n >= 1 && n <= 4096) {
+      return `${n}px`;
+    }
+  }
+  return null;
+}
+
 function infoToken(info: string | undefined): string | null {
   if (info === undefined) {
     return null;
@@ -170,6 +196,19 @@ function directive(name: string, attrs: Attrs, nodes: Node[], profile: Profile):
         return turbolink(target, profile);
       }
       break; // malformed use: fall through to the placeholder
+    }
+    case "media": {
+      const vars: string[] = [];
+      const w = mediaSize(attrs["width"]);
+      const h = mediaSize(attrs["height"]);
+      if (w !== null) {
+        vars.push(`--mq-media-w:${w}`);
+      }
+      if (h !== null) {
+        vars.push(`--mq-media-h:${h}`);
+      }
+      const style = vars.length === 0 ? "" : ` style="${vars.join(";")}"`;
+      return `<div class="mq-media"${style}>${inner}</div>`;
     }
   }
   // Unknown vocabulary: a container renders its children with an affordance

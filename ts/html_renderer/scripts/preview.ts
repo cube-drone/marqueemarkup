@@ -40,6 +40,22 @@ function placeholderBox(label: string) {
   };
 }
 
+/** Data-URI memo: each file is read and encoded once per run. The *output*
+ * still repeats the bytes per reference - a static single-file page has no
+ * define-once mechanism without scripting, and this tool's output is a
+ * document, not a program. (Blob-URL dedup belongs to the interactive
+ * renderer; on a real server, N references to one URL fetch once anyway.) */
+const dataUris = new Map<string, string>();
+
+function dataUri(path: string, mime: string): string {
+  let uri = dataUris.get(path);
+  if (uri === undefined) {
+    uri = `data:${mime};base64,${readFileSync(path).toString("base64")}`;
+    dataUris.set(path, uri);
+  }
+  return uri;
+}
+
 /** The preview profile for one source file: relative media resolve against
  * that file's directory, per the base-URI rule. */
 function previewProfile(sourceDir: string): Profile {
@@ -56,8 +72,7 @@ function previewProfile(sourceDir: string): Profile {
         const ext = path.includes(".") ? path.slice(path.lastIndexOf(".") + 1).toLowerCase() : "";
         const mime = MIME[ext];
         if (mime !== undefined && existsSync(path)) {
-          const data = readFileSync(path).toString("base64");
-          return { kind: kindOf(mime), url: `data:${mime};base64,${data}` };
+          return { kind: kindOf(mime), url: dataUri(path, mime) };
         }
         return placeholderBox(t); // wired but not landed yet
       }

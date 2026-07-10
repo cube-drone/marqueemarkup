@@ -37,6 +37,19 @@
   color: var(--mq-color, inherit);
 }
 
+/* ---- media sizing: :::media knobs land in slots; containment applies
+ * them to every embed in the subtree ---- */
+
+.mq-media .mq-embed {
+  width: var(--mq-media-w, auto);
+  height: var(--mq-media-h, auto);
+}
+
+.mq-media img.mq-embed,
+.mq-media video.mq-embed {
+  object-fit: cover;
+}
+
 /* ---- placeholders and affordances (the contractual shrug, visibly) ---- */
 
 .mq-placeholder,

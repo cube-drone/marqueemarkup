@@ -91,6 +91,24 @@ The description in the brackets matters: it's what screen readers speak and what
 the media can't be shown. A client that can't play a format shows a labeled link instead —
 nobody gets a broken page.
 
+To size media, wrap embeds in a `:::media` block — its knobs apply to every embed inside it:
+
+```
+:::media width=200 height=300
+![a thumbnail](photo.jpg)
+:::
+
+:::media width=full
+![the demo song](song.mp3)
+:::
+```
+
+`width` and `height` take exact pixels (`200`) or a size token (`small`, `medium`, `large`,
+`full`). Set one dimension and the media scales to it, keeping its own aspect ratio — any
+shape works. Set both and you're authoring a frame the media fills, cropped to fit, never
+squashed. That's the whole sizing vocabulary — there's no unit soup and no positioning; an
+invalid value just means natural size.
+
 ## Turbolinks (rich link previews)
 
 Paste a full URL alone in its own paragraph and it becomes a *turbolink* — a link the reader's

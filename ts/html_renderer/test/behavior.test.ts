@@ -114,6 +114,16 @@ test("blocked links keep their children", () => {
   assert.ok(!html.includes("weird://scheme"));
 });
 
+test("media sizing: knobs land in slots, invalid values degrade", () => {
+  const sized = renderMarquee(":::media width=200 height=300\n![x](https://e.x/p.png)\n:::\n");
+  assert.ok(sized.includes('<div class="mq-media" style="--mq-media-w:200px;--mq-media-h:300px">'));
+  const full = renderMarquee(":::media width=full\n![x](https://e.x/s.mp3)\n:::\n");
+  assert.ok(full.includes("--mq-media-w:100%"));
+  const bogus = renderMarquee(':::media width=69420 height="12px"\n![x](https://e.x/p.png)\n:::\n');
+  assert.ok(bogus.includes('<div class="mq-media">'), "invalid values -> unsized wrapper");
+  assert.ok(!bogus.includes("69420") && !bogus.includes("12px"), "invalid values never emitted");
+});
+
 test("unknown span shrugs but children survive styled context", () => {
   const html = renderMarquee("[spiral]still here[/spiral]\n");
   assert.ok(html.includes("still here"));

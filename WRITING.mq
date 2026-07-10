@@ -111,6 +111,39 @@ And the explicit form takes any target, including relative ones:
 
 :::turbolink target=other-page level=title:::
 
+## Sizing media
+
+Wrap embeds in a `:::media` block — its knobs apply to everything inside. Width and height
+take exact pixels (like `200`) or the tokens `small` / `medium` / `large` / `full`. One
+dimension scales (aspect ratio kept); both dimensions make a frame the media fills, cropped,
+never squashed:
+
+```marquee
+:::media width=200 height=300
+![a picture, resized](example-media/picture.jpg)
+:::
+
+:::media width=200 height=300
+![a tiny film, in a tiny frame](example-media/clip.mp4)
+:::
+
+:::media width=full
+![the demo song, stretched full width](example-media/song.mp3)
+:::
+```
+
+:::media width=200 height=300
+![a picture, resized](example-media/picture.jpg)
+:::
+
+:::media width=200 height=300
+![a tiny film, in a tiny frame](example-media/clip.mp4)
+:::
+
+:::media width=full
+![the demo song, stretched full width](example-media/song.mp3)
+:::
+
 ## Emoji
 
 ```marquee
