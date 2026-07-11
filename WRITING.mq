@@ -117,7 +117,7 @@ A [plain link](https://example.org), a [relative link](other-page), and a
 
 One embed syntax — the file's own type decides whether it's a picture, a song, or a film:
 
-(I apologize for the generative nature of these media assets, but it keeps them public domain so that I can distribute them freely as examples.)
+[small]*(I apologize for the generative nature of these media assets, but it keeps them public domain so that I can distribute them freely as examples.)*[/small]
 
 ![a picture, by description](example-media/picture.jpg)
 
