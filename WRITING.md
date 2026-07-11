@@ -31,6 +31,11 @@ Roses are red\
 Violets are blue
 ```
 
+You don't need a blank line to *start* most blocks: a list, heading, quote, or fence begins
+even when jammed directly against a paragraph's last line — `Here's my list:` followed
+immediately by `- one` works, markdown-style. (Escape the leading character, `\- like this`,
+to keep such a line inside your prose.)
+
 ## Headings
 
 One to six `#` characters, then a space, then the heading:
@@ -248,6 +253,21 @@ Anything at the start of the line (column 0) that isn't a list item ends the lis
 ordered lists that means numbering restarts — if you see `1. 2. 1.` on the page, that's the
 signal you left the list by accident (usually an unindented line in the middle).
 
+## Where indentation matters
+
+Exactly one place: **lists**, as above — two spaces per nesting level, and content indented
+to an item's column belongs to that item (which is also why an indented fence or image works
+*inside* a bullet).
+
+Everywhere else, indentation is just text. Block constructs — headings, `:::` lines, code
+fences, `>`, `%%`, `---` — only count at the very start of the line, so don't pretty-print
+directive bodies with indents: an indented `# heading` renders as the literal characters, and
+an indented `:::` closes nothing. Keep directive bodies flat; when deep nesting gets hard to
+read, the tool is named closers, not whitespace.
+
+(Wrapped *prose* lines are the exception in the other direction: indent paragraph
+continuations however you like — soft line breaks swallow the surrounding spaces.)
+
 ## Quotes
 
 Every quoted line carries its `>`:
@@ -284,7 +304,7 @@ around them. An unclosed fence runs to the end of the document rather than error
 Comments are invisible to readers but **not secret**: they travel with the document's bytes,
 and view-source is real. Thirty years of leaked HTML comments are the cautionary tale — write
 accordingly. (Some hosts strip comments at publication; standalone files keep them, exactly
-like HTML.)
+like HTML.) Need a paragraph line that literally starts with `%%`? Escape it: `\%%`.
 
 ## Horizontal rule
 
@@ -360,12 +380,14 @@ webring stuff
 `two-column-nav-footer`, `three-column-nav-footer`.
 
 **Slots** by layout: `nav`, `main`, `footer` everywhere; `right` in two-column; `left` and
-`right` in three-column. Each slot claimed once.
+`right` in three-column. Each slot claimed once; slots you don't claim simply collapse.
 
 **Schemes** are named looks — set one and the colors/fonts follow: `noir`, `terminal`,
 `parchment`, `hotdog-stand` (the list grows). Individual knobs refine a scheme:
-`:::section scheme=parchment color=#7a4a12` — style knobs are `color`, `background`, `scheme`.
-A section without a slot is just a styled container, usable anywhere.
+`:::section scheme=parchment color=#7a4a12` — style knobs are `color`, `background`, `scheme`,
+`font`. Styling flows down by containment: everything inside a schemed page inherits its
+look, and whichever knob is set *closest* wins — that's the entire cascade. A section without
+a slot is just a styled container, usable anywhere.
 
 There are no font-size sliders, no pixel positioning, no CSS. Layout is picked, not authored —
 that's what keeps every Marquee page readable on every client.
@@ -404,8 +426,8 @@ Most of your habits transfer. The deliberate differences:
 ## Limits (you will not hit these by accident)
 
 Lists, quotes, and inline nesting cap at 8 levels; directive nesting at 4; URLs at 2048 bytes;
-attribute values at 1024 bytes. Past a cap, content degrades to visible literal text — the
-same never-break rule as everywhere else.
+attribute values at 1024 bytes; emoji shortcodes at 64 characters. Past a cap, content
+degrades to visible literal text — the same never-break rule as everywhere else.
 
 ## Previewing your work
 

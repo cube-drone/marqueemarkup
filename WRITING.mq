@@ -37,6 +37,16 @@ violets are blue,\
 these lines end in backslashes\
 so each one renders new.
 
+```marquee
+And no blank line is needed to start a block — here's my list:
+- it starts anyway
+- jammed right against the prose
+```
+
+And no blank line is needed to start a block — here's my list:
+- it starts anyway
+- jammed right against the prose
+
 ## Headings
 
 ```marquee
@@ -162,6 +172,25 @@ never squashed:
 
 :::media width=full
 ![the demo song, stretched full width](example-media/song.mp3)
+:::
+
+Embeds are *inline*, so pictures sharing one paragraph flow and wrap like words — a gallery
+with no gallery element:
+
+```marquee
+:::media width=150
+![pasta](example-media/pasta_1.jpg)
+![pasta](example-media/pasta_2.jpg)
+![pasta](example-media/pasta_3.jpg)
+![pasta](example-media/pasta_4.jpg)
+:::
+```
+
+:::media width=150
+![pasta](example-media/pasta_1.jpg)
+![pasta](example-media/pasta_2.jpg)
+![pasta](example-media/pasta_3.jpg)
+![pasta](example-media/pasta_4.jpg)
 :::
 
 ## Emoji
@@ -373,6 +402,23 @@ Items hold whole paragraphs — even images — as long as they stay indented:
 oops — this line ends the list
 1. and the numbering restarts, which is how you *see* the mistake
 
+## Where indentation matters
+
+Only lists mean anything by indentation (see above). Everywhere else, an indent demotes
+structure to prose — visibly, fixably, on purpose:
+
+```marquee
+  # an indented heading is just text
+
+  ::: and an indented closer closes nothing
+```
+
+  # an indented heading is just text
+
+  ::: and an indented closer closes nothing
+
+So keep directive bodies flat, and use named closers when nesting gets deep.
+
 ## Quotes
 
 ```marquee
@@ -429,12 +475,16 @@ Need literal triple-backticks *inside* a block? Fence with four:
 %% notes to self — readers never see this
 %% consecutive comment lines merge into one comment
 
+\%% but escape the marker and the line stays in prose
+
 :::meta title="Writing Marquee, live" date=2026-07-10 tags="guide, demo":::
 ```
 
 There is a live comment in this very spot — and rendering it as nothing *is* the demo:
 
 %% told you.
+
+\%% but escape the marker and the line stays in prose
 
 The live `:::meta` is at the top of this file, describing the document to any tool that asks,
 rendering nothing.
@@ -491,7 +541,9 @@ document.
 (That footer closed with `::: section` — a **named closer**: `:::name` opens, `::: name`
 closes. Pure readability in deep nesting, plus a safety net — a named closer that doesn't
 match the innermost open block gets flagged right at that line instead of silently
-mis-nesting the rest of the page.)
+mis-nesting the rest of the page. And notice the sections inside the noir page needed no
+scheme of their own: styling flows down by containment, and whichever knob sits closest
+wins — that's the entire cascade.)
 
 ## Widgets and placeholders
 
