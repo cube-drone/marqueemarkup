@@ -33,6 +33,40 @@
   border-radius: 0.25rem;
 }
 
+/* ---- deep headings: the grammar allows 1-8; HTML's ladder stops at h6,
+   so 7 and 8 are ARIA-labeled blocks continuing the size taper ---- */
+
+.mq-doc .mq-h7,
+.mq-doc .mq-h8 {
+  font-weight: bold;
+  margin-block: 1em;
+}
+
+.mq-doc .mq-h7 {
+  font-size: 0.85em;
+}
+
+.mq-doc .mq-h8 {
+  font-size: 0.75em;
+}
+
+/* ---- tables: paragraph-rows and [c] cells (SPEC.md, "Tables") ---- */
+
+.mq-table {
+  border-collapse: collapse;
+  margin-block: 1em;
+}
+
+.mq-table :is(td, th) {
+  border: 1px solid rgba(127, 127, 127, 0.45);
+  padding: 0.35rem 0.75rem;
+  text-align: left;
+}
+
+.mq-table th {
+  background: rgba(127, 127, 127, 0.12);
+}
+
 /* ---- the color slot: validated author values, property mapping ours ---- */
 
 .mq-color {

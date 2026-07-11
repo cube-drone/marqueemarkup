@@ -10,7 +10,7 @@ import type { Attrs, Node } from "./ast.ts";
 import { isName, nameLen, parseAttrs, parseValue, utf8Len } from "./attrs.ts";
 import { MAX_TARGET_BYTES } from "./blocks.ts";
 
-export const MAX_INLINE_DEPTH = 8;
+export const MAX_INLINE_DEPTH = 16;
 export const MAX_EMOJI_SLUG_BYTES = 64;
 
 type DelimKind = "em" | "strong" | "strike";
@@ -51,7 +51,7 @@ export function parseInlines(text: string): Node[] {
 }
 
 /** `base` is the inline depth already spent by enclosing link text: spans,
- * delimiters, and link nesting share the one <= 8 cap (a per-construct cap
+ * delimiters, and link nesting share the one <= 16 cap (a per-construct cap
  * would let composition multiply past it). */
 function parseInlinesAt(text: string, base: number): Node[] {
   const chars = Array.from(text);

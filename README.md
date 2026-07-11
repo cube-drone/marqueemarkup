@@ -27,6 +27,13 @@ Markdown is still more widely used (for NOW).
 
 But Marquee is for building Geocities.
 
+## Why Wouldn't I Just Use HTML?
+
+The security problem with Markdown is partially that it _can include HTML_.
+
+HTML is _guaranteed to include HTML_, and proving that HTML is safe is hard.
+
+
 ## Writing Marquee
 
 A more in-depth "writing" document is available [here](./WRITING.md), but 

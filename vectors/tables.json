@@ -1,0 +1,195 @@
+[
+  {
+    "name": "tables/basic-with-header-row",
+    "marquee": ":::table header=row\n[c]dish[/c] [c]price[/c]\n\n[c]*Spaghetti* al Limone[/c] [c]$12[/c]\n::: table\n",
+    "ast": {
+      "children": [
+        {
+          "attrs": {
+            "header": "row"
+          },
+          "children": [
+            {
+              "children": [
+                {
+                  "attrs": {},
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "dish"
+                    }
+                  ],
+                  "name": "c",
+                  "type": "span"
+                },
+                {
+                  "type": "text",
+                  "value": " "
+                },
+                {
+                  "attrs": {},
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "price"
+                    }
+                  ],
+                  "name": "c",
+                  "type": "span"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "children": [
+                {
+                  "attrs": {},
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "Spaghetti"
+                        }
+                      ],
+                      "type": "emphasis"
+                    },
+                    {
+                      "type": "text",
+                      "value": " al Limone"
+                    }
+                  ],
+                  "name": "c",
+                  "type": "span"
+                },
+                {
+                  "type": "text",
+                  "value": " "
+                },
+                {
+                  "attrs": {},
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "$12"
+                    }
+                  ],
+                  "name": "c",
+                  "type": "span"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "name": "table",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    }
+  },
+  {
+    "name": "tables/loose-content-between-cells",
+    "marquee": ":::table\nloose [c]celled[/c] tail\n:::\n",
+    "ast": {
+      "children": [
+        {
+          "attrs": {},
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "loose "
+                },
+                {
+                  "attrs": {},
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "celled"
+                    }
+                  ],
+                  "name": "c",
+                  "type": "span"
+                },
+                {
+                  "type": "text",
+                  "value": " tail"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "name": "table",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    }
+  },
+  {
+    "name": "tables/non-paragraph-child-survives",
+    "marquee": ":::table\n[c]a[/c] [c]b[/c]\n\n> a quote in a table\n:::\n",
+    "ast": {
+      "children": [
+        {
+          "attrs": {},
+          "children": [
+            {
+              "children": [
+                {
+                  "attrs": {},
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "a"
+                    }
+                  ],
+                  "name": "c",
+                  "type": "span"
+                },
+                {
+                  "type": "text",
+                  "value": " "
+                },
+                {
+                  "attrs": {},
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "b"
+                    }
+                  ],
+                  "name": "c",
+                  "type": "span"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "a quote in a table"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "blockquote"
+            }
+          ],
+          "name": "table",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    }
+  }
+]

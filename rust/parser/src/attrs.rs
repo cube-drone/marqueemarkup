@@ -4,7 +4,7 @@
 
 use crate::ast::{Attrs, Reason};
 
-pub const MAX_ATTR_VALUE_BYTES: usize = 1024;
+pub const MAX_ATTR_VALUE_BYTES: usize = 2048;
 
 pub fn is_name(s: &str) -> bool {
     let mut bytes = s.bytes();

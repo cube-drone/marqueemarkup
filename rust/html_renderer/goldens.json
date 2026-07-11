@@ -8,7 +8,7 @@
     "name": "adversarial/delimiter-soup"
   },
   {
-    "html": "<div class=\"mq-doc\"><div class=\"mq-page mq-layout-basic\"><section class=\"mq-section\" data-slot=\"main\"><div class=\"mq-invalid\" data-reason=\"mismatched_close\"></div><p>words survive every fence mistake</p></section></div><div class=\"mq-invalid\" data-reason=\"stray_close\"></div><div class=\"mq-invalid\" data-reason=\"bad_name\"></div><div class=\"mq-invalid\" data-reason=\"bad_name\"></div><div class=\"mq-invalid\" data-reason=\"bad_name\"></div><div class=\"mq-invalid\" data-reason=\"bad_attribute\"></div><div class=\"mq-invalid\" data-reason=\"bad_attribute\"></div><div class=\"mq-placeholder\" data-directive=\"x\"></div><div class=\"mq-unknown\" data-directive=\"a\"><div class=\"mq-unknown\" data-directive=\"b\"><div class=\"mq-unknown\" data-directive=\"c\"><div class=\"mq-unknown\" data-directive=\"d\"><div class=\"mq-invalid\" data-reason=\"depth_exceeded\"></div></div></div></div></div><div class=\"mq-placeholder\" data-directive=\"x\"></div><div class=\"mq-invalid\" data-reason=\"bad_attribute\"></div></div>",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-page mq-layout-basic\"><section class=\"mq-section\" data-slot=\"main\"><div class=\"mq-invalid\" data-reason=\"mismatched_close\"></div><p>words survive every fence mistake</p></section></div><div class=\"mq-invalid\" data-reason=\"stray_close\"></div><div class=\"mq-invalid\" data-reason=\"bad_name\"></div><div class=\"mq-invalid\" data-reason=\"bad_name\"></div><div class=\"mq-invalid\" data-reason=\"bad_name\"></div><div class=\"mq-invalid\" data-reason=\"bad_attribute\"></div><div class=\"mq-invalid\" data-reason=\"bad_attribute\"></div><div class=\"mq-placeholder\" data-directive=\"x\"></div><div class=\"mq-unknown\" data-directive=\"a\"><div class=\"mq-unknown\" data-directive=\"b\"><div class=\"mq-unknown\" data-directive=\"c\"><div class=\"mq-unknown\" data-directive=\"d\"><div class=\"mq-unknown\" data-directive=\"e\"><div class=\"mq-unknown\" data-directive=\"f\"><div class=\"mq-unknown\" data-directive=\"g\"><div class=\"mq-unknown\" data-directive=\"h\"><div class=\"mq-invalid\" data-reason=\"depth_exceeded\"></div></div></div></div></div></div></div></div></div><div class=\"mq-placeholder\" data-directive=\"x\"></div><div class=\"mq-invalid\" data-reason=\"bad_attribute\"></div></div>",
     "name": "adversarial/directive-maze"
   },
   {
@@ -80,8 +80,12 @@
     "name": "blocks/soft-newline-stays-literal"
   },
   {
+    "html": "<div class=\"mq-doc\"><p class=\"mq-h7\" role=\"heading\" aria-level=\"7\">seven deep</p><p class=\"mq-h8\" role=\"heading\" aria-level=\"8\">eight deep</p></div>",
+    "name": "blocks/headings-seven-and-eight"
+  },
+  {
     "html": "<div class=\"mq-doc\"><p>[b]x[/b]</p></div>",
-    "name": "caps/ninth-span-is-literal"
+    "name": "caps/seventeenth-span-is-literal"
   },
   {
     "html": "<div class=\"mq-doc\"><p>:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:</p></div>",
@@ -93,19 +97,27 @@
   },
   {
     "html": "<div class=\"mq-doc\"><div class=\"mq-placeholder\" data-directive=\"x\"></div></div>",
-    "name": "caps/attr-value-1024-ok"
+    "name": "caps/attr-value-2048-ok"
   },
   {
     "html": "<div class=\"mq-doc\"><div class=\"mq-invalid\" data-reason=\"attribute_too_long\"></div></div>",
-    "name": "caps/attr-value-1025-too-long"
+    "name": "caps/attr-value-2049-too-long"
   },
   {
-    "html": "<div class=\"mq-doc\"><ul><li><p>L1</p><ul><li><p>L2</p><ul><li><p>L3</p><ul><li><p>L4</p><ul><li><p>L5</p><ul><li><p>L6</p><ul><li><p>L7</p><ul><li><p>L8\n- too deep</p></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></div>",
-    "name": "caps/ninth-list-level-is-literal"
+    "html": "<div class=\"mq-doc\"><ul><li><p>L1</p><ul><li><p>L2</p><ul><li><p>L3</p><ul><li><p>L4</p><ul><li><p>L5</p><ul><li><p>L6</p><ul><li><p>L7</p><ul><li><p>L8</p><ul><li><p>L9</p><ul><li><p>L10</p><ul><li><p>L11</p><ul><li><p>L12</p><ul><li><p>L13</p><ul><li><p>L14</p><ul><li><p>L15</p><ul><li><p>L16\n- too deep</p></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></div>",
+    "name": "caps/seventeenth-list-level-is-literal"
   },
   {
-    "html": "<div class=\"mq-doc\"><p><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\">[x](t)</a></a></a></a></a></a></a></a></p></div>",
-    "name": "caps/ninth-link-is-literal"
+    "html": "<div class=\"mq-doc\"><p><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\"><a href=\"t\">[x](t)</a></a></a></a></a></a></a></a></a></a></a></a></a></a></a></a></p></div>",
+    "name": "caps/seventeenth-link-is-literal"
+  },
+  {
+    "html": "<div class=\"mq-doc\"><p><a href=\"https://e.x/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\">t</a></p></div>",
+    "name": "caps/target-4096-ok"
+  },
+  {
+    "html": "<div class=\"mq-doc\"><p><a href=\"https://e.x/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\">t</a></p></div>",
+    "name": "caps/target-4097-is-literal"
   },
   {
     "html": "<div class=\"mq-doc\"><section class=\"mq-section\" data-slot=\"nav\"><p>Welcome!</p></section></div>",
@@ -136,7 +148,7 @@
     "name": "directives/stray-close"
   },
   {
-    "html": "<div class=\"mq-doc\"><div class=\"mq-unknown\" data-directive=\"a\"><div class=\"mq-unknown\" data-directive=\"b\"><div class=\"mq-unknown\" data-directive=\"c\"><div class=\"mq-unknown\" data-directive=\"d\"><div class=\"mq-invalid\" data-reason=\"depth_exceeded\"></div></div></div></div></div><div class=\"mq-invalid\" data-reason=\"stray_close\"></div></div>",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-unknown\" data-directive=\"a\"><div class=\"mq-unknown\" data-directive=\"b\"><div class=\"mq-unknown\" data-directive=\"c\"><div class=\"mq-unknown\" data-directive=\"d\"><div class=\"mq-unknown\" data-directive=\"e\"><div class=\"mq-unknown\" data-directive=\"f\"><div class=\"mq-unknown\" data-directive=\"g\"><div class=\"mq-unknown\" data-directive=\"h\"><div class=\"mq-invalid\" data-reason=\"depth_exceeded\"></div></div></div></div></div></div></div></div></div><div class=\"mq-invalid\" data-reason=\"stray_close\"></div></div>",
     "name": "directives/depth-exceeded"
   },
   {
@@ -300,8 +312,8 @@
     "name": "smoke/heading-and-paragraph"
   },
   {
-    "html": "<div class=\"mq-doc\"><p>####### nope</p></div>",
-    "name": "smoke/seven-hashes-are-prose"
+    "html": "<div class=\"mq-doc\"><p>######### nope</p></div>",
+    "name": "smoke/nine-hashes-are-prose"
   },
   {
     "html": "<div class=\"mq-doc\"><p>#nope</p></div>",
@@ -342,6 +354,18 @@
   {
     "html": "<div class=\"mq-doc\"><p><span class=\"mq-typewriter\">slow reveal</span></p></div>",
     "name": "spans/attribute"
+  },
+  {
+    "html": "<div class=\"mq-doc\"><table class=\"mq-table\"><tr><th scope=\"col\">dish</th><th scope=\"col\">price</th></tr><tr><td><em>Spaghetti</em> al Limone</td><td>$12</td></tr></table></div>",
+    "name": "tables/basic-with-header-row"
+  },
+  {
+    "html": "<div class=\"mq-doc\"><table class=\"mq-table\"><tr><td>loose </td><td>celled</td><td> tail</td></tr></table></div>",
+    "name": "tables/loose-content-between-cells"
+  },
+  {
+    "html": "<div class=\"mq-doc\"><table class=\"mq-table\"><tr><td>a</td><td>b</td></tr><tr><td><blockquote><p>a quote in a table</p></blockquote></td></tr></table></div>",
+    "name": "tables/non-paragraph-child-survives"
   },
   {
     "html": "<div class=\"mq-doc\"><p class=\"mq-turbolink\"><a href=\"https://example.org/post\">https://example.org/post</a></p></div>",

@@ -5,10 +5,10 @@ import type { Node, Reason } from "./ast.ts";
 import { isName, nameLen, parseAttrs, utf8Len } from "./attrs.ts";
 import { parseInlines } from "./inlines.ts";
 
-export const MAX_LIST_DEPTH = 8;
-export const MAX_QUOTE_DEPTH = 8;
-export const MAX_DIRECTIVE_DEPTH = 4;
-export const MAX_TARGET_BYTES = 2048;
+export const MAX_LIST_DEPTH = 16;
+export const MAX_QUOTE_DEPTH = 16;
+export const MAX_DIRECTIVE_DEPTH = 8;
+export const MAX_TARGET_BYTES = 4096;
 
 interface Ctx {
   dirDepth: number;
@@ -218,7 +218,7 @@ function headingLine(line: string): { level: number; content: string } | null {
   while (n < line.length && line[n] === "#") {
     n += 1;
   }
-  if (n >= 1 && n <= 6 && line[n] === " ") {
+  if (n >= 1 && n <= 8 && line[n] === " ") {
     return { level: n, content: line.slice(n + 1) };
   }
   return null;

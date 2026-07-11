@@ -193,6 +193,28 @@ test("turbolink socket: rich plugins wrap, the floor is always reachable", () =>
   assert.ok(floor.includes('<p class="mq-turbolink"><a href="https://e.x/post">'), "no plugins: the floor");
 });
 
+test("tables: paragraph-rows, [c] cells, header promotion, nothing eaten", () => {
+  const html = renderMarquee(
+    ":::table header=row\n[c]dish[/c] [c]price[/c]\n\n[c]*Spaghetti*[/c] [c]$12[/c]\n:::\n",
+  );
+  assert.ok(html.includes('<table class="mq-table">'));
+  assert.ok(html.includes('<th scope="col">dish</th><th scope="col">price</th>'));
+  assert.ok(html.includes("<td><em>Spaghetti</em></td><td>$12</td>"));
+  const col = renderMarquee(":::table header=column\n[c]sun[/c] [c]warm[/c]\n:::\n");
+  assert.ok(col.includes('<th scope="row">sun</th><td>warm</td>'));
+  const loose = renderMarquee(":::table\nloose [c]celled[/c]\n:::\n");
+  assert.ok(loose.includes("loose") && loose.includes("<td>celled</td>"), "implicit cells never eat");
+  const noHead = renderMarquee(":::table\n[c]a[/c]\n:::\n");
+  assert.ok(!noHead.includes("<th"), "no header attr: all data cells");
+});
+
+test("headings 7 and 8: ARIA heading blocks past HTML's ladder", () => {
+  const html = renderMarquee("####### seven\n\n######## eight\n\n######### nine\n");
+  assert.ok(html.includes('<p class="mq-h7" role="heading" aria-level="7">seven</p>'));
+  assert.ok(html.includes('<p class="mq-h8" role="heading" aria-level="8">eight</p>'));
+  assert.ok(html.includes("######### nine"), "nine hashes degrade to prose");
+});
+
 test("emoji socket: text escapes, images wear mq-emoji, null stays literal", () => {
   const profile = {
     ...bareWebProfile,

@@ -112,7 +112,14 @@ fn render_node(node: &Node, ctx: &mut Ctx) -> String {
             flush_notes(ctx, html)
         }
         Node::Heading { level, children: c } => {
-            let html = format!("<h{level}>{}</h{level}>", children(c, ctx));
+            // HTML's ladder stops at h6; levels 7-8 (the grammar allows 1-8)
+            // keep real heading semantics via ARIA on a styled block.
+            let inner = children(c, ctx);
+            let html = if *level <= 6 {
+                format!("<h{level}>{inner}</h{level}>")
+            } else {
+                format!("<p class=\"mq-h{level}\" role=\"heading\" aria-level=\"{level}\">{inner}</p>")
+            };
             flush_notes(ctx, html)
         }
         Node::CodeBlock { info, text } => {
@@ -382,6 +389,7 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
             };
             format!("<div class=\"mq-media\"{style}>{inner}</div>")
         }
+        "table" => render_table(attrs, nodes, ctx),
         // Unknown vocabulary: a container renders its children with an
         // affordance that something wrapped them; a leaf renders the inert
         // placeholder. Never eat authored content.
@@ -394,6 +402,63 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
             escape_attr(name)
         ),
     }
+}
+
+/// :::table (SPEC.md, "Tables"): each paragraph child is a row; a row's
+/// cells are its top-level `[c]` spans, and loose inline content between
+/// cells coalesces into implicit cells (never eaten). A non-paragraph block
+/// child is a full-width single-cell row. `header=row|column|both` promotes
+/// the first row / first column to <th> with scope - header association is
+/// the accessibility half of tables, hoisted onto the one attr.
+fn render_table(attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
+    let header = attrs.get("header").map(|s| s.as_str());
+    let head_row = matches!(header, Some("row") | Some("both"));
+    let head_col = matches!(header, Some("column") | Some("both"));
+    let mut rows: Vec<String> = Vec::new();
+    for node in nodes {
+        let mut cells: Vec<String> = Vec::new();
+        if let Node::Paragraph { children: kids } = node {
+            let mut loose: Vec<&Node> = Vec::new();
+            let flush_loose = |loose: &mut Vec<&Node>, cells: &mut Vec<String>, ctx: &mut Ctx| {
+                let has_content = loose.iter().any(|n| match n {
+                    Node::Text { value } => !value.trim().is_empty(),
+                    _ => true,
+                });
+                if has_content {
+                    cells.push(loose.iter().map(|n| render_node(n, ctx)).collect());
+                }
+                loose.clear();
+            };
+            for child in kids {
+                match child {
+                    Node::Span { name, children: c, .. } if name == "c" => {
+                        flush_loose(&mut loose, &mut cells, ctx);
+                        cells.push(children(c, ctx));
+                    }
+                    other => loose.push(other),
+                }
+            }
+            flush_loose(&mut loose, &mut cells, ctx);
+        } else {
+            cells.push(render_node(node, ctx));
+        }
+        let is_head_row = head_row && rows.is_empty();
+        let cells_html: String = cells
+            .iter()
+            .enumerate()
+            .map(|(i, cell)| {
+                if is_head_row || (head_col && i == 0) {
+                    let scope = if is_head_row { "col" } else { "row" };
+                    format!("<th scope=\"{scope}\">{cell}</th>")
+                } else {
+                    format!("<td>{cell}</td>")
+                }
+            })
+            .collect();
+        rows.push(format!("<tr>{cells_html}</tr>"));
+    }
+    // Cell sidenotes land just below the table, like a paragraph's would.
+    flush_notes(ctx, format!("<table class=\"mq-table\">{}</table>", rows.concat()))
 }
 
 /// One rung of the font-element seven-step dial: presentational floor

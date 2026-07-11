@@ -2,133 +2,415 @@
   {
     "name": "blocks/blockquote",
     "marquee": "> a\n> b\n\nafter\n",
-    "ast": {"type": "document", "version": 0, "children": [
-      {"type": "blockquote", "children": [
-        {"type": "paragraph", "children": [{"type": "text", "value": "a\nb"}]}
-      ]},
-      {"type": "paragraph", "children": [{"type": "text", "value": "after"}]}
-    ]}
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "blockquote",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "a\nb"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "after"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "name": "blocks/blockquote-no-lazy-continuation",
     "marquee": "> a\nb\n",
-    "ast": {"type": "document", "version": 0, "children": [
-      {"type": "blockquote", "children": [
-        {"type": "paragraph", "children": [{"type": "text", "value": "a"}]}
-      ]},
-      {"type": "paragraph", "children": [{"type": "text", "value": "b"}]}
-    ]}
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "blockquote",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "a"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "b"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "name": "blocks/blockquote-nested",
     "marquee": "> > deep\n",
-    "ast": {"type": "document", "version": 0, "children": [
-      {"type": "blockquote", "children": [
-        {"type": "blockquote", "children": [
-          {"type": "paragraph", "children": [{"type": "text", "value": "deep"}]}
-        ]}
-      ]}
-    ]}
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "blockquote",
+          "children": [
+            {
+              "type": "blockquote",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "deep"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "name": "blocks/fenced-code-with-info",
     "marquee": "```python\nfor x:\n    pass\n```\nafter\n",
-    "ast": {"type": "document", "version": 0, "children": [
-      {"type": "code_block", "info": "python", "text": "for x:\n    pass"},
-      {"type": "paragraph", "children": [{"type": "text", "value": "after"}]}
-    ]}
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "code_block",
+          "info": "python",
+          "text": "for x:\n    pass"
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "after"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "name": "blocks/longer-fence-quotes-backticks",
     "marquee": "````\n```\n````\n",
-    "ast": {"type": "document", "version": 0, "children": [
-      {"type": "code_block", "text": "```"}
-    ]}
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "code_block",
+          "text": "```"
+        }
+      ]
+    }
   },
   {
     "name": "blocks/unclosed-fence-auto-closes-at-eof",
     "marquee": "```\ncode\n",
-    "ast": {"type": "document", "version": 0, "children": [
-      {"type": "code_block", "text": "code"}
-    ]}
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "code_block",
+          "text": "code"
+        }
+      ]
+    }
   },
   {
     "name": "blocks/comment-block",
     "marquee": "%% one\n%% two\nafter\n",
-    "ast": {"type": "document", "version": 0, "children": [
-      {"type": "comment", "text": "one\ntwo"},
-      {"type": "paragraph", "children": [{"type": "text", "value": "after"}]}
-    ]}
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "comment",
+          "text": "one\ntwo"
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "after"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "name": "blocks/escaped-comment-marker-is-prose",
     "marquee": "\\%% not a comment\n",
-    "ast": {"type": "document", "version": 0, "children": [
-      {"type": "paragraph", "children": [{"type": "text", "value": "%% not a comment"}]}
-    ]}
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "%% not a comment"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "name": "blocks/thematic-break",
     "marquee": "a\n\n---\n\nb\n",
-    "ast": {"type": "document", "version": 0, "children": [
-      {"type": "paragraph", "children": [{"type": "text", "value": "a"}]},
-      {"type": "thematic_break"},
-      {"type": "paragraph", "children": [{"type": "text", "value": "b"}]}
-    ]}
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "a"
+            }
+          ]
+        },
+        {
+          "type": "thematic_break"
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "b"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "name": "blocks/thematic-break-nbsp-tail-is-prose",
-    "marquee": "---\u00a0\n",
-    "ast": {"type": "document", "version": 0, "children": [
-      {"type": "paragraph", "children": [{"type": "text", "value": "---\u00a0"}]}
-    ]}
+    "marquee": "--- \n",
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "--- "
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "name": "blocks/four-dashes-are-prose",
     "marquee": "----\n",
-    "ast": {"type": "document", "version": 0, "children": [
-      {"type": "paragraph", "children": [{"type": "text", "value": "----"}]}
-    ]}
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "----"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "name": "blocks/list-interrupts-paragraph",
     "marquee": "text here:\n- one\n- two\n",
-    "ast": {"type": "document", "version": 0, "children": [
-      {"type": "paragraph", "children": [{"type": "text", "value": "text here:"}]},
-      {"type": "list", "ordered": false, "children": [
-        {"type": "list_item", "children": [
-          {"type": "paragraph", "children": [{"type": "text", "value": "one"}]}
-        ]},
-        {"type": "list_item", "children": [
-          {"type": "paragraph", "children": [{"type": "text", "value": "two"}]}
-        ]}
-      ]}
-    ]}
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "text here:"
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "ordered": false,
+          "children": [
+            {
+              "type": "list_item",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "one"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "list_item",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "two"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "name": "blocks/indented-constructs-are-prose",
     "marquee": "  # not a heading\n\n  ::: not a close, just prose\n",
-    "ast": {"type": "document", "version": 0, "children": [
-      {"type": "paragraph", "children": [{"type": "text", "value": "  # not a heading"}]},
-      {"type": "paragraph", "children": [{"type": "text", "value": "  ::: not a close, just prose"}]}
-    ]}
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "  # not a heading"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "  ::: not a close, just prose"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "name": "blocks/hard-break",
     "marquee": "line one\\\nline two\n",
-    "ast": {"type": "document", "version": 0, "children": [
-      {"type": "paragraph", "children": [
-        {"type": "text", "value": "line one"},
-        {"type": "hard_break"},
-        {"type": "text", "value": "line two"}
-      ]}
-    ]}
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "line one"
+            },
+            {
+              "type": "hard_break"
+            },
+            {
+              "type": "text",
+              "value": "line two"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "name": "blocks/soft-newline-stays-literal",
     "marquee": "a\nb\n",
-    "ast": {"type": "document", "version": 0, "children": [
-      {"type": "paragraph", "children": [{"type": "text", "value": "a\nb"}]}
-    ]}
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "a\nb"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "blocks/headings-seven-and-eight",
+    "marquee": "####### seven deep\n\n######## eight deep\n",
+    "ast": {
+      "children": [
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "seven deep"
+            }
+          ],
+          "level": 7,
+          "type": "heading"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "eight deep"
+            }
+          ],
+          "level": 8,
+          "type": "heading"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    }
   }
 ]

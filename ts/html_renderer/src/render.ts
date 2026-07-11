@@ -36,8 +36,16 @@ function renderNode(node: Node, ctx: Ctx): string {
       return `<div class="mq-doc">${children(node.children, ctx)}</div>`;
     case "paragraph":
       return flushNotes(ctx, `<p>${children(node.children, ctx)}</p>`);
-    case "heading":
-      return flushNotes(ctx, `<h${node.level}>${children(node.children, ctx)}</h${node.level}>`);
+    case "heading": {
+      // HTML's ladder stops at h6; levels 7-8 (the grammar allows 1-8) keep
+      // real heading semantics via ARIA on a styled block.
+      const inner = children(node.children, ctx);
+      const html =
+        node.level <= 6
+          ? `<h${node.level}>${inner}</h${node.level}>`
+          : `<p class="mq-h${node.level}" role="heading" aria-level="${node.level}">${inner}</p>`;
+      return flushNotes(ctx, html);
+    }
     case "code_block": {
       const lang = infoToken(node.info);
       const cls = lang === null ? "" : ` class="language-${escapeAttr(lang)}"`;
@@ -319,6 +327,8 @@ function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string 
       const style = vars.length === 0 ? "" : ` style="${vars.join(";")}"`;
       return `<div class="mq-media"${style}>${inner}</div>`;
     }
+    case "table":
+      return renderTable(attrs, nodes, ctx);
   }
   // Unknown vocabulary: a container renders its children with an affordance
   // that something wrapped them; a leaf renders the inert placeholder.
@@ -326,6 +336,53 @@ function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string 
   return nodes.length > 0
     ? `<div class="mq-unknown" data-directive="${escapeAttr(name)}">${inner}</div>`
     : `<div class="mq-placeholder" data-directive="${escapeAttr(name)}"></div>`;
+}
+
+/** :::table (SPEC.md, "Tables"): each paragraph child is a row; a row's
+ * cells are its top-level `[c]` spans, and loose inline content between
+ * cells coalesces into implicit cells (never eaten). A non-paragraph block
+ * child is a full-width single-cell row. `header=row|column|both` promotes
+ * the first row / first column to <th> with scope - header association is
+ * the accessibility half of tables, hoisted onto the one attr. */
+function renderTable(attrs: Attrs, nodes: Node[], ctx: Ctx): string {
+  const header = attrs["header"];
+  const headRow = header === "row" || header === "both";
+  const headCol = header === "column" || header === "both";
+  const rows: string[] = [];
+  for (const node of nodes) {
+    const cells: string[] = [];
+    if (node.type === "paragraph") {
+      let loose: Node[] = [];
+      const flushLoose = () => {
+        if (loose.some((n) => n.type !== "text" || n.value.trim() !== "")) {
+          cells.push(children(loose, ctx));
+        }
+        loose = [];
+      };
+      for (const child of node.children) {
+        if (child.type === "span" && child.name === "c") {
+          flushLoose();
+          cells.push(children(child.children, ctx));
+        } else {
+          loose.push(child);
+        }
+      }
+      flushLoose();
+    } else {
+      cells.push(renderNode(node, ctx));
+    }
+    const isHeadRow = headRow && rows.length === 0;
+    const cellsHtml = cells
+      .map((cell, i) =>
+        isHeadRow || (headCol && i === 0)
+          ? `<th scope="${isHeadRow ? "col" : "row"}">${cell}</th>`
+          : `<td>${cell}</td>`,
+      )
+      .join("");
+    rows.push(`<tr>${cellsHtml}</tr>`);
+  }
+  // Cell sidenotes land just below the table, like a paragraph's would.
+  return flushNotes(ctx, `<table class="mq-table">${rows.join("")}</table>`);
 }
 
 /** Effect/typographic spans. The `<font>` tag is deliberate: presentational

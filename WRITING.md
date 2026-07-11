@@ -38,12 +38,13 @@ to keep such a line inside your prose.)
 
 ## Headings
 
-One to six `#` characters, then a space, then the heading:
+One to eight `#` characters, then a space, then the heading:
 
 ```
 # The biggest
 ## Slightly smaller
-###### The smallest
+###### Small
+######## The smallest (HTML stops at six; Marquee lets you get lost in the weeds)
 ```
 
 Headings take the full inline grammar — emphasis, color, emoji, even effects. A blinking
@@ -410,6 +411,29 @@ doesn't know them you'll see a labeled placeholder box (your page still renders)
 The placeholder isn't an error — it's the deal that lets new widgets appear without old
 clients breaking. Check your host's documentation for its widget list.
 
+## Tables
+
+A table is a `:::table` block. Each paragraph inside it is a row; each `[c]...[/c]` span is a
+cell. The blank line between rows is just the ordinary paragraph break:
+
+```
+:::table header=row
+[c]dish[/c]                    [c]price[/c]
+
+[c]*Spaghetti* al Limone[/c]   [c]$12[/c]
+
+[c]Linguine alle Vongole[/c]   [c]$18[/c]
+:::
+```
+
+- `header=row` makes the first row header cells; `header=column` the first cell of each row;
+  `header=both` both. Headers come out bold *and* carry real header semantics for screen
+  readers — that's why it's an attribute instead of "just bold the top row."
+- Cells take the full inline grammar: emphasis, color, emoji, links, images, even effects.
+- Spacing between cells is yours — line the source up into columns for the plaintext reader,
+  or don't; it renders the same.
+- There is deliberately no way to put a table inside a table.
+
 ## Coming from markdown?
 
 Most of your habits transfer. The deliberate differences:
@@ -422,13 +446,13 @@ Most of your habits transfer. The deliberate differences:
 | indented code blocks | fenced ``` blocks only |
 | lazy quote continuation | every quoted line needs its `>` |
 | raw HTML `<b>`, `<br>`, `&mdash;` | renders as the literal characters — type **bold** with `**`, break with trailing `\`, type — directly (it's all UTF-8) |
-| `| tables |` | not yet — the name is reserved for a future version |
+| `| tables |` | `:::table` with `[c]cell[/c]` spans — see Tables (no pipe alignment, ever again) |
 | `1)` ordered lists | `1.` only |
 
 ## Limits (you will not hit these by accident)
 
-Lists, quotes, and inline nesting cap at 8 levels; directive nesting at 4; URLs at 2048 bytes;
-attribute values at 1024 bytes; emoji shortcodes at 64 characters. Past a cap, content
+Lists, quotes, and inline nesting cap at 16 levels; directive nesting at 8; URLs at 4096 bytes;
+attribute values at 2048 bytes; emoji shortcodes at 64 characters. Past a cap, content
 degrades to visible literal text — the same never-break rule as everywhere else.
 
 ## Previewing your work

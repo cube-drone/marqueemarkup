@@ -183,6 +183,32 @@ fn turbolink_socket_floor_and_rich_wrapper() {
 }
 
 #[test]
+fn tables_rows_cells_headers_nothing_eaten() {
+    let html = render_marquee(
+        ":::table header=row\n[c]dish[/c] [c]price[/c]\n\n[c]*Spaghetti*[/c] [c]$12[/c]\n:::\n",
+        &BareWebProfile,
+    )
+    .unwrap();
+    assert!(html.contains("<table class=\"mq-table\">"));
+    assert!(html.contains("<th scope=\"col\">dish</th><th scope=\"col\">price</th>"));
+    assert!(html.contains("<td><em>Spaghetti</em></td><td>$12</td>"));
+    let col = render_marquee(":::table header=column\n[c]sun[/c] [c]warm[/c]\n:::\n", &BareWebProfile).unwrap();
+    assert!(col.contains("<th scope=\"row\">sun</th><td>warm</td>"));
+    let loose = render_marquee(":::table\nloose [c]celled[/c]\n:::\n", &BareWebProfile).unwrap();
+    assert!(loose.contains("loose") && loose.contains("<td>celled</td>"), "implicit cells never eat");
+    let no_head = render_marquee(":::table\n[c]a[/c]\n:::\n", &BareWebProfile).unwrap();
+    assert!(!no_head.contains("<th"), "no header attr: all data cells");
+}
+
+#[test]
+fn headings_seven_and_eight_are_aria_blocks() {
+    let html = render_marquee("####### seven\n\n######## eight\n\n######### nine\n", &BareWebProfile).unwrap();
+    assert!(html.contains("<p class=\"mq-h7\" role=\"heading\" aria-level=\"7\">seven</p>"));
+    assert!(html.contains("<p class=\"mq-h8\" role=\"heading\" aria-level=\"8\">eight</p>"));
+    assert!(html.contains("######### nine"), "nine hashes degrade to prose");
+}
+
+#[test]
 fn emoji_socket_text_image_and_literal() {
     use marquee_html_renderer::EmojiResolution;
     struct Table;

@@ -4,7 +4,7 @@
 
 import type { Attrs, Reason } from "./ast.ts";
 
-export const MAX_ATTR_VALUE_BYTES = 1024;
+export const MAX_ATTR_VALUE_BYTES = 2048;
 
 const encoder = new TextEncoder();
 

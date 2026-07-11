@@ -488,9 +488,37 @@
                       "attrs": {},
                       "children": [
                         {
-                          "children": [],
-                          "reason": "depth_exceeded",
-                          "type": "invalid_directive"
+                          "attrs": {},
+                          "children": [
+                            {
+                              "attrs": {},
+                              "children": [
+                                {
+                                  "attrs": {},
+                                  "children": [
+                                    {
+                                      "attrs": {},
+                                      "children": [
+                                        {
+                                          "children": [],
+                                          "reason": "depth_exceeded",
+                                          "type": "invalid_directive"
+                                        }
+                                      ],
+                                      "name": "h",
+                                      "type": "directive"
+                                    }
+                                  ],
+                                  "name": "g",
+                                  "type": "directive"
+                                }
+                              ],
+                              "name": "f",
+                              "type": "directive"
+                            }
+                          ],
+                          "name": "e",
+                          "type": "directive"
                         }
                       ],
                       "name": "d",
@@ -534,7 +562,7 @@
       "type": "document",
       "version": 0
     },
-    "marquee": "#!marquee 0\n\n:::meta title=\"maze \\\"quoted\\\" title\" title=ignored-duplicate:::\n\n:::page layout=basic\n:::section slot=main\n::: page\n%% ^ that named close doesn't match `section` - flagged at that line; section continues\n\nwords survive every fence mistake\n:::\n:::\n\n:::\n%% ^ stray close, nothing open\n\n:::9lives\n:::Nope\n::: also not-a-name!\n:::ok but=\"unterminated\n:::x k= v\n:::x k=v extra=\"fine\" k=duplicate-ignored:::\n\n:::a\n:::b\n:::c\n:::d\n:::e depth=five\n:::\n:::\n:::\n:::\n\n:::x constructor=alpha valueof=beta:::\n\n%% ^ attribute keys are just keys - no javascript object traps\n\n:::x __proto__=nope:::\n\n%% ^ and __proto__ cannot even be written: keys start with a lowercase letter\n%% comments hold broken sketches raw: :::half [/open ** ```\n",
+    "marquee": "#!marquee 0\n\n:::meta title=\"maze \\\"quoted\\\" title\" title=ignored-duplicate:::\n\n:::page layout=basic\n:::section slot=main\n::: page\n%% ^ that named close doesn't match `section` - flagged at that line; section continues\n\nwords survive every fence mistake\n:::\n:::\n\n:::\n%% ^ stray close, nothing open\n\n:::9lives\n:::Nope\n::: also not-a-name!\n:::ok but=\"unterminated\n:::x k= v\n:::x k=v extra=\"fine\" k=duplicate-ignored:::\n\n:::a\n:::b\n:::c\n:::d\n:::e\n:::f\n:::g\n:::h\n:::i depth=nine\n:::\n:::\n:::\n:::\n:::\n:::\n:::\n:::\n\n:::x constructor=alpha valueof=beta:::\n\n%% ^ attribute keys are just keys - no javascript object traps\n\n:::x __proto__=nope:::\n\n%% ^ and __proto__ cannot even be written: keys start with a lowercase letter\n%% comments hold broken sketches raw: :::half [/open ** ```\n",
     "name": "adversarial/directive-maze"
   },
   {

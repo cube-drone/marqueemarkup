@@ -5,10 +5,10 @@ use crate::ast::{Node, Reason};
 use crate::attrs::{is_name, name_len, parse_attrs};
 use crate::inlines::parse_inlines;
 
-pub const MAX_LIST_DEPTH: usize = 8;
-pub const MAX_QUOTE_DEPTH: usize = 8;
-pub const MAX_DIRECTIVE_DEPTH: usize = 4;
-pub const MAX_TARGET_BYTES: usize = 2048;
+pub const MAX_LIST_DEPTH: usize = 16;
+pub const MAX_QUOTE_DEPTH: usize = 16;
+pub const MAX_DIRECTIVE_DEPTH: usize = 8;
+pub const MAX_TARGET_BYTES: usize = 4096;
 
 #[derive(Clone, Copy, Default)]
 struct Ctx {
@@ -205,7 +205,7 @@ fn is_block_start(line: &str, ctx: Ctx) -> bool {
 
 fn heading_line(line: &str) -> Option<(u8, &str)> {
     let n = line.bytes().take_while(|b| *b == b'#').count();
-    if (1..=6).contains(&n) && line.as_bytes().get(n) == Some(&b' ') {
+    if (1..=8).contains(&n) && line.as_bytes().get(n) == Some(&b' ') {
         Some((n as u8, &line[n + 1..]))
     } else {
         None

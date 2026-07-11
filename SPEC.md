@@ -56,9 +56,11 @@ Blocks, separated by blank lines:
   `%%`, `---`, `:::`) - jamming a list against your prose works, markdown-style; escape the
   leading character (`\- `) to keep such a line in prose. Block constructs are recognized at
   column 0 of their container.
-- **Heading** - ATX only: 1-6 `#` + space + **inline content** (emphasis, spans, color, emoji,
+- **Heading** - ATX only: 1-8 `#` + space + **inline content** (emphasis, spans, color, emoji,
   embeds - the full inline grammar; a blinking heading is fair game). No setext underlines.
-  Seven-plus `#`s, or `#` without its space, is a paragraph - prose degrades, never guesses.
+  Nine-plus `#`s, or `#` without its space, is a paragraph - prose degrades, never guesses.
+  (Levels 7-8 outrun HTML's ladder on purpose - writers get to be lost in the weeds; an HTML
+  renderer keeps heading semantics via ARIA on a styled block.)
 - **Fenced code** - backtick fences: an opening fence is three or more backticks; it closes on
   a line of at least that many backticks and nothing else (longer fences exist to quote literal
   triple-backticks - a document *about* Marquee needs them), and an unclosed fence auto-closes
@@ -153,17 +155,22 @@ Inlines:
   line (two newlines) is a paragraph separator.
 
 Deliberately absent, forever or until a version bump: embedded HTML, setext headings,
-reference-style links, lazy continuation, indented code blocks. Tables are deferred from v0, but the name `:::table` is **reserved** (see Reserved
-vocabulary): cozy pages rarely want them, and the body model is an open fork.
+reference-style links, lazy continuation, indented code blocks. Pipe tables are permanently
+declined (tables are vocabulary - see Tables): a pipe body is raw content a vocabulary-blind
+parser cannot grant by name, and since `\|` and `|` are indistinguishable in the AST (escapes
+resolve at parse), a renderer re-lexing pipes could never let a cell carry a literal pipe.
 
 **Caps are spec, not implementation** - an implementation-defined depth limit is a manufactured
 parser differential (input parses on one client, blows the stack on another), so the limits are
-conformance rules with vectors: list nesting ≤ 8, blockquote nesting ≤ 8, directive nesting ≤ 4, inline nesting
-(spans, delimiters, and link text - one shared depth) ≤ 8, targets ≤ 2048 bytes, attribute
-values ≤ 1024 bytes, emoji slugs ≤ 64 bytes (an over-cap slug is a non-match: literal text; a
-ninth-deep span opener or link falls back to literal the same way). Document size is deliberately the embedder's, not the
+conformance rules with vectors: list nesting ≤ 16, blockquote nesting ≤ 16, directive nesting ≤ 8, inline nesting
+(spans, delimiters, and link text - one shared depth) ≤ 16, targets ≤ 4096 bytes, attribute
+values ≤ 2048 bytes, emoji slugs ≤ 64 bytes (an over-cap slug is a non-match: literal text; a
+seventeenth-deep span opener or link falls back to literal the same way). The numbers are set
+far past human writing and well short of machine weirdness - and they are sealed with v0:
+raising a cap later is a parser differential between implementations claiming the same
+version, i.e. a version bump. Document size is deliberately the embedder's, not the
 language's. Behavior at a cap follows the prose/construct split: over-deep list indentation
-stays inside the deepest item as literal text (prose degrades), and a ninth `>` is likewise
+stays inside the deepest item as literal text (prose degrades), and a seventeenth `>` is likewise
 literal text inside the deepest quote; over-deep directives are
 `invalid_directive` nodes (constructs error, visibly for authors, fail-closed for strangers).
 
@@ -286,7 +293,7 @@ Names and attributes are the strict half of the language, so the grammar is spel
   be quoted (`key=""`).
 - Any deviation - a bad name, whitespace around `=`, an unterminated quote, trailing garbage
   after a leaf's closer - makes the whole directive an `invalid_directive` (strictness as
-  promised); a value over 1024 bytes likewise (`attribute_too_long`). Duplicate keys are
+  promised); a value over 2048 bytes likewise (`attribute_too_long`). Duplicate keys are
   *well-formed* and resolve first-writer-wins (see The AST).
 
 Spans reuse this grammar verbatim for `[name key=value]` openers, but their failure mode is
@@ -336,7 +343,7 @@ Style is where the spec says "no" most, so here is the positive model, in one pl
   specificity, cascade-precedence, `!important`, and action-at-a-distance in one stroke - most
   of CSS's size, gone by omission.
 - **Containment inheritance - the one thing taken from CSS.** A node's effective style is its
-  own knobs layered over its parent's effective style; walk the shallow (depth ≤ 4) tree, layer.
+  own knobs layered over its parent's effective style; walk the shallow (depth ≤ 8) tree, layer.
   `:::page scheme=hotdog-stand` themes the page; an inner `:::section` inherits and may override
   a knob. That is the entire cascade - tree containment, deterministic, nothing else.
 - **Schemes are named knob-bundles; individual knobs refine them.** A scheme sets many knobs at
@@ -516,6 +523,40 @@ Marquee's conformance model can, so it does not need them:
     effect into the blob before embedding and Marquee neither knows nor cares.
   - Video/audio knobs not yet imagined - the vocabulary is meant to grow here.
 
+### Tables: paragraph-rows, inline cells
+
+```
+:::table header=row
+[c]dish[/c] [c]price[/c]
+
+[c]*Spaghetti* al Limone[/c] [c]$12[/c]
+::: table
+```
+
+Pure vocabulary - one directive, one span name, one attr - shaped to spend only one level in
+block space, because Marquee's weak point is deep block nesting (no indentation, closer
+stacks) and its strong point is inline nesting (explicit BBCode closers, legible on one line):
+
+- **A row is a paragraph; a cell is a `[c]` span** (spec-defined, like `sidenote`; the name is
+  one letter because rows are typed by hand). The blank line between rows is the ordinary
+  paragraph separator - no new grammar anywhere, and the source stays alignable for the
+  plaintext reader with nothing more than spacing.
+- **`header=row` / `header=column` / `header=both`** promotes the first row / the first cell
+  of each row to header cells with proper scope. Header *association* is the accessibility
+  half of tables (a screen reader announces "price: $12" only if the header is semantic;
+  bold is visually identical and semantically dead), and it is hoisted onto the one attr
+  because humans think "the top row is the header," not per-cell. No header attr, no header
+  cells; visual emphasis inside cells is what emphasis is for.
+- **Nothing is eaten**: loose inline content between cells coalesces into implicit cells; a
+  non-paragraph block child renders as a full-width single-cell row. A renderer that doesn't
+  know `table` shows the children as plain content - rows of readable text; one that doesn't
+  know `[c]` shows the words. Never a placeholder where the data was.
+- Cells are inline content, so a table inside a cell is *unrepresentable* - complex nested
+  tables are excluded by construction, which is a feature. Alignment, captions, and spans are
+  future *attrs* (additive, corpus-driven), not future grammar.
+- Depth arithmetic: page > section > table is three directive levels - comfortable under the
+  cap even before v0's raise, by design.
+
 ### Emoji resolution
 
 The grammar gives one thing: the `emoji{slug}` node. What a slug *becomes* is layered and
@@ -609,13 +650,8 @@ built*.
 
 Discipline (so this never becomes a graveyard of ghost names): reserve only names that are
 near-certain to be wanted, where a collision would misrender real documents, and whose meaning
-is unambiguous. Today that is exactly one:
-
-- **`table`** - tabular data. Body model deliberately undecided, and the fork matters:
-  structured children (`:::row` / `:::cell`) would be pure vocabulary; a pipe body (`| a | b |`)
-  is *raw content*, which - like comments - a vocabulary-blind parser cannot grant to a name it
-  does not recognize, so pipe-tables would be a small future *grammar* addition, not just
-  vocabulary. Reserving `table` commits to neither; it does not reopen the closed grammar.
+is unambiguous. Today that is exactly zero: `table`, the one name ever reserved here, resolved
+its body-model fork and graduated to spec vocabulary (see Tables). The mechanism stays.
 
 ## The AST (the contract)
 
@@ -635,8 +671,8 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   spec name that malformed-construct case, never a render failure.
 - **The `reason` enum (closed, v0):** `bad_name` (a `:::` line with a missing or ill-formed
   name), `bad_attribute` (attribute text that doesn't parse, including trailing garbage after
-  a leaf's closer), `attribute_too_long` (a value over the 1024-byte cap), `depth_exceeded`
-  (a directive opened past depth 4), `mismatched_close` (a named close that doesn't name the
+  a leaf's closer), `attribute_too_long` (a value over the 2048-byte cap), `depth_exceeded`
+  (a directive opened past depth 8), `mismatched_close` (a named close that doesn't name the
   nearest open directive), `stray_close` (a close line with nothing open). Six values; growing
   the list is a spec change with vectors, exactly like node types.
 - **Blocks vs inlines - the whole malformed-syntax split.** A malformed *block* becomes an
@@ -742,8 +778,8 @@ to a different system entirely:
 - [ ] Exact vocabulary lists: the style knobs' values (palettes, patterns, cursors, schemes),
   the effect set, the widget set, the audio/video attribute lists (blocked on media blobs
   existing to test against). Shapes are settled; contents wait on use.
-- [ ] Tables (`:::table` name reserved, see Reserved vocabulary): if the corpus asks, decide the
-  body-model fork - structured children (vocabulary) vs. pipe body (a raw-content grammar addition).
+- [x] Tables: resolved (see Tables) - paragraph-rows with `[c]` cell spans, `header=` on the
+  directive; pipe bodies permanently declined. Alignment/captions/spans await the corpus, as attrs.
 - [ ] **Not Marquee's** (named so nobody hunts for them here): the query language
   resolved directives carry; the custom-emoji map artifact and the messaging vocabulary profile.
   All belong to the embedder. Marquee owns the `emoji`/`directive`/`embed` grammar

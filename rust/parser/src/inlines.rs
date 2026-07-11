@@ -6,7 +6,7 @@ use crate::ast::{Attrs, Node};
 use crate::attrs::{is_name, name_len, parse_attrs, parse_value};
 use crate::blocks::MAX_TARGET_BYTES;
 
-pub const MAX_INLINE_DEPTH: usize = 8;
+pub const MAX_INLINE_DEPTH: usize = 16;
 pub const MAX_EMOJI_SLUG_BYTES: usize = 64;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -48,7 +48,7 @@ pub fn parse_inlines(text: &str) -> Vec<Node> {
 }
 
 /// `base` is the inline depth already spent by enclosing link text: spans,
-/// delimiters, and link nesting share the one ≤ 8 cap (a per-construct cap
+/// delimiters, and link nesting share the one ≤ 16 cap (a per-construct cap
 /// would let composition multiply past it).
 fn parse_inlines_at(text: &str, base: usize) -> Vec<Node> {
     let chars: Vec<char> = text.chars().collect();

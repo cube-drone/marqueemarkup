@@ -52,12 +52,16 @@ And no blank line is needed to start a block — here's my list:
 ```marquee
 ### A heading with *emphasis*, [color=goldenrod]color[/color], and [blink]blink[/blink]
 
-####### Seven hashes is just a paragraph, rendered literally.
+######## Eight hashes still works — deeper than HTML dares.
+
+######### Nine hashes is just a paragraph, rendered literally.
 ```
 
 ### A heading with *emphasis*, [color=goldenrod]color[/color], and [blink]blink[/blink]
 
-####### Seven hashes is just a paragraph, rendered literally.
+######## Eight hashes still works — deeper than HTML dares.
+
+######### Nine hashes is just a paragraph, rendered literally.
 
 ## Emphasis and friends
 
@@ -112,6 +116,8 @@ A [plain link](https://example.org), a [relative link](other-page), and a
 [parenthetical Wikipedia link](https://en.wikipedia.org/wiki/Hat_(disambiguation)).
 
 One embed syntax — the file's own type decides whether it's a picture, a song, or a film:
+
+(I apologize for the generative nature of these media assets, but it keeps them public domain so that I can distribute them freely as examples.)
 
 ![a picture, by description](example-media/picture.jpg)
 
@@ -424,6 +430,33 @@ structure to prose — visibly, fixably, on purpose:
 
 So keep directive bodies flat, and use named closers when nesting gets deep.
 
+## Tables
+
+Rows are paragraphs, cells are [c]-spans, and the blank line between rows is the ordinary
+paragraph break. header=row makes the first row real header cells (screen readers get the
+association, not just the bold):
+
+```marquee
+:::table header=row
+[c]dish[/c]                    [c]price[/c]
+
+[c]*Spaghetti* al Limone[/c]   [c]$12[/c]
+
+[c]Linguine alle Vongole[/c]   [c]$18 :sparkles:[/c]
+:::
+```
+
+:::table header=row
+[c]dish[/c]                    [c]price[/c]
+
+[c]*Spaghetti* al Limone[/c]   [c]$12[/c]
+
+[c]Linguine alle Vongole[/c]   [c]$18 :sparkles:[/c]
+:::
+
+Line the source up into columns or don't — spacing between cells is yours, and it renders
+the same either way. There is deliberately no way to put a table inside a table.
+
 ## Quotes
 
 ```marquee
@@ -580,9 +613,10 @@ destructive":
 
 You have now seen each effect alone: polite, purposeful, stoppable. The spec says effects nest
 freely — that this "is not an edge case, it is the point." We are therefore obligated to
-conclude that the following is the point. All seven effects, one heading, riding the inline
-nesting cap *exactly* (an eighth level is legal; a ninth would fall to literal text, which
-would frankly be a relief):
+conclude that the following is the point. All seven effects, one heading, eight levels deep —
+which used to ride the inline nesting cap *exactly*, until v0 sealed the cap at sixteen.
+There is now officially room for a second abomination inside this one. We mention this fact
+and immediately regret it:
 
 ```marquee
 :::section scheme=terminal
