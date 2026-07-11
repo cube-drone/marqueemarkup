@@ -18,6 +18,14 @@
   max-width: 100%;
 }
 
+/* Custom emoji: an image wearing the size of a character. max-width: 100%
+   above would let a huge source image stay huge; the height cap wins. */
+.mq-doc img.mq-emoji {
+  height: 1.2em;
+  width: auto;
+  vertical-align: -0.25em;
+}
+
 .mq-doc pre.mq-code {
   overflow-x: auto;
   padding: 0.75rem;

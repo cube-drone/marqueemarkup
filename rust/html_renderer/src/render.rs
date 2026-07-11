@@ -5,7 +5,7 @@
 //! nothing; invalid constructs render inert placeholders.
 
 use crate::escape::{escape_attr, escape_text};
-use crate::profile::{MediaKind, Profile, TurbolinkLevel};
+use crate::profile::{EmojiResolution, MediaKind, Profile, TurbolinkLevel};
 use marquee_parser::{Attrs, Node};
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -158,10 +158,18 @@ fn render_node(node: &Node, ctx: &mut Ctx) -> String {
         Node::Embed { target, alt } => embed(target, alt, ctx.profile),
         Node::Turbolink { target } => turbolink(target, None, ctx.profile),
         Node::Span { name, attrs, children: c } => span(name, attrs, c, ctx),
-        Node::Emoji { slug } => {
-            let resolved = ctx.profile.emoji(slug).unwrap_or_else(|| format!(":{slug}:"));
-            escape_text(&resolved)
-        }
+        Node::Emoji { slug } => match ctx.profile.emoji(slug) {
+            Some(EmojiResolution::Image { url, alt }) => {
+                let alt = alt.unwrap_or_else(|| format!(":{slug}:"));
+                format!(
+                    "<img class=\"mq-emoji\" src=\"{}\" alt=\"{}\" loading=\"lazy\">",
+                    escape_attr(&url),
+                    escape_attr(&alt)
+                )
+            }
+            Some(EmojiResolution::Text(text)) => escape_text(&text),
+            None => escape_text(&format!(":{slug}:")),
+        },
         Node::HardBreak => "<br>".to_string(),
     }
 }

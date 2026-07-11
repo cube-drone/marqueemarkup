@@ -84,6 +84,10 @@ function renderNode(node: Node, ctx: Ctx): string {
       return span(node.name, node.attrs, node.children, ctx);
     case "emoji": {
       const resolved = ctx.profile.emoji(node.slug);
+      if (resolved !== null && typeof resolved === "object") {
+        const alt = resolved.alt ?? `:${node.slug}:`;
+        return `<img class="mq-emoji" src="${escapeAttr(resolved.image)}" alt="${escapeAttr(alt)}" loading="lazy">`;
+      }
       return escapeText(resolved ?? `:${node.slug}:`);
     }
     case "hard_break":

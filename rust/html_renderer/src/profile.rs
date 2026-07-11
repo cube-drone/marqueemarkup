@@ -26,6 +26,14 @@ pub enum TurbolinkLevel {
     Bare,
 }
 
+/// What an emoji slug becomes: replacement text, or a custom-emoji image
+/// (the spec's custom-emoji map is named indirection over an inline image).
+#[derive(Debug, Clone)]
+pub enum EmojiResolution {
+    Text(String),
+    Image { url: String, alt: Option<String> },
+}
+
 fn scheme(target: &str) -> Option<String> {
     let bytes = target.as_bytes();
     if !bytes.first().is_some_and(|b| b.is_ascii_alphabetic()) {
@@ -75,8 +83,11 @@ pub trait Profile {
         Some(MediaResolution { kind, url: target.to_string() })
     }
 
-    /// Resolve an emoji slug to replacement text; None renders `:slug:`.
-    fn emoji(&self, _slug: &str) -> Option<String> {
+    /// Resolve an emoji slug to replacement text or a custom-emoji image;
+    /// None renders `:slug:`. The image URL is embedder-supplied
+    /// configuration, trusted like `directive` - author bytes only ever
+    /// supply the slug.
+    fn emoji(&self, _slug: &str) -> Option<EmojiResolution> {
         None
     }
 

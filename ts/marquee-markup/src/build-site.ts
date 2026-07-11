@@ -21,6 +21,7 @@ import {
   escapeText,
   render,
   usedFontTokens,
+  type EmojiResolution,
   type Profile,
 } from "@cube-drone/marquee-html-renderer";
 import { marqueeCss } from "@cube-drone/marquee-css";
@@ -31,6 +32,9 @@ import { metaTitle } from "./index.ts";
 export interface SiteOptions {
   /** Turbolink expanders; defaults to the fetchless default set. */
   plugins?: TurbolinkPlugin[];
+  /** A pluggable emoji table: slug -> replacement text or `{ image, alt? }`
+   * (profile.emoji wins). */
+  emoji?: Record<string, EmojiResolution>;
   /** Overrides layered on the assembled per-site profile. */
   profile?: Partial<Profile>;
 }
@@ -90,6 +94,9 @@ export function buildSite(siteDirArg: string, outDirArg: string, opts: SiteOptio
         return bareWebProfile.media(target);
       },
       turbolink: composeTurbolinks(plugins),
+      ...(opts.emoji === undefined
+        ? {}
+        : { emoji: (slug: string) => opts.emoji![slug] ?? null }),
       directive(name, attrs, _children) {
         if (name !== "include" || depth > 0) {
           return null; // deep include -> unknown vocabulary -> inert placeholder

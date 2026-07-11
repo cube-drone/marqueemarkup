@@ -4,7 +4,7 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildSite, marquee, marqueeFragment } from "../src/index.ts";
+import { buildSite, marquee, marqueeBody, marqueeFragment, marqueeHead } from "../src/index.ts";
 
 test("marquee(): source in, complete self-contained page out", () => {
   const page = marquee("# Hello *world*\n");
@@ -25,11 +25,45 @@ test("marquee(): meta title wins, fonts inline only when worn", () => {
 });
 
 test("marqueeFragment(): the pieces, for embedders", () => {
-  const { html, css, title } = marqueeFragment("# Piece\n");
-  assert.ok(html.startsWith('<div class="mq-doc">'));
-  assert.ok(!html.includes("<!doctype"), "fragment is not a page");
+  const { body, css, title, fontTokens } = marqueeFragment("# Piece\n");
+  assert.ok(body.startsWith('<div class="mq-doc">'));
+  assert.ok(!body.includes("<!doctype"), "fragment is not a page");
   assert.ok(css.includes(".mq-turbolink-card"), "plugin skins collected");
   assert.equal(title, "Marquee");
+  assert.deepEqual(fontTokens, [], "no faces worn");
+});
+
+test("marqueeBody/marqueeHead: just the body, just the head", () => {
+  const source = ':::meta title="Halves":::\n\n# Hi\n';
+  const body = marqueeBody(source);
+  assert.ok(body.startsWith('<div class="mq-doc">') && !body.includes("<style"));
+  const head = marqueeHead(source);
+  assert.ok(head.startsWith("<title>Halves</title>\n<style>"));
+  assert.ok(head.includes(".mq-doc"), "head carries the stylesheet");
+});
+
+test("emoji option: a pluggable table, literal otherwise", () => {
+  const withTable = marquee("hats :tophat: off\n", { emoji: { tophat: "🎩" } });
+  assert.ok(withTable.includes("hats 🎩 off"));
+  const without = marquee("hats :tophat: off\n");
+  assert.ok(without.includes("hats :tophat: off"), "no table: literal slug");
+  const custom = marquee("look :blobcat:\n", {
+    emoji: { blobcat: { image: "https://e.x/blob.png", alt: "blobcat" } },
+  });
+  assert.ok(
+    custom.includes('<img class="mq-emoji" src="https://e.x/blob.png" alt="blobcat" loading="lazy">'),
+    "image values become character-sized inline images",
+  );
+});
+
+test("fonts: external mode emits urls and names the tokens", () => {
+  const { css, fontTokens } = marqueeFragment("[font=orbitron]GO[/font]\n", {
+    fonts: "external",
+    fontBase: "assets/f/",
+  });
+  assert.ok(css.includes('url("assets/f/orbitron.woff2")'));
+  assert.ok(!css.includes("data:font"), "external mode carries no bytes");
+  assert.deepEqual(fontTokens, ["orbitron"]);
 });
 
 test("buildSite(): the whole borsalino, one call", () => {

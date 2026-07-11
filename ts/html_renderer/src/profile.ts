@@ -12,6 +12,9 @@ export interface MediaResolution {
 
 export type TurbolinkLevel = "full" | "title" | "bare";
 
+/** What an emoji slug becomes: replacement text, or a custom-emoji image. */
+export type EmojiResolution = string | { image: string; alt?: string };
+
 export interface Profile {
   /** May this target become a hyperlink? Disallowed links render their
    * children without an anchor (content survives, capability doesn't). */
@@ -19,8 +22,11 @@ export interface Profile {
   /** Resolve an embed target to a media kind, or null for the inert
    * fallback. The kind is resolved at render time (SPEC.md, "Media"). */
   media(target: string): MediaResolution | null;
-  /** Resolve an emoji slug to replacement text, or null → literal `:slug:`. */
-  emoji(slug: string): string | null;
+  /** Resolve an emoji slug: replacement text, or an image (the spec's
+   * custom-emoji map is named indirection over an inline image), or null →
+   * literal `:slug:`. The image URL is embedder-supplied configuration,
+   * trusted like `directive` - author bytes only ever supply the slug. */
+  emoji(slug: string): EmojiResolution | null;
   /** Rendered turbolink content for a target, or null → the plain-link
    * floor. Embedders compose this from plugins (see marquee-turbolink: an
    * image in a box, play controls, a YouTube embed, Ringtome-native

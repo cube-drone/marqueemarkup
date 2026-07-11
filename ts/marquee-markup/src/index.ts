@@ -19,10 +19,11 @@ import {
   escapeText,
   render,
   usedFontTokens,
+  type EmojiResolution,
   type Profile,
 } from "@cube-drone/marquee-html-renderer";
 import { marqueeCss } from "@cube-drone/marquee-css";
-import { inlineFontFaces } from "@cube-drone/marquee-fonts";
+import { externalFontFaces, inlineFontFaces } from "@cube-drone/marquee-fonts";
 import {
   composeTurbolinks,
   defaultPlugins,
@@ -33,9 +34,19 @@ import {
 export interface MarqueeOptions {
   /** Page title; defaults to the document's `:::meta title`, then "Marquee". */
   title?: string;
-  /** Inline the used grab-bag fonts as base64 (default), or skip them and
-   * let names degrade to their fallback stacks. */
-  fonts?: "inline" | "none";
+  /** Font delivery: "inline" (default) carries the used faces as base64;
+   * "external" emits @font-face urls under `fontBase` (copy the files
+   * yourself - `fontTokens` in the fragment return + `fontFilePath()` tell
+   * you which); "none" lets names degrade to their fallback stacks. */
+  fonts?: "inline" | "external" | "none";
+  /** Base path for fonts: "external" urls (default "fonts/"). */
+  fontBase?: string;
+  /** A pluggable emoji table: slug -> replacement text, or
+   * `{ image, alt? }` for a custom-emoji image (rendered as an inline
+   * `<img class="mq-emoji">`, character-sized). Anything not in the table
+   * stays literal `:slug:`. (For dynamic resolution, use `profile.emoji`
+   * instead - a profile override wins over this.) */
+  emoji?: Record<string, EmojiResolution>;
   /** Turbolink expanders; defaults to the fetchless default set. */
   plugins?: TurbolinkPlugin[];
   /** Overrides layered on the assembled profile (schemes, media policy...). */
@@ -44,9 +55,11 @@ export interface MarqueeOptions {
 
 function assembleProfile(opts: MarqueeOptions): { profile: Profile; plugins: TurbolinkPlugin[] } {
   const plugins = opts.plugins ?? defaultPlugins;
+  const emoji = opts.emoji;
   const profile: Profile = {
     ...bareWebProfile,
     turbolink: composeTurbolinks(plugins),
+    ...(emoji === undefined ? {} : { emoji: (slug: string) => emoji[slug] ?? null }),
     ...opts.profile,
   };
   return { profile, plugins };
@@ -65,29 +78,46 @@ export function metaTitle(doc: Node): string | undefined {
   return undefined;
 }
 
-/** Parse and render to embeddable pieces: the body fragment and the CSS it
- * needs (stylesheet + composed plugin skins + used fonts, per options). */
+/** Parse and render to embeddable pieces: what goes in the body, the CSS
+ * that belongs in the head (stylesheet + composed plugin skins + fonts per
+ * options), the title, and which font faces the page wears. */
 export function marqueeFragment(
   source: string,
   opts: MarqueeOptions = {},
-): { html: string; css: string; title: string } {
+): { body: string; css: string; title: string; fontTokens: string[] } {
   const { profile, plugins } = assembleProfile(opts);
   const doc = parse(source);
-  const html = render(doc, profile);
+  const body = render(doc, profile);
+  const fontTokens = usedFontTokens(body);
   let css = `${marqueeCss}\n${turbolinkStyles(plugins)}`;
-  if ((opts.fonts ?? "inline") === "inline") {
-    const faces = inlineFontFaces(usedFontTokens(html));
-    if (faces !== "") {
-      css += `\n${faces}`;
-    }
+  const fonts = opts.fonts ?? "inline";
+  const faces =
+    fonts === "inline"
+      ? inlineFontFaces(fontTokens)
+      : fonts === "external"
+        ? externalFontFaces(fontTokens, opts.fontBase ?? "fonts/")
+        : "";
+  if (faces !== "") {
+    css += `\n${faces}`;
   }
-  return { html, css, title: opts.title ?? metaTitle(doc) ?? "Marquee" };
+  return { body, css, title: opts.title ?? metaTitle(doc) ?? "Marquee", fontTokens };
+}
+
+/** Just the stuff that goes inside <body>: the rendered document fragment. */
+export function marqueeBody(source: string, opts: MarqueeOptions = {}): string {
+  return marqueeFragment(source, opts).body;
+}
+
+/** Just the stuff that goes inside <head>: title + one <style> block. */
+export function marqueeHead(source: string, opts: MarqueeOptions = {}): string {
+  const { css, title } = marqueeFragment(source, opts);
+  return `<title>${escapeText(title)}</title>\n<style>\n${css}\n</style>`;
 }
 
 /** The one smooth motion: Marquee source in, a complete self-contained
  * HTML page out. */
 export function marquee(source: string, opts: MarqueeOptions = {}): string {
-  const { html, css, title } = marqueeFragment(source, opts);
+  const { body, css, title } = marqueeFragment(source, opts);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -100,7 +130,7 @@ ${css}
 </style>
 </head>
 <body>
-${html}
+${body}
 </body>
 </html>
 `;
@@ -120,7 +150,7 @@ export {
   renderMarquee,
   usedFontTokens,
 } from "@cube-drone/marquee-html-renderer";
-export type { MediaResolution, Profile, TurbolinkLevel } from "@cube-drone/marquee-html-renderer";
+export type { EmojiResolution, MediaResolution, Profile, TurbolinkLevel } from "@cube-drone/marquee-html-renderer";
 export { marqueeCss } from "@cube-drone/marquee-css";
 export {
   FONT_MANIFEST,

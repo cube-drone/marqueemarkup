@@ -27,6 +27,105 @@ If you're writing a README? Use Markdown.
 
 But Marquee is for building Geocities.
 
+## Writing Marquee
+
+A more in-depth "writing" document is available [here](./WRITING.md), but 
+this will get you started:
+
+
+```
+# Header 1
+## Header 2
+### Header 3
+
+* list
+* list
+
+1. list
+2. list
+3. list
+
+%% comment (you can't see this)
+
+[link](https://example.org)
+![image](https://example.org/fart.jif)
+
+
+standalone links expand into content: 
+
+https://www.youtube.com/watch?v=kiTpHaShznE
+
+Text can be sized: [miniscule]miniscule[/miniscule], [tiny]tiny[/tiny], [small]small[/small], [big]big[/big] [huge]huge[/huge], [enormous]ENORMOUS[/enormous].
+
+* E = mc[sup]2[/sup], 
+* H[sub]2[/sub]O, 
+* [color=goldenrod]color by name[/color]
+* [color=#f06]color by hex[/color]
+
+Footnote-style asides[sidenote]like this one [/sidenote] that never interrupt
+the sentence, they just show up later.
+
+[font=press-start]Fonts, but they come from a pre-defined list?[/font].
+
+* [blink]blink[/blink]
+* [rainbow]rainbow[/rainbow]
+* [bounce]bounce[/bounce]
+* [jitter]jitter[/jitter]
+* [wave]wave[/wave]
+* [typewriter speed=30]typewriter[/typewriter]
+
+Nested animations: [marquee][blink][rainbow]still open at 3am[/rainbow][/blink][/marquee]
+
+* [rainbow by=letter]EVERY LETTER ITS OWN HUE[/rainbow] ·
+* [wave by=letter]a true undulating wave[/wave] ·
+* [bounce by=word]each word takes its turn[/bounce] ·
+* [jitter by=letter]scattered nerves[/jitter]
+
+Code:
+
+\```
+for hat in attic.hats():
+    print(hat.vibe, hat.dampness)
+\```
+
+Quotes:
+
+> Every line of the quote is marked,
+> line by line — you need to include
+> the `>` symbol on every line.
+
+```
+
+
+## Getting Started
+
+There are a lot of ways to use Marquee, but the most obvious one is this:
+
+Get it from npm. (Have npm installed, obviously.)
+
+```
+npm install @cube-drone/marquee-markup
+```
+
+Write a script to convert .mq into html:
+
+```ts
+import { marquee } from "@cube-drone/marquee-markup";
+import { readFileSync, writeFileSync } from "node:fs";
+
+writeFileSync("hello.html", marquee(readFileSync("hello.mq", "utf8")));
+```
+
+`marquee(source)` parses, renders, styles, inlines exactly the
+fonts the page wears, and hands back a self-contained HTML page. Or use the CLI:
+
+```
+npx marquee hello.mq > hello.html     one self-contained page
+```
+
+More docs live [here](./ts/marquee-markup/README.md).
+
+
 ## Repository layout
 
 This is a monorepo: the spec, the conformance vectors, and every reference implementation

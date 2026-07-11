@@ -181,3 +181,34 @@ fn turbolink_socket_floor_and_rich_wrapper() {
     let floor = render_marquee("https://e.x/post\n", &BareWebProfile).unwrap();
     assert!(floor.contains("<p class=\"mq-turbolink\"><a href=\"https://e.x/post\">"));
 }
+
+#[test]
+fn emoji_socket_text_image_and_literal() {
+    use marquee_html_renderer::EmojiResolution;
+    struct Table;
+    impl marquee_html_renderer::Profile for Table {
+        fn emoji(&self, slug: &str) -> Option<EmojiResolution> {
+            match slug {
+                "cat" => Some(EmojiResolution::Text("🐱".to_string())),
+                "blobcat" => Some(EmojiResolution::Image {
+                    url: "https://e.x/blob.png".to_string(),
+                    alt: None,
+                }),
+                "sly" => Some(EmojiResolution::Image {
+                    url: "\"><script>alert(1)</script>".to_string(),
+                    alt: Some("<b>".to_string()),
+                }),
+                _ => None,
+            }
+        }
+    }
+    let html = render_marquee(":cat: :blobcat: :dog:\n", &Table).unwrap();
+    assert!(html.contains("🐱"));
+    assert!(html.contains(
+        "<img class=\"mq-emoji\" src=\"https://e.x/blob.png\" alt=\":blobcat:\" loading=\"lazy\">"
+    ));
+    assert!(html.contains(":dog:"), "unresolved slug stays literal");
+    let escaped = render_marquee(":sly:\n", &Table).unwrap();
+    assert!(!escaped.contains("<script"), "src and alt are attribute-escaped");
+    assert!(escaped.contains("&lt;b&gt;"));
+}

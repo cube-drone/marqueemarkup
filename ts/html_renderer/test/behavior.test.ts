@@ -193,6 +193,28 @@ test("turbolink socket: rich plugins wrap, the floor is always reachable", () =>
   assert.ok(floor.includes('<p class="mq-turbolink"><a href="https://e.x/post">'), "no plugins: the floor");
 });
 
+test("emoji socket: text escapes, images wear mq-emoji, null stays literal", () => {
+  const profile = {
+    ...bareWebProfile,
+    emoji: (slug: string) =>
+      slug === "cat" ? "🐱" : slug === "blobcat" ? { image: "https://e.x/blob.png" } : null,
+  };
+  const html = renderMarquee(":cat: :blobcat: :dog:\n", profile);
+  assert.ok(html.includes("🐱"));
+  assert.ok(
+    html.includes('<img class="mq-emoji" src="https://e.x/blob.png" alt=":blobcat:" loading="lazy">'),
+    "image resolution becomes a character-sized img, alt defaults to the slug",
+  );
+  assert.ok(html.includes(":dog:"), "unresolved slug stays literal");
+  const sly = {
+    ...bareWebProfile,
+    emoji: () => ({ image: '"><script>alert(1)</script>', alt: "<b>" }),
+  };
+  const escaped = renderMarquee(":x:\n", sly);
+  assert.ok(!escaped.includes("<script"), "src and alt are attribute-escaped");
+  assert.ok(escaped.includes("&lt;b&gt;"));
+});
+
 test("asides: numbered marks, notes flush below the triggering block", () => {
   const html = renderMarquee(
     "First[sidenote]note one[/sidenote] paragraph.\n\nSecond[sidenote]note two[/sidenote] here.\n",
