@@ -132,6 +132,7 @@ export {
   audioPlugin,
   defaultPlugins,
   imagePlugin,
+  mapsPlugin,
   spotifyPlugin,
   videoPlugin,
   youtubePlugin,

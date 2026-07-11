@@ -13,6 +13,7 @@
     "check": "tsc --noEmit",
     "bless": "node scripts/bless.ts",
     "preview": "node scripts/preview.ts",
+    "build-site": "node scripts/build-site.ts",
     "fetch-fonts": "node scripts/fetch-fonts.ts"
   },
   "devDependencies": {

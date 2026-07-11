@@ -39,6 +39,10 @@ export const cardCss = `.mq-turbolink-card {
   height: 6rem;
   object-fit: cover;
   border-radius: 0.25rem;
+}
+.mq-turbolink-rich .mq-turbolink-card {
+  border: none;
+  padding: 0;
 }`;
 
 export function renderCard(

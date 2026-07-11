@@ -114,11 +114,42 @@ export const spotifyPlugin: TurbolinkPlugin = {
   },
 };
 
+const GMAPS_COORDS =
+  /google\.[a-z.]+\/maps\/\S*@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(\d+(?:\.\d+)?)z/;
+
+/** Matches a Google Maps link that carries coordinates - and renders the
+ * same spot as an OpenStreetMap embed. Google retired its keyless embed
+ * endpoint, and this is cozier anyway: authors paste the link they have,
+ * readers get the map that doesn't track them. Links without coordinates
+ * decline to the plain-link floor. */
+export const mapsPlugin: TurbolinkPlugin = {
+  name: "maps",
+  css: frameCss,
+  match: (t) => GMAPS_COORDS.test(t),
+  render(target, { level }) {
+    if (level !== "full") {
+      return null;
+    }
+    const m = GMAPS_COORDS.exec(target)!;
+    const lat = Number(m[1]);
+    const lon = Number(m[2]);
+    const zoom = Math.min(Math.max(Number(m[3]), 1), 19);
+    const dLon = 360 / 2 ** zoom;
+    const dLat = dLon * 0.4;
+    const bbox = [lon - dLon, lat - dLat, lon + dLon, lat + dLat]
+      .map((n) => n.toFixed(5))
+      .join("%2C");
+    const marker = `${lat.toFixed(5)}%2C${lon.toFixed(5)}`;
+    return `<iframe class="mq-turbolink-frame mq-frame-map" src="https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&amp;layer=mapnik&amp;marker=${marker}" height="320" title="Map" loading="lazy"></iframe>`;
+  },
+};
+
 /** The fetchless defaults - safe to hand to any static build. OpenGraph
  * (which fetches) is exported separately and opted into deliberately. */
 export const defaultPlugins: TurbolinkPlugin[] = [
   youtubePlugin,
   spotifyPlugin,
+  mapsPlugin,
   imagePlugin,
   audioPlugin,
   videoPlugin,

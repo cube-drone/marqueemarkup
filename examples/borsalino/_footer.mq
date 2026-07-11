@@ -1,0 +1,8 @@
+#!marquee 0
+
+%% shared footer - included by every page via :::include doc=_footer:::
+
+---
+
+[small]Borsalino's · est. 1987 · one dish, zero compromises · Via dei Cappelli 42 ·
+[tiny]this site is written in Marquee — view source, it's lovely in there[/tiny][/small]

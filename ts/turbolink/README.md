@@ -33,7 +33,9 @@ const profile = {
 ```
 
 First plugin that matches *and* renders wins; a declined or unmatched target falls to the
-renderer's plain-link floor. `defaultPlugins` is entirely fetchless (YouTube and Spotify embed
+renderer's plain-link floor. And whatever a plugin renders, the renderer's wrapper appends
+the original link beside it — enrichment augments, never replaces, and that guarantee is
+structural: plugins don't need to remember it, and can't forget it. `defaultPlugins` is entirely fetchless (YouTube and Spotify embed
 URLs are derivable; media kinds are extensions); `opengraphPlugin` fetches and is exported
 separately — opting into network is a deliberate act.
 

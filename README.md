@@ -11,6 +11,8 @@ version together, because they are one conformance unit.
   (`WRITING.mq` is its live twin — preview it to see everything running)
 - `SPEC.md` — the language specification (grammar, AST contract, conformance rules)
 - `examples/` — hand-written `.mq` documents; the ergonomics testbed and vector seed corpus
+  (`examples/borsalino/` is a complete little website with shared nav/footer, built via
+  `npm run build-site` in `ts/html_renderer/`)
 - `vectors/` — published conformance vectors (`*.json`, input → exact AST); see `vectors/README.md`
 - `rust/parser/` — reference parser, Rust (`cargo test` runs the vectors; `cargo run --bin bless` grows them)
 - `ts/parser/` — reference parser, TypeScript (`npm test` runs the same vectors; `npm run check` typechecks)

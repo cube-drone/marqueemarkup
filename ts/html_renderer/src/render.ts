@@ -209,7 +209,9 @@ function turbolink(target: string, levelAttr: string | undefined, profile: Profi
   if (level !== "bare") {
     const rich = profile.turbolink(target, level);
     if (rich !== null) {
-      return `<div class="mq-turbolink mq-turbolink-rich">${rich}</div>`;
+      // Enrichment augments, never replaces: the wrapper itself carries the
+      // original link, so no plugin can eat it - not even by accident.
+      return `<div class="mq-turbolink mq-turbolink-rich">${rich}<a class="mq-turbolink-source" href="${escapeAttr(target)}">${escapeText(target)}</a></div>`;
     }
   }
   // The contractual floor: a plain link, always reachable.

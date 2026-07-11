@@ -1,0 +1,7 @@
+#!marquee 0
+
+%% shared navigation - included by every page via :::include doc=_nav:::
+
+[size=5][font=bungee]🎩 BORSALINO'S[/font][/size] · [font=caveat]cucina con cappello[/font]
+
+[Home](index) · [Menu](menu) · [Gallery](gallery) · [Find Us](map)

@@ -180,7 +180,11 @@ test("turbolink socket: rich plugins wrap, the floor is always reachable", () =>
     turbolink: (_t: string, level: string) => (level === "full" ? "<b>RICH</b>" : null),
   };
   const full = renderMarquee("https://e.x/post\n", profile);
-  assert.ok(full.includes('<div class="mq-turbolink mq-turbolink-rich"><b>RICH</b></div>'));
+  assert.ok(full.includes('<div class="mq-turbolink mq-turbolink-rich"><b>RICH</b>'));
+  assert.ok(
+    full.includes('<a class="mq-turbolink-source" href="https://e.x/post">https://e.x/post</a></div>'),
+    "the wrapper always carries the original link - augment, never replace",
+  );
   const title = renderMarquee(":::turbolink target=https://e.x/post level=title:::\n", profile);
   assert.ok(title.includes('<p class="mq-turbolink"><a'), "plugin declined title: the floor");
   const bare = renderMarquee(":::turbolink target=https://e.x/post level=bare:::\n", profile);

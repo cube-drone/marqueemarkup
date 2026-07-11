@@ -145,7 +145,8 @@ Inlines:
   fetched from a web URL, native metadata (title, etc.) for a `ringtome://` target - and
   because enriching a web link means *fetching* it, that obeys the fetch-policy/care-modes dial
   (a privacy-max reader gets a plain link, not a fetched preview). Degrades to a plain link
-  always.
+  always - and an *enriched* rendering keeps the original link reachable beside the content:
+  enrichment augments the link, it never replaces it.
 - Line breaks: a single newline inside a paragraph is **soft** - it and any surrounding
   horizontal whitespace collapse to one space, so hard-wrapping a paragraph at any column is
   render-invariant (the source breaks vanish). A **hard** break is a trailing backslash; a blank

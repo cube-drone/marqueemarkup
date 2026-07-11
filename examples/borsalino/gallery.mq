@@ -1,0 +1,38 @@
+#!marquee 0
+
+:::meta title="Borsalino's — Gallery" tags="gallery, spaghetti":::
+
+:::page layout=two-column-nav-footer scheme=parchment font=playfair-display
+:::section slot=nav
+:::include doc=_nav:::
+:::
+:::section slot=main
+# Gallery
+
+%% four photos. all spaghetti. of course they're all spaghetti.
+
+One `:::media` wrapper sizes the whole gallery — containment, not repetition:
+
+:::media width=320 height=240
+![Spaghetti, plated](../../example-media/pasta_1.jpg)
+
+![Spaghetti, in progress](../../example-media/pasta_2.jpg)
+
+![Spaghetti, admired](../../example-media/pasta_3.jpg)
+
+![Spaghetti, gone](../../example-media/pasta_4.jpg)
+:::
+:::
+:::section slot=right
+## Press
+
+*"It's spaghetti."* — the Tribune
+
+*"Remarkably consistent."* — the Gazette
+
+*"[rainbow by=letter]unforgettable[/rainbow]"* — a blog we love
+:::
+:::section slot=footer
+:::include doc=_footer:::
+:::
+:::

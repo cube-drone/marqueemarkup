@@ -1,0 +1,35 @@
+#!marquee 0
+
+:::meta title="Borsalino's — Find Us" tags="map, directions":::
+
+:::page layout=two-column-nav-footer scheme=parchment font=playfair-display
+:::section slot=nav
+:::include doc=_nav:::
+:::
+:::section slot=main
+# Find Us
+
+The corner of Mulberry & Hats. Look for the [rainbow by=letter]neon spaghetti[/rainbow].
+
+https://www.google.com/maps/place/Mulberry+St,+New+York/@40.7192,-73.9973,17z
+
+Paste a Google Maps link, get a map — the expander renders it as OpenStreetMap, so nobody's
+location leaks to anybody just for wondering where dinner is.
+:::
+:::section slot=right
+## Parking
+
+No.
+
+## Transit
+
+The B, the D, and a pleasant walk during which to anticipate spaghetti.
+
+## Landmarks
+
+Between the hat shop (no relation, allegedly) and the other hat shop.
+:::
+:::section slot=footer
+:::include doc=_footer:::
+:::
+:::

@@ -1,0 +1,44 @@
+#!marquee 0
+
+:::meta title="Borsalino's — We Only Have Spaghetti" date=2026-07-10 tags="restaurant, spaghetti, hats":::
+
+:::page layout=two-column-nav-footer scheme=parchment font=playfair-display
+:::section slot=nav
+:::include doc=_nav:::
+:::
+:::section slot=main
+![Borsalino's: We Only Have Spaghetti](../../example-media/banner.jpg)
+
+# Benvenuti
+
+Since 1987: one dish[sidenote]The health inspector asked why. We asked him, gently, to
+leave.[/sidenote], done right. Our founder, Giuseppe "The Hat" Borsalino, believed a
+restaurant should do exactly *one thing* perfectly. He also believed in hats. Only one of
+these beliefs made it onto the menu.
+
+[marquee]FRESH SPAGHETTI DAILY · THE ONLY THING WE HAVE · YOU KNOW WHY YOU'RE HERE ·[/marquee]
+
+[blink]**TONIGHT'S SPECIAL: spaghetti.**[/blink]
+
+No reservations. No substitutions. No regrets.
+
+:::construction:::
+:::
+:::section slot=right
+## Hours
+
+- Tue–Sun: 5pm until the marquee stops
+- Monday: we make the pasta
+
+## Tonight
+
+[color=#7a4a12]**Spaghetti.**[/color]
+
+## Also tonight
+
+See above.
+:::
+:::section slot=footer
+:::include doc=_footer:::
+:::
+:::

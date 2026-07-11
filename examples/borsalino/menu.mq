@@ -1,0 +1,46 @@
+#!marquee 0
+
+:::meta title="Borsalino's — The Menu" tags="menu, spaghetti":::
+
+:::page layout=two-column-nav-footer scheme=parchment font=playfair-display
+:::section slot=nav
+:::include doc=_nav:::
+:::
+:::section slot=main
+# The Menu
+
+%% chef says: stop asking about the menu structure. it's spaghetti.
+
+## Primi
+
+1. **Spaghetti al Pomodoro** — the reason the building exists · [color=#7a4a12]12[/color]
+2. **Spaghetti alla Carbonara** — guanciale, pecorino, *no cream*[sidenote]we heard what you
+   said in the vestibule and we forgive you[/sidenote] · [color=#7a4a12]16[/color]
+3. **Spaghetti Aglio e Olio** — for purists and the recently heartbroken · [color=#7a4a12]11[/color]
+4. **Spaghetti al Limone** — bright, silly, wonderful · [color=#7a4a12]14[/color]
+
+## Secondi
+
+1. **Spaghetti, More** — a second spaghetti · [color=#7a4a12]12[/color]
+
+## Dolci
+
+1. **Spaghetti Dolci** — fried nests, honey, powdered sugar · [color=#7a4a12]9[/color]
+
+## Da Bere
+
+- house red · house white · [font=vt323]house mystery[/font]
+:::
+:::section slot=right
+## Allergens
+
+Everything here touches wheat. *Everything.* The water has looked at wheat.
+
+## Gluten-free?
+
+We admire your courage. There is a very nice salad place two doors down.
+:::
+:::section slot=footer
+:::include doc=_footer:::
+:::
+:::

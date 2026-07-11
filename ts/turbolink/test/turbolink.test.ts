@@ -9,6 +9,7 @@ import {
   composeTurbolinks,
   defaultPlugins,
   imagePlugin,
+  mapsPlugin,
   opengraphPlugin,
   parseOpenGraph,
   renderCard,
@@ -42,6 +43,16 @@ test("spotify: track height differs from playlist height", () => {
   const playlist = spotifyPlugin.render("https://open.spotify.com/playlist/xyz789", { level: "full", data: undefined });
   assert.ok(track!.includes('height="152"') && track!.includes("/embed/track/abc123DEF"));
   assert.ok(playlist!.includes('height="352"') && playlist!.includes("/embed/playlist/xyz789"));
+});
+
+test("maps: google link with coordinates becomes an OSM embed; without, declines", () => {
+  const url = "https://www.google.com/maps/place/Mulberry+St/@40.7192,-73.9973,17z";
+  assert.ok(mapsPlugin.match(url));
+  const html = mapsPlugin.render(url, { level: "full", data: undefined });
+  assert.ok(html!.includes("openstreetmap.org/export/embed.html"));
+  assert.ok(html!.includes("marker=40.71920%2C-73.99730"));
+  assert.equal(mapsPlugin.render(url, { level: "title", data: undefined }), null);
+  assert.ok(!mapsPlugin.match("https://www.google.com/maps?q=just+a+query"), "no coords: floor");
 });
 
 test("media plugins: extension recognition, medium boxes, controls", () => {
