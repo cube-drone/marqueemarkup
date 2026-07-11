@@ -11,6 +11,7 @@
     "ts/html_renderer",
     "ts/marquee-css",
     "ts/marquee-fonts",
+    "ts/marquee-emoji",
     "ts/marquee-markup"
   ],
   "scripts": {

@@ -33,11 +33,14 @@ If `marquee` is a little too all-inclusive for your tastes:
 - `marqueeHead(source, opts)` → just what goes inside `<head>` (title + one `<style>` block)
 - `marqueeFragment(source, opts)` → `{ body, css, title, fontTokens }` — all the pieces
 - `buildSite(siteDir, outDir, opts)` → the CLI's site build as a function
-- options: `{ title, fonts: "inline" | "external" | "none", fontBase, emoji, plugins,
-  profile }` — inline the fonts, reference them externally (copy the `fontTokens` files via
-  `fontFilePath()`), or skip them; plug in an emoji table (values are replacement text or
-  `{ image, alt? }` for custom image emoji); add turbolink expanders; override any embedder
+- options: `{ title, fonts: "inline" | "external" | "none", fontBase, emoji, emojiDefaults,
+  plugins, profile }` — inline the fonts, reference them externally (copy the `fontTokens`
+  files via `fontFilePath()`), or skip them; add turbolink expanders; override any embedder
   policy
+- emoji just work: `:sparkles:` and 1,900 friends resolve out of the box (the standard gemoji
+  table, via `@cube-drone/marquee-emoji`). Layer your own entries on with
+  `emoji: { slug: "🎩" }` or `emoji: { slug: { image, alt? } }` for custom image emoji —
+  yours win on collision — or pass `emojiDefaults: false` to start from a blank table
 - **everything underneath is re-exported** — `parse`, `render`, `Profile`, the plugin
   machinery, the stylesheet, the font helpers — so when you outgrow the convenience you
   don't switch packages, you just reach deeper

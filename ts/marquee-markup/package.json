@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@cube-drone/marquee-css": "^0.1.0",
+    "@cube-drone/marquee-emoji": "^0.1.0",
     "@cube-drone/marquee-fonts": "^0.1.0",
     "@cube-drone/marquee-html-renderer": "^0.1.0",
     "@cube-drone/marquee-parser": "^0.1.0",

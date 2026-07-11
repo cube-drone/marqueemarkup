@@ -187,6 +187,8 @@ anybody else. The TypeScript side is an npm workspace: `npm install` once at the
 - `ts/marquee-fonts/` — the 31-face grab bag as an *optional* package: `externalFontFaces()` for
   hosted files, `inlineFontFaces()` for self-contained base64 pages; without it every font name
   degrades to its fallback stack
+- `ts/marquee-emoji/` — gemoji's standard shortcode table repackaged (`:sparkles:` → ✨);
+  dependency-free, loaded implicitly by the omnibus
 - `ts/marquee-markup/` — **the batteries-included omnibus and the place to start**:
   `marquee(source)` → a complete page, `buildSite(dir, out)` → a website, the `marquee` CLI,
   everything underneath re-exported

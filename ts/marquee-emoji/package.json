@@ -1,0 +1,41 @@
+{
+  "name": "@cube-drone/marquee-emoji",
+  "version": "0.1.0",
+  "description": "The standard emoji shortcode table (gemoji, repackaged) for Marquee's :shortcode: resolution",
+  "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cube-drone/marqueemarkup.git",
+    "directory": "ts/marquee-emoji"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "files": [
+    "dist",
+    "src",
+    "GEMOJI-LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "marquee-src": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "test": "node --conditions=marquee-src --test test/*.test.ts",
+    "check": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build",
+    "fetch-standard": "node scripts/fetch-standard.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}

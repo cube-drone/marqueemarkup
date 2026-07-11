@@ -25,6 +25,7 @@ import {
   type Profile,
 } from "@cube-drone/marquee-html-renderer";
 import { marqueeCss } from "@cube-drone/marquee-css";
+import { standardEmoji } from "@cube-drone/marquee-emoji";
 import { externalFontFaces, fontFilePath } from "@cube-drone/marquee-fonts";
 import { composeTurbolinks, defaultPlugins, turbolinkStyles, type TurbolinkPlugin } from "@cube-drone/marquee-turbolink";
 import { metaTitle } from "./index.ts";
@@ -32,9 +33,12 @@ import { metaTitle } from "./index.ts";
 export interface SiteOptions {
   /** Turbolink expanders; defaults to the fetchless default set. */
   plugins?: TurbolinkPlugin[];
-  /** A pluggable emoji table: slug -> replacement text or `{ image, alt? }`
-   * (profile.emoji wins). */
+  /** Your emoji: slug -> replacement text or `{ image, alt? }`, layered
+   * over the default table (profile.emoji wins over everything). */
   emoji?: Record<string, EmojiResolution>;
+  /** The implicit emoji table (default true): gemoji's standard shortcodes.
+   * Set false and unlisted slugs stay literal. */
+  emojiDefaults?: boolean;
   /** Overrides layered on the assembled per-site profile. */
   profile?: Partial<Profile>;
 }
@@ -50,6 +54,10 @@ export function buildSite(siteDirArg: string, outDirArg: string, opts: SiteOptio
   const siteDir = resolve(siteDirArg);
   const outDir = resolve(outDirArg);
   const plugins = opts.plugins ?? defaultPlugins;
+  const emojiTable: Record<string, EmojiResolution> = {
+    ...(opts.emojiDefaults === false ? {} : standardEmoji),
+    ...opts.emoji,
+  };
 
   const mqFiles = readdirSync(siteDir).filter((f) => f.endsWith(".mq"));
   const pageIds = mqFiles.filter((f) => !f.startsWith("_")).map((f) => basename(f, ".mq"));
@@ -94,9 +102,7 @@ export function buildSite(siteDirArg: string, outDirArg: string, opts: SiteOptio
         return bareWebProfile.media(target);
       },
       turbolink: composeTurbolinks(plugins),
-      ...(opts.emoji === undefined
-        ? {}
-        : { emoji: (slug: string) => opts.emoji![slug] ?? null }),
+      emoji: (slug: string) => emojiTable[slug] ?? null,
       directive(name, attrs, _children) {
         if (name !== "include" || depth > 0) {
           return null; // deep include -> unknown vocabulary -> inert placeholder

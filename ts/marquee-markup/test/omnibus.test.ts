@@ -42,11 +42,19 @@ test("marqueeBody/marqueeHead: just the body, just the head", () => {
   assert.ok(head.includes(".mq-doc"), "head carries the stylesheet");
 });
 
-test("emoji option: a pluggable table, literal otherwise", () => {
-  const withTable = marquee("hats :tophat: off\n", { emoji: { tophat: "🎩" } });
-  assert.ok(withTable.includes("hats 🎩 off"));
-  const without = marquee("hats :tophat: off\n");
-  assert.ok(without.includes("hats :tophat: off"), "no table: literal slug");
+test("emoji: the standard table is implicitly loaded", () => {
+  const page = marquee("hats :tophat: off, :sparkles: and :+1:\n");
+  assert.ok(page.includes("hats 🎩 off, ✨ and 👍"), "gemoji shortcodes just work");
+  assert.ok(marquee(":thisoneisnotreal:\n").includes(":thisoneisnotreal:"), "unknown: literal");
+});
+
+test("emoji: user entries override defaults; emojiDefaults: false opts out", () => {
+  const overridden = marquee("hats :tophat: off\n", { emoji: { tophat: "🤠" } });
+  assert.ok(overridden.includes("hats 🤠 off"), "user entry wins over the standard table");
+  const bare = marquee("hats :tophat: off\n", { emojiDefaults: false });
+  assert.ok(bare.includes("hats :tophat: off"), "no defaults: literal slug");
+  const own = marquee(":tophat: :bespoke:\n", { emojiDefaults: false, emoji: { bespoke: "🛠️" } });
+  assert.ok(own.includes(":tophat: 🛠️"), "own table without defaults underneath");
   const custom = marquee("look :blobcat:\n", {
     emoji: { blobcat: { image: "https://e.x/blob.png", alt: "blobcat" } },
   });

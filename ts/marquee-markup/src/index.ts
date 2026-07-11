@@ -23,6 +23,7 @@ import {
   type Profile,
 } from "@cube-drone/marquee-html-renderer";
 import { marqueeCss } from "@cube-drone/marquee-css";
+import { standardEmoji } from "@cube-drone/marquee-emoji";
 import { externalFontFaces, inlineFontFaces } from "@cube-drone/marquee-fonts";
 import {
   composeTurbolinks,
@@ -41,12 +42,16 @@ export interface MarqueeOptions {
   fonts?: "inline" | "external" | "none";
   /** Base path for fonts: "external" urls (default "fonts/"). */
   fontBase?: string;
-  /** A pluggable emoji table: slug -> replacement text, or
-   * `{ image, alt? }` for a custom-emoji image (rendered as an inline
-   * `<img class="mq-emoji">`, character-sized). Anything not in the table
-   * stays literal `:slug:`. (For dynamic resolution, use `profile.emoji`
-   * instead - a profile override wins over this.) */
+  /** Your emoji: slug -> replacement text, or `{ image, alt? }` for a
+   * custom-emoji image (rendered as an inline `<img class="mq-emoji">`,
+   * character-sized). Entries layer over the default table and win on
+   * collision. (For dynamic resolution, use `profile.emoji` instead - a
+   * profile override wins over everything.) */
   emoji?: Record<string, EmojiResolution>;
+  /** The implicit emoji table (default true): gemoji's standard shortcodes,
+   * from @cube-drone/marquee-emoji. Set false and unlisted slugs stay
+   * literal `:slug:`. */
+  emojiDefaults?: boolean;
   /** Turbolink expanders; defaults to the fetchless default set. */
   plugins?: TurbolinkPlugin[];
   /** Overrides layered on the assembled profile (schemes, media policy...). */
@@ -55,11 +60,14 @@ export interface MarqueeOptions {
 
 function assembleProfile(opts: MarqueeOptions): { profile: Profile; plugins: TurbolinkPlugin[] } {
   const plugins = opts.plugins ?? defaultPlugins;
-  const emoji = opts.emoji;
+  const emoji: Record<string, EmojiResolution> = {
+    ...(opts.emojiDefaults === false ? {} : standardEmoji),
+    ...opts.emoji,
+  };
   const profile: Profile = {
     ...bareWebProfile,
     turbolink: composeTurbolinks(plugins),
-    ...(emoji === undefined ? {} : { emoji: (slug: string) => emoji[slug] ?? null }),
+    emoji: (slug: string) => emoji[slug] ?? null,
     ...opts.profile,
   };
   return { profile, plugins };
@@ -152,6 +160,7 @@ export {
 } from "@cube-drone/marquee-html-renderer";
 export type { EmojiResolution, MediaResolution, Profile, TurbolinkLevel } from "@cube-drone/marquee-html-renderer";
 export { marqueeCss } from "@cube-drone/marquee-css";
+export { standardEmoji } from "@cube-drone/marquee-emoji";
 export {
   FONT_MANIFEST,
   externalFontFaces,
