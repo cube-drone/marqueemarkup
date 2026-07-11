@@ -193,6 +193,22 @@ test("turbolink socket: rich plugins wrap, the floor is always reachable", () =>
   assert.ok(floor.includes('<p class="mq-turbolink"><a href="https://e.x/post">'), "no plugins: the floor");
 });
 
+test("background tiles: media policy applies, URLs are CSS-sanitized", () => {
+  const tiled = renderMarquee(":::section background=tile:https://e.x/stars.gif\nwords\n:::\n");
+  assert.ok(tiled.includes("--mq-bg-tile:url('https://e.x/stars.gif')"), "in-policy image tiles");
+  const blocked = renderMarquee(":::section background=tile:weird://x.gif\nwords\n:::\n");
+  assert.ok(!blocked.includes("mq-bg-tile"), "out-of-policy scheme: no background, words survive");
+  assert.ok(blocked.includes("words"), "the words survive the lost wallpaper");
+  const notImage = renderMarquee(":::section background=tile:https://e.x/song.mp3\nwords\n:::\n");
+  assert.ok(!notImage.includes("mq-bg-tile"), "non-image target: no background");
+  const sly = renderMarquee(
+    `:::section background="tile:https://e.x/x.png?a=') ; background:url(//evil"\nwords\n:::\n`,
+  );
+  const token = sly.match(/--mq-bg-tile:url\('([^']*)'\)/);
+  assert.ok(token !== null, "sly url still lands in exactly one url token");
+  assert.ok(!/[()'"\\]/.test(token![1]!), "quotes, parens, backslashes never survive into it");
+});
+
 test("tables: paragraph-rows, [c] cells, header promotion, nothing eaten", () => {
   const html = renderMarquee(
     ":::table header=row\n[c]dish[/c] [c]price[/c]\n\n[c]*Spaghetti*[/c] [c]$12[/c]\n:::\n",

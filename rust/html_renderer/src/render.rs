@@ -290,15 +290,48 @@ fn turbolink(target: &str, level_attr: Option<&str>, profile: &dyn Profile) -> S
     )
 }
 
+/// A resolved URL made safe for a CSS url("...") token: percent-encode
+/// whitespace, controls, backslashes, quotes, and parens, so the value can
+/// never terminate the url() or the declaration - author bytes must not
+/// write CSS, even inside their own style attribute.
+fn css_url(url: &str) -> String {
+    let mut out = String::with_capacity(url.len());
+    for b in url.bytes() {
+        match b {
+            b'"' | b'\'' | b'(' | b')' | b'\\' | b'<' | b'>' | b'`' | b'{' | b'}' | b'|'
+            | b'^' | 0x00..=0x20 | 0x7f.. => {
+                out.push_str(&format!("%{b:02X}"));
+            }
+            _ => out.push(b as char),
+        }
+    }
+    out
+}
+
 /// Style knobs on a block node: validated values into --mq-* slots; the
-/// stylesheet owns which CSS property each slot feeds.
-fn style_vars(attrs: &Attrs) -> String {
+/// stylesheet owns which CSS property each slot feeds. `background` takes a
+/// color, or `tile:<target>` - a tiled background image, resolved through
+/// the embedder's media policy exactly as an embed (a background fetch is a
+/// fetch): out-of-policy or non-image targets degrade to no background.
+fn style_vars(attrs: &Attrs, profile: &dyn Profile) -> String {
     let mut vars: Vec<String> = Vec::new();
     if let Some(v) = attrs.get("color").filter(|v| is_color_value(v)) {
         vars.push(format!("--mq-color:{v}"));
     }
-    if let Some(v) = attrs.get("background").filter(|v| is_color_value(v)) {
-        vars.push(format!("--mq-bg:{v}"));
+    match attrs.get("background") {
+        Some(v) if is_color_value(v) => vars.push(format!("--mq-bg:{v}")),
+        Some(v) => {
+            if let Some(target) = v.strip_prefix("tile:") {
+                if let Some(media) = profile.media(target) {
+                    if media.kind == MediaKind::Image {
+                        // Single-quoted url token: the style attribute itself
+                        // is double-quoted; css_url percent-encodes quotes.
+                        vars.push(format!("--mq-bg-tile:url('{}')", css_url(&media.url)));
+                    }
+                }
+            }
+        }
+        None => {}
     }
     if vars.is_empty() {
         String::new()
@@ -356,7 +389,7 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
                 "<div class=\"mq-page{layout}{}{}\"{}>{inner}</div>",
                 scheme_class(attrs),
                 font_class(attrs),
-                style_vars(attrs)
+                style_vars(attrs, ctx.profile)
             )
         }
         "section" => {
@@ -368,7 +401,7 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
                 "<section class=\"mq-section{}{}\"{slot}{}>{inner}</section>",
                 scheme_class(attrs),
                 font_class(attrs),
-                style_vars(attrs)
+                style_vars(attrs, ctx.profile)
             )
         }
         "turbolink" if attrs.contains_key("target") => {

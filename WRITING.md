@@ -392,6 +392,12 @@ webring stuff
 look, and whichever knob is set *closest* wins — that's the entire cascade. A section without
 a slot is just a styled container, usable anywhere.
 
+**Backgrounds** take a color (`background=navy`) or — the early web's crowning glory — a
+**tiled image**: `background=tile:stars.gif`. Any image target works (relative, `https:`,
+pinned `blob:`), subject to the same host media policy as an embed; if the host won't fetch
+it, you get no wallpaper and your words carry on. Yes, this means you can tile something
+truly horrifying back there. We know. That's the point.
+
 There are no font-size sliders, no pixel positioning, no CSS. Layout is picked, not authored —
 that's what keeps every Marquee page readable on every client.
 

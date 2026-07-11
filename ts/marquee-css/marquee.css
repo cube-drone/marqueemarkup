@@ -102,7 +102,10 @@
 
 .mq-page,
 .mq-section {
-  background: var(--mq-bg, transparent);
+  background-color: var(--mq-bg, transparent);
+  /* background=tile:<target> - the early web's tiled wallpaper, back by
+     popular demand; the default `repeat` does the tiling */
+  background-image: var(--mq-bg-tile, none);
   color: var(--mq-color, inherit);
 }
 

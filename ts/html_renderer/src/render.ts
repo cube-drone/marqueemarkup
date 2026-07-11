@@ -265,15 +265,35 @@ function turbolink(target: string, levelAttr: string | undefined, profile: Profi
   return `<p class="mq-turbolink"><a href="${escapeAttr(target)}">${escapeText(target)}</a></p>`;
 }
 
+/** A resolved URL made safe for a CSS url("...") token: encodeURI handles
+ * whitespace, controls, backslashes, and double quotes; quotes and parens
+ * that encodeURI deliberately leaves are percent-encoded on top, so the
+ * value can never terminate the url() or the declaration - author bytes
+ * must not write CSS, even inside their own style attribute. */
+function cssUrl(url: string): string {
+  return encodeURI(url).replaceAll("'", "%27").replaceAll("(", "%28").replaceAll(")", "%29");
+}
+
 /** Style knobs on a block node: validated values into --mq-* slots; the
- * stylesheet owns which CSS property each slot feeds. */
-function styleVars(attrs: Attrs): string {
+ * stylesheet owns which CSS property each slot feeds. `background` takes a
+ * color, or `tile:<target>` - a tiled background image, resolved through
+ * the embedder's media policy exactly as an embed (a background fetch is a
+ * fetch): out-of-policy or non-image targets degrade to no background. */
+function styleVars(attrs: Attrs, profile: Profile): string {
   const vars: string[] = [];
   if (isColorValue(attrs["color"])) {
     vars.push(`--mq-color:${attrs["color"]}`);
   }
-  if (isColorValue(attrs["background"])) {
-    vars.push(`--mq-bg:${attrs["background"]}`);
+  const bg = attrs["background"];
+  if (bg !== undefined && bg.startsWith("tile:")) {
+    const media = profile.media(bg.slice("tile:".length));
+    if (media !== null && media.kind === "image") {
+      // Single-quoted url token: the style attribute itself is
+      // double-quoted, and cssUrl percent-encodes single quotes.
+      vars.push(`--mq-bg-tile:url('${cssUrl(media.url)}')`);
+    }
+  } else if (isColorValue(bg)) {
+    vars.push(`--mq-bg:${bg}`);
   }
   return vars.length === 0 ? "" : ` style="${vars.join(";")}"`;
 }
@@ -301,11 +321,11 @@ function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string 
       return inner;
     case "page": {
       const layout = isToken(attrs["layout"]) ? ` mq-layout-${attrs["layout"]}` : "";
-      return `<div class="mq-page${layout}${schemeClass(attrs)}${fontClass(attrs)}"${styleVars(attrs)}>${inner}</div>`;
+      return `<div class="mq-page${layout}${schemeClass(attrs)}${fontClass(attrs)}"${styleVars(attrs, profile)}>${inner}</div>`;
     }
     case "section": {
       const slot = isToken(attrs["slot"]) ? ` data-slot="${attrs["slot"]}"` : "";
-      return `<section class="mq-section${schemeClass(attrs)}${fontClass(attrs)}"${slot}${styleVars(attrs)}>${inner}</section>`;
+      return `<section class="mq-section${schemeClass(attrs)}${fontClass(attrs)}"${slot}${styleVars(attrs, profile)}>${inner}</section>`;
     }
     case "turbolink": {
       const target = attrs["target"];

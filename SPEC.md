@@ -352,7 +352,10 @@ Style is where the spec says "no" most, so here is the positive model, in one pl
   scheme degrades to unstyled.
 - **Tiny closed knob set; only `color`'s value is open.** Color (text/background/link - hex or a
   palette token; inline via `[color=red]`, block via a knob), background (color / named pattern
-  / `tile:blob:HASH`), scheme, cursor, and **`font` - a named family enum in two tiers**: four
+  / **`tile:<target>`** - the early web's tiled wallpaper: any target, resolved through the
+  embedder's *media policy* exactly as an embed, because a background fetch is a fetch;
+  out-of-policy or non-image targets degrade to no background, and the resolved URL is
+  CSS-sanitized - author bytes never write CSS), scheme, cursor, and **`font` - a named family enum in two tiers**: four
   standard stacks (`sans`, `serif`, `mono`, `comic`) and a curated grab bag of SIL-OFL faces
   (~two dozen; the canonical name list ships with the reference stylesheet). Inline via
   `[font=orbitron]`, block via the knob on pages/sections. An embedder serves the faces

@@ -547,6 +547,19 @@ Hark — the same markup, an entirely different mood (this one says `scheme=parc
 THE CONDIMENT KING'S OWN COLORWAY (`scheme=hotdog-stand`)
 :::
 
+And backgrounds tile images, exactly as the old web intended — any image target, honoring
+the host's media policy like every other embed:
+
+```marquee
+:::section background=tile:example-media/angry-burger-emoji.png color=#fff8dc
+**WELCOME TO THE BURGER ZONE.** We regret nothing.
+:::
+```
+
+:::section background=tile:example-media/angry-burger-emoji.png color=#fff8dc
+**WELCOME TO THE BURGER ZONE.** We regret nothing.
+:::
+
 And a whole page-in-miniature, wrapping slotted sections:
 
 ```marquee

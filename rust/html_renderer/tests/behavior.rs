@@ -183,6 +183,32 @@ fn turbolink_socket_floor_and_rich_wrapper() {
 }
 
 #[test]
+fn background_tiles_policy_and_sanitization() {
+    let tiled = render_marquee(
+        ":::section background=tile:https://e.x/stars.gif\nwords\n:::\n",
+        &BareWebProfile,
+    )
+    .unwrap();
+    assert!(tiled.contains("--mq-bg-tile:url('https://e.x/stars.gif')"));
+    let blocked = render_marquee(":::section background=tile:weird://x.gif\nwords\n:::\n", &BareWebProfile).unwrap();
+    assert!(!blocked.contains("mq-bg-tile"), "out-of-policy scheme: no background");
+    assert!(blocked.contains("words"), "the words survive the lost wallpaper");
+    let not_image = render_marquee(":::section background=tile:https://e.x/song.mp3\nwords\n:::\n", &BareWebProfile).unwrap();
+    assert!(!not_image.contains("mq-bg-tile"), "non-image target: no background");
+    let sly = render_marquee(
+        ":::section background=\"tile:https://e.x/x.png?a=') ; background:url(//evil\"\nwords\n:::\n",
+        &BareWebProfile,
+    )
+    .unwrap();
+    let start = sly.find("--mq-bg-tile:url('").expect("one url token") + "--mq-bg-tile:url('".len();
+    let token = &sly[start..start + sly[start..].find('\'').expect("token closes")];
+    assert!(
+        !token.contains(['(', ')', '"', '\\']),
+        "quotes, parens, backslashes never survive into the url token: {token}"
+    );
+}
+
+#[test]
 fn tables_rows_cells_headers_nothing_eaten() {
     let html = render_marquee(
         ":::table header=row\n[c]dish[/c] [c]price[/c]\n\n[c]*Spaghetti*[/c] [c]$12[/c]\n:::\n",
