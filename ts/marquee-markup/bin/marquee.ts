@@ -29,6 +29,9 @@ function usage(): never {
       "  marquee <site-dir> <out-dir>      build a whole site",
       "  --nofetch                         skip the fetch-ahead pass (no network,",
       "                                    web turbolinks stay plain links)",
+      "  --envelope                        wrap plain documents in a 650px centered",
+      "                                    envelope for readability (documents with",
+      "                                    their own :::page layout are left alone)",
     ].join("\n"),
   );
   process.exit(2);
@@ -38,6 +41,7 @@ const args = process.argv.slice(2);
 const positional: string[] = [];
 let outFile: string | null = null;
 let fetchMode = true;
+let envelope = false;
 for (let i = 0; i < args.length; i += 1) {
   if (args[i] === "-o") {
     outFile = args[++i] ?? null;
@@ -48,6 +52,10 @@ for (let i = 0; i < args.length; i += 1) {
   }
   if (args[i] === "--nofetch") {
     fetchMode = false;
+    continue;
+  }
+  if (args[i] === "--envelope") {
+    envelope = true;
     continue;
   }
   positional.push(args[i]!);
@@ -70,7 +78,9 @@ if (isDir) {
   if (outDir === undefined) {
     usage();
   }
-  const report = fetchMode ? await buildSiteFetch(input!, outDir) : buildSite(input!, outDir);
+  const report = fetchMode
+    ? await buildSiteFetch(input!, outDir, { envelope })
+    : buildSite(input!, outDir, { envelope });
   console.error(
     `built ${report.pages.length} pages (${report.pages.join(", ")}) + ${report.mediaFiles} media files + ${report.fontFaces.length} font faces -> ${report.outDir}`,
   );
@@ -79,7 +89,7 @@ if (isDir) {
     usage();
   }
   const source = readFileSync(input!, "utf8");
-  const page = fetchMode ? await marqueeFetch(source) : marquee(source);
+  const page = fetchMode ? await marqueeFetch(source, { envelope }) : marquee(source, { envelope });
   if (outFile === null) {
     process.stdout.write(page);
   } else {

@@ -36,9 +36,13 @@ import {
   turbolinkTargets,
   type TurbolinkPlugin,
 } from "@cube-drone/marquee-turbolink";
-import { metaTitle } from "./index.ts";
+import { docIsPage, envelopeCss, metaTitle } from "./index.ts";
 
 export interface SiteOptions {
+  /** Wrap pages in a 650px centered readability envelope (default false;
+   * opt-in so it can't interfere with a host stack's layout). Documents
+   * that ARE a `:::page` are left alone. */
+  envelope?: boolean;
   /** Turbolink expanders; defaults to the fetchless default set. */
   plugins?: TurbolinkPlugin[];
   /** Your emoji: slug -> replacement text or `{ image, alt? }`, layered
@@ -179,7 +183,7 @@ function buildSiteCore(
 <link rel="stylesheet" href="css/turbolink.css">
 <style>/* the embedder's page, the embedder's reset: full-bleed backgrounds
    (marquee.css never touches body - it must embed politely in host pages) */
-body { margin: 0; }</style>
+body { margin: 0; }${opts.envelope === true ? `\n${envelopeCss}` : ""}</style>
 </head>
 <body>
 ${body}
@@ -206,6 +210,10 @@ ${body}
     }
     for (const token of usedFontTokens(body)) {
       usedFonts.add(token);
+    }
+    // The envelope defers to a document that IS a page.
+    if (opts.envelope === true && !docIsPage(doc)) {
+      body = `<div class="mq-envelope">${body}</div>`;
     }
     writeFileSync(join(outDir, `${id}.html`), shell(metaTitle(doc) ?? id, body));
   }

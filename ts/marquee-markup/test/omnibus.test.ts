@@ -94,6 +94,23 @@ test("fonts: external mode emits urls and names the tokens", () => {
   assert.deepEqual(fontTokens, ["orbitron"]);
 });
 
+test("envelope: opt-in readability wrap that defers to :::page", () => {
+  const plain = marquee("just some words\n", { envelope: true });
+  assert.ok(plain.includes('<div class="mq-envelope"><div class="mq-doc">'), "plain text wrapped");
+  assert.ok(plain.includes("max-width: 650px"), "envelope rule shipped");
+  const laidOut = marquee(":::page layout=basic\nwords\n:::\n", { envelope: true });
+  assert.ok(!laidOut.includes("mq-envelope"), "a document that IS a :::page is left alone");
+  const demoing = marquee("prose first\n\n:::page layout=basic\na page demo\n:::\n\nprose after\n", {
+    envelope: true,
+  });
+  assert.ok(
+    demoing.includes("mq-envelope"),
+    "a document merely containing a page demo is still unstructured: wrapped",
+  );
+  const off = marquee("just some words\n");
+  assert.ok(!off.includes("mq-envelope"), "default: no envelope, no surprises for host stacks");
+});
+
 test("marqueeFetch(): resolve() runs ahead, render consumes the data", async () => {
   const source = "demo://hello-world\n";
   // An embedder registering its own scheme: plugins expand it, the profile

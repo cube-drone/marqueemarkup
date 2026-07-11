@@ -45,9 +45,13 @@ If `marquee` is a little too all-inclusive for your tastes:
 - `marqueeFragment(source, opts)` → `{ body, css, title, fontTokens }` — all the pieces
 - `buildSite(siteDir, outDir, opts)` → the CLI's site build as a function
 - options: `{ title, fonts: "inline" | "external" | "none", fontBase, emoji, emojiDefaults,
-  plugins, profile }` — inline the fonts, reference them externally (copy the `fontTokens`
-  files via `fontFilePath()`), or skip them; add turbolink expanders; override any embedder
-  policy
+  envelope, plugins, profile }` — inline the fonts, reference them externally (copy the
+  `fontTokens` files via `fontFilePath()`), or skip them; add turbolink expanders; override
+  any embedder policy
+- `envelope: true` (or `npx marquee --envelope`) wraps plain documents in a 650px centered
+  envelope so unstructured text reads comfortably. Opt-in, because it could interfere with a
+  host stack's own layout — and a document that *is* a `:::page` (top-level content is page
+  directives) is left alone either way; merely mentioning a page demo mid-prose doesn't count
 - emoji just work: `:sparkles:` and 1,900 friends resolve out of the box (the standard gemoji
   table, via `@cube-drone/marquee-emoji`). Layer your own entries on with
   `emoji: { slug: "🎩" }` or `emoji: { slug: { image, alt? } }` for custom image emoji —

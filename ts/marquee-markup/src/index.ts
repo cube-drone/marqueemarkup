@@ -55,6 +55,12 @@ export interface MarqueeOptions {
    * from @cube-drone/marquee-emoji. Set false and unlisted slugs stay
    * literal `:slug:`. */
   emojiDefaults?: boolean;
+  /** Wrap the rendered document in a 650px centered envelope, purely for
+   * readability (default false - it could interfere with a host stack's
+   * own layout, so it's opt-in). A document that IS a `:::page` (its
+   * top-level content is page directives) is left alone even when this is
+   * on: the author took layout control, the envelope defers. */
+  envelope?: boolean;
   /** Turbolink expanders; defaults to the fetchless default set. */
   plugins?: TurbolinkPlugin[];
   /** Overrides layered on the assembled profile (schemes, media policy...). */
@@ -112,6 +118,24 @@ export function marqueeFragment(source: string, opts: MarqueeOptions = {}): Frag
   return fragmentCore(parse(source), opts, opts.plugins ?? defaultPlugins);
 }
 
+/** The readability envelope: omnibus convenience, not renderer contract
+ * (mq-* classes in marquee.css are the renderers'; this one is ours). */
+export const envelopeCss = `.mq-envelope { max-width: 650px; margin-inline: auto; padding-inline: 1rem; }`;
+
+/** Does the document take layout into its own hands? Only when it IS a
+ * page: every top-level block (ignoring `:::meta` and comments) is a
+ * `:::page` directive. A document that merely *contains* a page demo among
+ * prose is still an unstructured document, and the envelope applies. */
+export function docIsPage(doc: Node): boolean {
+  if (doc.type !== "document") {
+    return false;
+  }
+  const blocks = doc.children.filter(
+    (c) => c.type !== "comment" && !(c.type === "directive" && c.name === "meta"),
+  );
+  return blocks.length > 0 && blocks.every((c) => c.type === "directive" && c.name === "page");
+}
+
 function fragmentCore(
   doc: Node,
   opts: MarqueeOptions,
@@ -119,9 +143,16 @@ function fragmentCore(
   resolved?: Map<string, unknown>,
 ): Fragment {
   const profile = assembleProfile(opts, plugins, resolved);
-  const body = render(doc, profile);
+  let body = render(doc, profile);
+  const enveloped = opts.envelope === true && !docIsPage(doc);
+  if (enveloped) {
+    body = `<div class="mq-envelope">${body}</div>`;
+  }
   const fontTokens = usedFontTokens(body);
   let css = `${marqueeCss}\n${turbolinkStyles(plugins)}`;
+  if (enveloped) {
+    css += `\n${envelopeCss}`;
+  }
   const fonts = opts.fonts ?? "inline";
   const faces =
     fonts === "inline"
