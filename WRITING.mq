@@ -178,8 +178,8 @@ Known shortcodes resolve — :tophat: :sparkles: :blobcat: — unknown ones stay
 
 ```marquee
 E = mc[sup]2[/sup], H[sub]2[/sub]O, [small]the fine print[/small], colors by
-[color=goldenrod]name[/color] or [color=#f06]hex[/color], and margin
-notes[sidenote]like this aside[/sidenote] that never interrupt the sentence.
+[color=goldenrod]name[/color] or [color=#f06]hex[/color], and
+asides[sidenote]like this one[/sidenote] that never interrupt the sentence.
 
 The size dial goes [size=1]one[/size] [size=2]two[/size] [size=3]three[/size]
 [size=4]four[/size] [size=5]five[/size] [size=6]six[/size] [size=7]SEVEN[/size],
@@ -196,9 +196,10 @@ Fonts are picked from a closed list, never uploaded: [font=orbitron]SPACE STATIO
 ```
 
 E = mc[sup]2[/sup], H[sub]2[/sub]O, [small]the fine print[/small], colors by
-[color=goldenrod]name[/color] or [color=#f06]hex[/color], and margin
-notes[sidenote]like this aside, which floats beside the text on a wide screen and becomes a
-parenthetical on a narrow one[/sidenote] that never interrupt the sentence.
+[color=goldenrod]name[/color] or [color=#f06]hex[/color], and
+asides[sidenote]like this one — a numbered mark where it happened, the note set just below the
+paragraph, sequentially numbered through the whole document[/sidenote] that never interrupt
+the sentence.
 
 The size dial goes [size=1]one[/size] [size=2]two[/size] [size=3]three[/size]
 [size=4]four[/size] [size=5]five[/size] [size=6]six[/size] [size=7]SEVEN[/size],

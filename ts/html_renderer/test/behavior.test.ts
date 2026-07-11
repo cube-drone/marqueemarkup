@@ -193,6 +193,18 @@ test("turbolink socket: rich plugins wrap, the floor is always reachable", () =>
   assert.ok(floor.includes('<p class="mq-turbolink"><a href="https://e.x/post">'), "no plugins: the floor");
 });
 
+test("asides: numbered marks, notes flush below the triggering block", () => {
+  const html = renderMarquee(
+    "First[sidenote]note one[/sidenote] paragraph.\n\nSecond[sidenote]note two[/sidenote] here.\n",
+  );
+  assert.ok(html.includes('<sup class="mq-noteref">1</sup> paragraph.</p><aside class="mq-notes">'));
+  assert.ok(html.includes('<span class="mq-note-num">1</span>note one'));
+  assert.ok(html.includes('<sup class="mq-noteref">2</sup>'), "numbering runs through the document");
+  assert.ok(html.includes('<span class="mq-note-num">2</span>note two'));
+  const heading = renderMarquee("# Title[sidenote]on a heading[/sidenote]\n");
+  assert.ok(heading.includes("</h1><aside"), "headings flush their notes too");
+});
+
 test("unknown span shrugs but children survive styled context", () => {
   const html = renderMarquee("[spiral]still here[/spiral]\n");
   assert.ok(html.includes("still here"));

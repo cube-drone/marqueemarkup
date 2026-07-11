@@ -170,44 +170,45 @@ big {
   overflow-wrap: anywhere;
 }
 
-/* ---- sidenotes: margin aside when wide, parenthetical when narrow ---- */
+/* ---- asides: a numbered mark in the flow, the note just below the
+ * triggering paragraph. Regular flow - no floats (ugly reflow, orphaned
+ * triggers), no popups (JS) ---- */
 
-.mq-sidenote {
+.mq-noteref {
+  font-size: 0.75em;
+  opacity: 0.8;
+}
+
+.mq-notes {
+  margin: 0.25rem 0 1rem;
+}
+
+.mq-note {
+  margin: 0.15rem 0;
   font-size: 0.85em;
+  font-style: italic;
   opacity: 0.85;
 }
 
-.mq-sidenote::before {
-  content: " (";
-}
-
-.mq-sidenote::after {
-  content: ") ";
-}
-
-@media (min-width: 70rem) {
-  .mq-sidenote {
-    float: right;
-    clear: right;
-    width: min(18rem, 40%);
-    margin: 0 0 0.5rem 1rem;
-    border-left: 2px solid rgba(136, 136, 136, 0.33);
-    padding-left: 0.5rem;
-  }
-
-  .mq-sidenote::before,
-  .mq-sidenote::after {
-    content: none;
-  }
+.mq-note-num {
+  font-style: normal;
+  font-size: 0.75em;
+  vertical-align: super;
+  margin-right: 0.3em;
+  opacity: 0.8;
 }
 
 /* ---- effects: best-effort CSS motion. The old web's mistake was never
  * marquee; it was marquee without an exit — the exit is the media query. */
 
 .mq-marquee {
+  /* width pinned to the container: an inline-block would shrink-to-fit the
+   * text, leaving a scroll window only as wide as the words (the inner
+   * strip's percentage padding is circular during intrinsic sizing and
+   * resolves to 0). Full-bleed is what marquee means. */
   display: inline-block;
+  width: 100%;
   overflow: hidden;
-  max-width: 100%;
   white-space: nowrap;
   vertical-align: bottom;
 }
@@ -337,6 +338,12 @@ big {
 
 /* ---- layouts: picked, not authored ---- */
 
+.mq-page {
+  /* breathing room INSIDE the painted background; the page background
+   * itself runs full-bleed (the embedder's shell handles body margin) */
+  padding: 1rem clamp(1rem, 4vw, 2rem);
+}
+
 .mq-layout-nav-footer,
 .mq-layout-two-column-nav-footer,
 .mq-layout-three-column-nav-footer {
@@ -379,6 +386,12 @@ big {
 }
 
 /* ---- schemes: named knob bundles (grown from the corpus) ---- */
+
+/* a schemed section paints its own background: give the text room inside
+ * (scoped to <section> so a schemed page keeps its own padding rule) */
+section[class*="mq-scheme-"] {
+  padding: 0.75rem 1rem;
+}
 
 .mq-scheme-noir {
   --mq-bg: #101014;

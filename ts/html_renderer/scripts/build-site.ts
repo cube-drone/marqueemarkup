@@ -118,6 +118,9 @@ function shell(title: string, body: string): string {
 <link rel="stylesheet" href="css/marquee.css">
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/turbolink.css">
+<style>/* the embedder's page, the embedder's reset: full-bleed backgrounds
+   (marquee.css never touches body - it must embed politely in host pages) */
+body { margin: 0; }</style>
 </head>
 <body>
 ${body}

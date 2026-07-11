@@ -450,8 +450,12 @@ the same time is not an edge case, it is the point.
 **Sidenotes are first-class** (`text[sidenote]the witty aside[/sidenote] continues`): the
 Pratchett/Adams/Tufte margin aside, which every markdown ecosystem reinvents as a plugin, is
 blessed vocabulary here. The span's body is the aside (rich inline content); it attaches at its
-position in the flow; a capable renderer floats it in the margin (or hover/tap-to-expand on
-narrow screens), and it degrades - never hidden - to an inline parenthetical or a footnote. No
+position in the flow. The reference treatment is a sequentially numbered mark at the trigger
+with the note rendered just below the triggering paragraph - part of regular flow, where the
+reader actually is (nobody scrolls to end-of-document footnotes, and margin floats orphan
+their triggers and reflow ugly). A gutter margin note or tap-to-expand are equally conforming
+where a renderer has the room or the runtime; it degrades - never hidden - to an inline
+parenthetical. No
 grammar change: it is a `span{name: "sidenote"}` like any other, just one the spec defines rather
 than the embedder. (Godot's RichTextLabel speaks BBCode with
 effect tags natively; a game-engine Marquee renderer for RPG dialogue is an intended

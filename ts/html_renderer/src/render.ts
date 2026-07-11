@@ -7,14 +7,37 @@
 import type { Attrs, Node } from "../../parser/src/index.ts";
 import { bareWebProfile, type Profile, type TurbolinkLevel } from "./profile.ts";
 
+/** Render state: the profile, plus the one piece of cross-block
+ * coordination the renderer owns - aside numbering (sequential through the
+ * document) and the pending notes that flush after the triggering block. */
+interface Ctx {
+  profile: Profile;
+  note: { n: number; pending: string[] };
+}
+
 export function render(node: Node, profile: Profile = bareWebProfile): string {
+  return renderNode(node, { profile, note: { n: 0, pending: [] } });
+}
+
+/** Asides render just below the paragraph (or heading) that triggered
+ * them - part of regular flow, no floats, no popups. */
+function flushNotes(ctx: Ctx, html: string): string {
+  if (ctx.note.pending.length === 0) {
+    return html;
+  }
+  const notes = ctx.note.pending.map((n) => `<p class="mq-note">${n}</p>`).join("");
+  ctx.note.pending = [];
+  return `${html}<aside class="mq-notes">${notes}</aside>`;
+}
+
+function renderNode(node: Node, ctx: Ctx): string {
   switch (node.type) {
     case "document":
-      return `<div class="mq-doc">${children(node.children, profile)}</div>`;
+      return `<div class="mq-doc">${children(node.children, ctx)}</div>`;
     case "paragraph":
-      return `<p>${children(node.children, profile)}</p>`;
+      return flushNotes(ctx, `<p>${children(node.children, ctx)}</p>`);
     case "heading":
-      return `<h${node.level}>${children(node.children, profile)}</h${node.level}>`;
+      return flushNotes(ctx, `<h${node.level}>${children(node.children, ctx)}</h${node.level}>`);
     case "code_block": {
       const lang = infoToken(node.info);
       const cls = lang === null ? "" : ` class="language-${escapeAttr(lang)}"`;
@@ -22,17 +45,17 @@ export function render(node: Node, profile: Profile = bareWebProfile): string {
       return `<pre class="mq-code"><code${cls}>${text}</code></pre>`;
     }
     case "blockquote":
-      return `<blockquote>${children(node.children, profile)}</blockquote>`;
+      return `<blockquote>${children(node.children, ctx)}</blockquote>`;
     case "list": {
       const tag = node.ordered ? "ol" : "ul";
-      return `<${tag}>${children(node.children, profile)}</${tag}>`;
+      return `<${tag}>${children(node.children, ctx)}</${tag}>`;
     }
     case "list_item":
-      return `<li>${children(node.children, profile)}</li>`;
+      return `<li>${children(node.children, ctx)}</li>`;
     case "thematic_break":
       return "<hr>";
     case "directive":
-      return directive(node.name, node.attrs, node.children, profile);
+      return directive(node.name, node.attrs, node.children, ctx);
     case "invalid_directive":
       return `<div class="mq-invalid" data-reason="${escapeAttr(node.reason)}"></div>`;
     case "comment":
@@ -40,27 +63,27 @@ export function render(node: Node, profile: Profile = bareWebProfile): string {
     case "text":
       return escapeText(node.value);
     case "emphasis":
-      return `<em>${children(node.children, profile)}</em>`;
+      return `<em>${children(node.children, ctx)}</em>`;
     case "strong":
-      return `<strong>${children(node.children, profile)}</strong>`;
+      return `<strong>${children(node.children, ctx)}</strong>`;
     case "strikethrough":
-      return `<del>${children(node.children, profile)}</del>`;
+      return `<del>${children(node.children, ctx)}</del>`;
     case "code_span":
       return `<code>${escapeText(node.text)}</code>`;
     case "link": {
-      const inner = children(node.children, profile);
-      return profile.linkAllowed(node.target)
+      const inner = children(node.children, ctx);
+      return ctx.profile.linkAllowed(node.target)
         ? `<a href="${escapeAttr(node.target)}">${inner}</a>`
         : `<span class="mq-blocked">${inner}</span>`;
     }
     case "embed":
-      return embed(node.target, node.alt, profile);
+      return embed(node.target, node.alt, ctx.profile);
     case "turbolink":
-      return turbolink(node.target, undefined, profile);
+      return turbolink(node.target, undefined, ctx.profile);
     case "span":
-      return span(node.name, node.attrs, node.children, profile);
+      return span(node.name, node.attrs, node.children, ctx);
     case "emoji": {
-      const resolved = profile.emoji(node.slug);
+      const resolved = ctx.profile.emoji(node.slug);
       return escapeText(resolved ?? `:${node.slug}:`);
     }
     case "hard_break":
@@ -68,8 +91,8 @@ export function render(node: Node, profile: Profile = bareWebProfile): string {
   }
 }
 
-function children(nodes: Node[], profile: Profile): string {
-  return nodes.map((n) => render(n, profile)).join("");
+function children(nodes: Node[], ctx: Ctx): string {
+  return nodes.map((n) => renderNode(n, ctx)).join("");
 }
 
 // -- validation gates (closed value grammars; failures degrade, never emit)
@@ -240,8 +263,9 @@ function fontClass(attrs: Attrs): string {
   return value !== undefined && FONTS[value] !== undefined ? ` mq-font-${value}` : "";
 }
 
-function directive(name: string, attrs: Attrs, nodes: Node[], profile: Profile): string {
-  const inner = children(nodes, profile);
+function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string {
+  const { profile } = ctx;
+  const inner = children(nodes, ctx);
   const custom = profile.directive(name, attrs, inner);
   if (custom !== null) {
     return custom;
@@ -293,9 +317,9 @@ function directive(name: string, attrs: Attrs, nodes: Node[], profile: Profile):
  * browser itself, so color survives with no stylesheet and no style
  * attributes - the floor of the degradation ladder. The --mq-color slot is
  * the stylesheet-era ceiling on the same element. */
-function span(name: string, attrs: Attrs, nodes: Node[], profile: Profile): string {
-  const inner = children(nodes, profile);
-  const custom = profile.span(name, attrs, inner);
+function span(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string {
+  const inner = children(nodes, ctx);
+  const custom = ctx.profile.span(name, attrs, inner);
   if (custom !== null) {
     return custom;
   }
@@ -338,8 +362,14 @@ function span(name: string, attrs: Attrs, nodes: Node[], profile: Profile): stri
       }
       return inner; // invalid value: the effect degrades, the words survive
     }
-    case "sidenote":
-      return `<span class="mq-sidenote" role="note">${inner}</span>`;
+    case "sidenote": {
+      // A numbered mark in the flow; the note itself flushes just below the
+      // triggering paragraph (see flushNotes). Numbering runs sequentially
+      // through the whole document.
+      ctx.note.n += 1;
+      ctx.note.pending.push(`<span class="mq-note-num">${ctx.note.n}</span>${inner}`);
+      return `<sup class="mq-noteref">${ctx.note.n}</sup>`;
+    }
     case "marquee": {
       const dir = isToken(attrs["direction"]) ? ` data-direction="${attrs["direction"]}"` : "";
       const speed = attrs["speed"] !== undefined && COUNT.test(attrs["speed"])
@@ -358,7 +388,7 @@ function span(name: string, attrs: Attrs, nodes: Node[], profile: Profile): stri
     case "jitter":
     case "wave":
       if (attrs["by"] === "letter" || attrs["by"] === "word") {
-        return bySegments(name, attrs["by"], attrs["phase"], nodes, profile);
+        return bySegments(name, attrs["by"], attrs["phase"], nodes, ctx);
       }
       return `<span class="mq-${name}">${inner}</span>`;
     case "typewriter":
@@ -397,7 +427,7 @@ function bySegments(
   by: SplitBy,
   phaseAttr: string | undefined,
   nodes: Node[],
-  profile: Profile,
+  ctx: Ctx,
 ): string {
   // Each effect has a natural phase order (jitter scatters, the rest sweep);
   // the knob overrides it either way. Invalid values degrade to the default.
@@ -410,9 +440,9 @@ function bySegments(
   const state: SplitState = { effect, by, phase, i: 0, total: 0 };
   state.total = countUnits(nodes, by);
   if (state.total === 0 || state.total > MAX_SPLIT_UNITS) {
-    return `<span class="mq-${effect}">${children(nodes, profile)}</span>`;
+    return `<span class="mq-${effect}">${children(nodes, ctx)}</span>`;
   }
-  return `<span class="mq-${effect} mq-split">${splitRender(nodes, profile, state)}</span>`;
+  return `<span class="mq-${effect} mq-split">${splitRender(nodes, ctx, state)}</span>`;
 }
 
 /** A segment gets wrapped if it's animatable: for words, word-like segments
@@ -468,7 +498,7 @@ function countUnits(nodes: Node[], by: SplitBy): number {
   return n;
 }
 
-function splitRender(nodes: Node[], profile: Profile, state: SplitState): string {
+function splitRender(nodes: Node[], ctx: Ctx, state: SplitState): string {
   let out = "";
   for (const node of nodes) {
     if (node.type === "text") {
@@ -482,13 +512,13 @@ function splitRender(nodes: Node[], profile: Profile, state: SplitState): string
         out += `<span class="mq-l" style="--mq-o:${o}">${escapeText(seg.segment)}</span>`;
       }
     } else if (node.type === "emphasis") {
-      out += `<em>${splitRender(node.children, profile, state)}</em>`;
+      out += `<em>${splitRender(node.children, ctx, state)}</em>`;
     } else if (node.type === "strong") {
-      out += `<strong>${splitRender(node.children, profile, state)}</strong>`;
+      out += `<strong>${splitRender(node.children, ctx, state)}</strong>`;
     } else if (node.type === "strikethrough") {
-      out += `<del>${splitRender(node.children, profile, state)}</del>`;
+      out += `<del>${splitRender(node.children, ctx, state)}</del>`;
     } else {
-      out += render(node, profile); // anything else renders whole, un-split
+      out += renderNode(node, ctx); // anything else renders whole, un-split
     }
   }
   return out;
