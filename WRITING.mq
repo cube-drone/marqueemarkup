@@ -196,12 +196,16 @@ with no gallery element:
 ## Emoji
 
 ```marquee
-Known shortcodes resolve — :tophat: :sparkles: :blobcat: — unknown ones stay literal, like
-:thisoneisnotreal:, typed emoji 🎩 are just text, and 3:30 is just a time.
+Known shortcodes resolve — :tophat: :sparkles: :blobcat: — and a host can map a slug to a
+little image: :angry-burger: is a custom image emoji this host provides, worn at character
+size right in the line. Unknown ones stay literal, like :thisoneisnotreal:, typed emoji 🎩
+are just text, and 3:30 is just a time.
 ```
 
-Known shortcodes resolve — :tophat: :sparkles: :blobcat: — unknown ones stay literal, like
-:thisoneisnotreal:, typed emoji 🎩 are just text, and 3:30 is just a time.
+Known shortcodes resolve — :tophat: :sparkles: :blobcat: — and a host can map a slug to a
+little image: :angry-burger: is a custom image emoji this host provides, worn at character
+size right in the line. Unknown ones stay literal, like :thisoneisnotreal:, typed emoji 🎩
+are just text, and 3:30 is just a time.
 
 ## Typography spans
 

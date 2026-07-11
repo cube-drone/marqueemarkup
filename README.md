@@ -23,7 +23,7 @@ hot piles of clown nonsense.
 
 Safe. Clown. Nonsense.
 
-If you're writing a README? Use Markdown.
+Markdown is still more widely used (for NOW).
 
 But Marquee is for building Geocities.
 
@@ -38,8 +38,13 @@ this will get you started:
 ## Header 2
 ### Header 3
 
+*italics*
+**strong**
+
 * list
 * list
+  * list in a list
+    * list in a list in a list
 
 1. list
 2. list

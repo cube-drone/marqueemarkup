@@ -149,7 +149,9 @@ It's :sparkles: like this :tophat:
 
 A shortcode is lowercase letters, digits, `_`, `+`, `-` between two colons. Which shortcodes
 resolve depends on where you're posting (standard tables, community custom emoji); an unknown
-one renders as the literal `:text:`, exactly like every chat app you've used. Regular typed
+one renders as the literal `:text:`, exactly like every chat app you've used. A custom emoji
+is a little image the host maps to a slug — it gets worn at character size, right in the
+line, and degrades back to the literal `:slug:` anywhere it can't be shown. Regular typed
 emoji (🎩) are just text and need no syntax. Times like `3:30` are safe — one colon never
 triggers anything.
 

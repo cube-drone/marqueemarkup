@@ -25,7 +25,8 @@
 
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
-import { bareWebProfile, renderMarquee, usedFontTokens, type Profile } from "../src/index.ts";
+import { fileURLToPath } from "node:url";
+import { bareWebProfile, renderMarquee, usedFontTokens, type EmojiResolution, type Profile } from "../src/index.ts";
 import { marqueeCss } from "@cube-drone/marquee-css";
 import { inlineFontFaces } from "@cube-drone/marquee-fonts";
 import {
@@ -36,9 +37,23 @@ import {
   type TurbolinkPlugin,
 } from "@cube-drone/marquee-turbolink";
 
-const EMOJI: Record<string, string> = {
+// A custom image emoji for the demo table, inlined as a data URI so the
+// preview output stays one self-contained file. Real hosts map slugs to
+// hosted image URLs the same way.
+const ANGRY_BURGER = fileURLToPath(
+  new URL("../../../example-media/angry-burger-emoji.png", import.meta.url),
+);
+
+const EMOJI: Record<string, EmojiResolution> = {
   tophat: "🎩", smile: "😀", sparkles: "✨", blobcat: "🐱", wave: "👋",
   heart: "❤️", star: "⭐", fire: "🔥",
+  ...(existsSync(ANGRY_BURGER)
+    ? {
+        "angry-burger": {
+          image: `data:image/png;base64,${readFileSync(ANGRY_BURGER).toString("base64")}`,
+        },
+      }
+    : {}),
 };
 
 const MIME: Record<string, string> = {
