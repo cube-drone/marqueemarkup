@@ -53,8 +53,12 @@ reference implementations would not be.
 
 Notes:
 
-- npm packages ship TypeScript source (`engines: node >=22.6`); a `dist`/`.d.ts` build is
-  deliberately deferred until a consumer needs older toolchains — revisit before 1.0.
+- **BLOCKER until fixed: npm packages currently ship raw TypeScript source, and Node refuses
+  to type-strip files under `node_modules`** (`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`,
+  verified empirically via `npm pack` + install). Works in-repo only because workspace
+  symlinks realpath out of `node_modules`. Before first publish, every package needs a `tsc`
+  build emitting `dist/` (JS + `.d.ts`) with `exports` pointing at it; the crates are
+  unaffected and already pass `cargo publish --dry-run`.
 - `@classam/turbolink-example-plugin` stays `private: true` (a teaching artifact); flip that
   flag if it should ever be installable.
 - Vectors and the spec are CC0 and travel with the repo, not the packages; the version tag is
