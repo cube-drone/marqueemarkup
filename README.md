@@ -16,7 +16,7 @@ Do you want a format that's safe to send from user to user in an untrusted
 system, while still being weird and loud and colorful? 
 
 Marquee does not allow inline HTML to pass through: you get what you get.
-The AST is sealed up, tight as a drum, 
+The AST is sealed up, tight as a drum.
 
 That's what Marquee is designed for: the intersection between safety and 
 hot piles of clown nonsense.
@@ -47,18 +47,34 @@ this will get you started:
 
 %% comment (you can't see this)
 
-[link](https://example.org)
-![image](https://example.org/fart.jif)
+  %% a lot of Marquee's tags can't survive 
+  %% any space between them and the beginning 
+  %% of the line, this comment is invalid (and visible)
 
+[link](https://example.org)
+![image](https://example.org/fart.gif)
+![zounds, it's sounds](https://example.org/fart.mp3)
 
 standalone links expand into content: 
 
 https://www.youtube.com/watch?v=kiTpHaShznE
 
-Text can be sized: [miniscule]miniscule[/miniscule], [tiny]tiny[/tiny], [small]small[/small], [big]big[/big] [huge]huge[/huge], [enormous]ENORMOUS[/enormous].
+Text can be sized: 
+
+* [miniscule]miniscule[/miniscule]
+* [tiny]tiny[/tiny]
+* [small]small[/small]
+* [big]big[/big]
+* [huge]huge[/huge]
+* [enormous]ENORMOUS[/enormous].
+
+Superscripted or subscripted: 
 
 * E = mc[sup]2[/sup], 
 * H[sub]2[/sub]O, 
+
+Colored: 
+
 * [color=goldenrod]color by name[/color]
 * [color=#f06]color by hex[/color]
 
