@@ -109,6 +109,10 @@ shape works. Set both and you're authoring a frame the media fills, cropped to f
 squashed. That's the whole sizing vocabulary — there's no unit soup and no positioning; an
 invalid value just means natural size.
 
+And because embeds are *inline*, several images sharing one paragraph flow side by side and
+wrap like words — a photo gallery is just a paragraph of pictures inside one `:::media`
+sizing block. No gallery element needed.
+
 ## Turbolinks (rich link previews)
 
 Paste a full URL alone in its own paragraph and it becomes a *turbolink* — a link the reader's
@@ -297,7 +301,21 @@ Directives are Marquee's big-structure mechanism — metadata, page layout, widg
 ```
 
 - `:::name attrs` opens; a `:::` line closes the nearest open block.
-- A close may name its block for readability: `::: section`.
+- **A closer can name what it closes**: `::: section` (note the space — `:::name` opens,
+  `::: name` closes). Two things this buys you in deeply nested pages:
+
+  ```
+  :::page layout=nav-footer
+  :::section slot=main
+  the content
+  ::: section     ← readable: no counting fences
+  ::: page
+  ```
+
+  First, readability — the closers document themselves. Second, a safety net: if a named
+  closer doesn't match the innermost open block, you get a small "invalid markup" box *at
+  that exact line*, instead of discovering three sections later that everything nested
+  wrong. Bare `:::` closers never complain; named ones check their work.
 - A directive with no content closes itself on one line: `:::counter theme=retro:::`
 - Forgot a closer? Blocks auto-close at the end of the document — the effect may land wrong,
   but your words all render.

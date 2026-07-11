@@ -488,6 +488,11 @@ document.
 ::: section
 :::
 
+(That footer closed with `::: section` — a **named closer**: `:::name` opens, `::: name`
+closes. Pure readability in deep nesting, plus a safety net — a named closer that doesn't
+match the innermost open block gets flagged right at that line instead of silently
+mis-nesting the rest of the page.)
+
 ## Widgets and placeholders
 
 These depend on where you're posting — here they render labeled placeholder boxes, the

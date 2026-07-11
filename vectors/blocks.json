@@ -106,6 +106,14 @@
     ]}
   },
   {
+    "name": "blocks/indented-constructs-are-prose",
+    "marquee": "  # not a heading\n\n  ::: not a close, just prose\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [{"type": "text", "value": "  # not a heading"}]},
+      {"type": "paragraph", "children": [{"type": "text", "value": "  ::: not a close, just prose"}]}
+    ]}
+  },
+  {
     "name": "blocks/hard-break",
     "marquee": "line one\\\nline two\n",
     "ast": {"type": "document", "version": 0, "children": [

@@ -68,6 +68,10 @@
     "html": "<div class=\"mq-doc\"><p>text here:</p><ul><li><p>one</p></li><li><p>two</p></li></ul></div>"
   },
   {
+    "name": "blocks/indented-constructs-are-prose",
+    "html": "<div class=\"mq-doc\"><p>  # not a heading</p><p>  ::: not a close, just prose</p></div>"
+  },
+  {
     "name": "blocks/hard-break",
     "html": "<div class=\"mq-doc\"><p>line one<br>line two</p></div>"
   },

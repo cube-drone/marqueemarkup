@@ -11,15 +11,13 @@
 
 %% four photos. all spaghetti. of course they're all spaghetti.
 
-One `:::media` wrapper sizes the whole gallery — containment, not repetition:
+One `:::media` wrapper sizes the whole gallery, and because embeds are *inline*, photos
+sharing a paragraph flow and wrap like words — a gallery with no gallery element:
 
 :::media width=320 height=240
 ![Spaghetti, plated](../../example-media/pasta_1.jpg)
-
 ![Spaghetti, in progress](../../example-media/pasta_2.jpg)
-
 ![Spaghetti, admired](../../example-media/pasta_3.jpg)
-
 ![Spaghetti, gone](../../example-media/pasta_4.jpg)
 :::
 :::
