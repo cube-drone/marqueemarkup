@@ -3,9 +3,11 @@
 :::meta title="Borsalino's — We Only Have Spaghetti" date=2026-07-10 tags="restaurant, spaghetti, hats":::
 
 :::page layout=two-column-nav-footer scheme=parchment font=playfair-display
+
 :::section slot=nav
 :::include doc=_nav:::
 :::
+
 :::section slot=main
 ![Borsalino's: We Only Have Spaghetti](../../example-media/banner.jpg)
 
@@ -38,7 +40,9 @@ No reservations. No substitutions. No regrets.
 
 See above.
 :::
+
 :::section slot=footer
 :::include doc=_footer:::
 :::
+
 :::
