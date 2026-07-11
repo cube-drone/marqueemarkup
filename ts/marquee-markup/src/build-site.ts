@@ -36,13 +36,20 @@ import {
   turbolinkTargets,
   type TurbolinkPlugin,
 } from "@cube-drone/marquee-turbolink";
-import { docIsPage, envelopeCss, metaTitle } from "./index.ts";
+import { docIsPage, envelopeCss, metaTitle, readabilityCss } from "./index.ts";
 
 export interface SiteOptions {
+  /** Force the site's theme; default follows the reader's OS. */
+  colorScheme?: "light" | "dark";
   /** Wrap pages in a 650px centered readability envelope (default false;
    * opt-in so it can't interfere with a host stack's layout). Documents
    * that ARE a `:::page` are left alone. */
   envelope?: boolean;
+  /** Best-effort color-readability rescue: clamp author colors' lightness
+   * toward the canvas's opposite (see MarqueeOptions.readable). Defaults
+   * ON - the site's shell declares the color-scheme, so the clamp
+   * direction is trustworthy; pass false to opt out. */
+  readable?: boolean;
   /** Turbolink expanders; defaults to the fetchless default set. */
   plugins?: TurbolinkPlugin[];
   /** Your emoji: slug -> replacement text or `{ image, alt? }`, layered
@@ -182,8 +189,10 @@ function buildSiteCore(
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/turbolink.css">
 <style>/* the embedder's page, the embedder's reset: full-bleed backgrounds
-   (marquee.css never touches body - it must embed politely in host pages) */
-body { margin: 0; }${opts.envelope === true ? `\n${envelopeCss}` : ""}</style>
+   (marquee.css never touches body - it must embed politely in host pages),
+   and the reader's OS theme decides light or dark unless the build forced one */
+:root { color-scheme: ${opts.colorScheme ?? "light dark"}; }
+body { margin: 0; }${opts.envelope === true ? `\n${envelopeCss}` : ""}${opts.readable === false ? "" : `\n${readabilityCss(opts.colorScheme)}`}</style>
 </head>
 <body>
 ${body}

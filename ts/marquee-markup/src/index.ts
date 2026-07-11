@@ -55,12 +55,26 @@ export interface MarqueeOptions {
    * from @cube-drone/marquee-emoji. Set false and unlisted slugs stay
    * literal `:slug:`. */
   emojiDefaults?: boolean;
+  /** Force the page's theme. Default: follow the reader's OS
+   * (`color-scheme: light dark`). Applies to the page shell, so it only
+   * affects `marquee()`/`marqueeFetch()` - fragments follow their host. */
+  colorScheme?: "light" | "dark";
   /** Wrap the rendered document in a 650px centered envelope, purely for
    * readability (default false - it could interfere with a host stack's
    * own layout, so it's opt-in). A document that IS a `:::page` (its
    * top-level content is page directives) is left alone even when this is
    * on: the author took layout control, the envelope defers. */
   envelope?: boolean;
+  /** Best-effort color-readability rescue: author colors keep their hue
+   * but their lightness is clamped toward the canvas's opposite -
+   * lightened on dark canvases, darkened on light. Containers that paint
+   * their own background (schemes, `background=` knobs) own their contrast
+   * and are left alone. Defaults ON for whole pages (marquee/marqueeFetch/
+   * buildSite - our shell declared the color-scheme, so the clamp direction
+   * is trustworthy) and OFF for bare fragments (a host theming by class
+   * rather than OS preference would get the clamp backwards - opt in when
+   * your canvas follows prefers-color-scheme). */
+  readable?: boolean;
   /** Turbolink expanders; defaults to the fetchless default set. */
   plugins?: TurbolinkPlugin[];
   /** Overrides layered on the assembled profile (schemes, media policy...). */
@@ -122,6 +136,30 @@ export function marqueeFragment(source: string, opts: MarqueeOptions = {}): Frag
  * (mq-* classes in marquee.css are the renderers'; this one is ours). */
 export const envelopeCss = `.mq-envelope { max-width: 650px; margin-inline: auto; padding-inline: 1rem; }`;
 
+/** The `readable` option's stylesheet: CSS relative color syntax clamps the
+ * *lightness* of author colors (hue and chroma survive) toward whatever the
+ * canvas isn't - floor 0.72 on dark canvases, ceiling 0.55 on light. The
+ * clamp bounds ride inherited custom properties, so containers that paint
+ * their own background (schemes, `background=` knobs) reset them to no-ops
+ * for their whole subtree: they own their contrast. A painted background
+ * with NO chosen text color additionally gets black-or-white text computed
+ * from the background's own lightness. Browsers without relative-color
+ * support ignore all of it and fall back to the raw colors. */
+export function readabilityCss(colorScheme?: "light" | "dark"): string {
+  const dark = `.mq-doc { --mq-rl-min: 0.72; --mq-rl-max: 1; }`;
+  const light = `.mq-doc { --mq-rl-min: 0; --mq-rl-max: 0.55; }`;
+  const mode =
+    colorScheme === "dark"
+      ? dark
+      : colorScheme === "light"
+        ? light
+        : `@media (prefers-color-scheme: dark) { ${dark} }\n@media (prefers-color-scheme: light) { ${light} }`;
+  return `${mode}
+.mq-doc [style*="--mq-color"] { color: oklch(from var(--mq-color) clamp(var(--mq-rl-min, 0), l, var(--mq-rl-max, 1)) c h); }
+.mq-doc [style*="--mq-bg"]:not([style*="--mq-color"]) { color: oklch(from var(--mq-bg) calc(1 - clamp(0, (l - 0.5) * 999, 1)) 0 h); }
+.mq-doc [class*="mq-scheme-"], .mq-doc [style*="--mq-bg"] { --mq-rl-min: 0; --mq-rl-max: 1; }`;
+}
+
 /** Does the document take layout into its own hands? Only when it IS a
  * page: every top-level block (ignoring `:::meta` and comments) is a
  * `:::page` directive. A document that merely *contains* a page demo among
@@ -153,6 +191,9 @@ function fragmentCore(
   if (enveloped) {
     css += `\n${envelopeCss}`;
   }
+  if (opts.readable === true) {
+    css += `\n${readabilityCss(opts.colorScheme)}`;
+  }
   const fonts = opts.fonts ?? "inline";
   const faces =
     fonts === "inline"
@@ -177,7 +218,7 @@ export function marqueeHead(source: string, opts: MarqueeOptions = {}): string {
   return `<title>${escapeText(title)}</title>\n<style>\n${css}\n</style>`;
 }
 
-function pageShell({ body, css, title }: Fragment): string {
+function pageShell({ body, css, title }: Fragment, colorScheme?: "light" | "dark"): string {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -185,6 +226,11 @@ function pageShell({ body, css, title }: Fragment): string {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeText(title)}</title>
 <style>
+/* The page is ours, so it follows the reader's OS theme unless the caller
+   forced one. marquee.css never declares color-scheme itself - embedded
+   fragments defer to their host - and its own neutrals are translucent, so
+   they ride either canvas. */
+:root { color-scheme: ${colorScheme ?? "light dark"}; }
 body { margin: 0; }
 ${css}
 </style>
@@ -200,7 +246,7 @@ ${body}
  * HTML page out. Synchronous and fetchless - turbolinks with nothing
  * gathered degrade to plain links. */
 export function marquee(source: string, opts: MarqueeOptions = {}): string {
-  return pageShell(marqueeFragment(source, opts));
+  return pageShell(marqueeFragment(source, { readable: true, ...opts }), opts.colorScheme);
 }
 
 /** marquee(), plus the network: runs the composed plugins' async resolve()
@@ -214,7 +260,7 @@ export async function marqueeFetch(source: string, opts: MarqueeOptions = {}): P
   const plugins = fetchChain(opts);
   const doc = parse(source);
   const resolved = await resolveTargets(turbolinkTargets(doc), plugins);
-  return pageShell(fragmentCore(doc, opts, plugins, resolved));
+  return pageShell(fragmentCore(doc, { readable: true, ...opts }, plugins, resolved), opts.colorScheme);
 }
 
 export { buildSite, buildSiteFetch, type SiteReport } from "./build-site.ts";

@@ -5,6 +5,14 @@
  * shapes around them may differ per renderer. Everything degrades: without
  * this stylesheet a rendered document is still readable semantic HTML (and
  * <font color> still colors, courtesy of the browser itself).
+ *
+ * Light/dark: this file never declares color-scheme - a fragment embeds
+ * politely and follows its host page's theme. Its own structural colors are
+ * translucent neutrals, so they ride either canvas; page shells that own
+ * the whole page (the omnibus, buildSite, the preview tool) declare
+ * `color-scheme: light dark` themselves. Scheme palettes (noir, parchment,
+ * hotdog-stand, terminal) are authorial and fixed: a noir page is noir at
+ * noon.
  */
 
 /* ---- document ---- */

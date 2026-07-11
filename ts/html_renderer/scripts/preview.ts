@@ -217,6 +217,7 @@ process.stdout.write(`<!doctype html>
 <title>${files.length === 1 ? basename(files[0]!) : "Marquee preview"}</title>
 <style>${css}</style>
 ${fontFaces}<style>
+  :root { color-scheme: light dark; }
   body { max-width: 60rem; margin: 2rem auto; padding: 0 1rem; font-family: system-ui, sans-serif; }
   .preview-label { font-family: ui-monospace, monospace; font-size: .9rem; opacity: .6;
                    border-top: 2px solid rgba(136,136,136,.4); padding-top: 1rem; margin-top: 2.5rem; }

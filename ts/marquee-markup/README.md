@@ -45,9 +45,20 @@ If `marquee` is a little too all-inclusive for your tastes:
 - `marqueeFragment(source, opts)` → `{ body, css, title, fontTokens }` — all the pieces
 - `buildSite(siteDir, outDir, opts)` → the CLI's site build as a function
 - options: `{ title, fonts: "inline" | "external" | "none", fontBase, emoji, emojiDefaults,
-  envelope, plugins, profile }` — inline the fonts, reference them externally (copy the
-  `fontTokens` files via `fontFilePath()`), or skip them; add turbolink expanders; override
-  any embedder policy
+  colorScheme, envelope, plugins, profile }` — inline the fonts, reference them externally
+  (copy the `fontTokens` files via `fontFilePath()`), or skip them; add turbolink expanders;
+  override any embedder policy
+- pages follow the reader's OS light/dark theme by default; `colorScheme: "dark"` (or
+  `npx marquee --darkmode`) forces one
+- color rescue is **on by default** for whole pages: author colors keep their hue but get
+  lightened on dark canvases and darkened on light ones until they're legible, via CSS
+  relative color syntax (the author picked their colors against one canvas; the OS theme
+  flip is the surprise, and the clamp carries their intent across it). Schemes and
+  `background=`-painted blocks own their own contrast and are left alone; browsers without
+  relative-color support just see the raw colors. Opt out with `readable: false` (or
+  `--noreadable`); bare fragments default off instead, since a host theming by class rather
+  than OS preference would get the clamp backwards — pass `readable: true` when your canvas
+  follows `prefers-color-scheme`
 - `envelope: true` (or `npx marquee --envelope`) wraps plain documents in a 650px centered
   envelope so unstructured text reads comfortably. Opt-in, because it could interfere with a
   host stack's own layout — and a document that *is* a `:::page` (top-level content is page

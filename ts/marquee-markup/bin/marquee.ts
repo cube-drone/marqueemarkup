@@ -32,6 +32,11 @@ function usage(): never {
       "  --envelope                        wrap plain documents in a 650px centered",
       "                                    envelope for readability (documents with",
       "                                    their own :::page layout are left alone)",
+      "  --darkmode                        force dark mode (default: follow the",
+      "                                    reader's OS theme)",
+      "  --noreadable                      don't rescue author colors (default: their",
+      "                                    lightness is clamped toward the canvas's",
+      "                                    opposite so colored text stays legible)",
     ].join("\n"),
   );
   process.exit(2);
@@ -42,6 +47,8 @@ const positional: string[] = [];
 let outFile: string | null = null;
 let fetchMode = true;
 let envelope = false;
+let readable = true;
+let colorScheme: "light" | "dark" | undefined;
 for (let i = 0; i < args.length; i += 1) {
   if (args[i] === "-o") {
     outFile = args[++i] ?? null;
@@ -58,11 +65,21 @@ for (let i = 0; i < args.length; i += 1) {
     envelope = true;
     continue;
   }
+  if (args[i] === "--darkmode") {
+    colorScheme = "dark";
+    continue;
+  }
+  if (args[i] === "--noreadable") {
+    readable = false;
+    continue;
+  }
   positional.push(args[i]!);
 }
 if (positional.length === 0 || positional.length > 2) {
   usage();
 }
+
+const opts = { envelope, readable, ...(colorScheme === undefined ? {} : { colorScheme }) };
 
 const [input, outDir] = positional;
 const isDir = (() => {
@@ -79,8 +96,8 @@ if (isDir) {
     usage();
   }
   const report = fetchMode
-    ? await buildSiteFetch(input!, outDir, { envelope })
-    : buildSite(input!, outDir, { envelope });
+    ? await buildSiteFetch(input!, outDir, opts)
+    : buildSite(input!, outDir, opts);
   console.error(
     `built ${report.pages.length} pages (${report.pages.join(", ")}) + ${report.mediaFiles} media files + ${report.fontFaces.length} font faces -> ${report.outDir}`,
   );
@@ -89,7 +106,7 @@ if (isDir) {
     usage();
   }
   const source = readFileSync(input!, "utf8");
-  const page = fetchMode ? await marqueeFetch(source, { envelope }) : marquee(source, { envelope });
+  const page = fetchMode ? await marqueeFetch(source, opts) : marquee(source, opts);
   if (outFile === null) {
     process.stdout.write(page);
   } else {

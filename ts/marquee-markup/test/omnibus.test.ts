@@ -94,6 +94,39 @@ test("fonts: external mode emits urls and names the tokens", () => {
   assert.deepEqual(fontTokens, ["orbitron"]);
 });
 
+test("colorScheme: OS theme by default, forceable", () => {
+  assert.ok(marquee("hi\n").includes("color-scheme: light dark"), "default follows the OS");
+  assert.ok(
+    marquee("hi\n", { colorScheme: "dark" }).includes("color-scheme: dark"),
+    "dark forced",
+  );
+});
+
+test("readable: on by default for pages, mode-aware, painted containers opt out", () => {
+  const auto = marquee("[color=#400]dark red words[/color]\n");
+  assert.ok(auto.includes("oklch(from var(--mq-color)"), "pages rescue colors by default");
+  assert.ok(
+    auto.includes("@media (prefers-color-scheme: dark)") &&
+      auto.includes("@media (prefers-color-scheme: light)"),
+    "auto mode clamps per OS theme",
+  );
+  const forced = marquee("[color=#400]words[/color]\n", { colorScheme: "dark" });
+  assert.ok(
+    forced.includes("--mq-rl-min: 0.72") && !forced.includes("@media (prefers-color-scheme"),
+    "forced mode clamps unconditionally",
+  );
+  assert.ok(
+    forced.includes('[class*="mq-scheme-"]'),
+    "schemes and painted backgrounds reset the clamp: they own their contrast",
+  );
+  assert.ok(!marquee("[color=#400]w[/color]\n", { readable: false }).includes("oklch"), "opt-out");
+  const fragment = marqueeFragment("[color=#400]w[/color]\n");
+  assert.ok(
+    !fragment.css.includes("oklch"),
+    "fragments default OFF: a class-theming host would get the clamp backwards",
+  );
+});
+
 test("envelope: opt-in readability wrap that defers to :::page", () => {
   const plain = marquee("just some words\n", { envelope: true });
   assert.ok(plain.includes('<div class="mq-envelope"><div class="mq-doc">'), "plain text wrapped");
