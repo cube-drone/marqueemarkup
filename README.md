@@ -2,7 +2,30 @@
 
 [![ci](https://github.com/cube-drone/marqueemarkup/actions/workflows/ci.yml/badge.svg)](https://github.com/cube-drone/marqueemarkup/actions/workflows/ci.yml)
 
-the marquee markup language: a little bit of markdown, a little bit of RST, a whole lot of dumb old internet
+Marquee is a markup language! 
+
+It's designed to a mash-up of Markdown, BBCode, RST, and the old web. 
+
+## Why Wouldn't I Just Use Markdown? Or RST?
+
+Sheer vibes. Stubborn nostalgia. And, secretly? _Draconian control_.
+
+Marquee is much more regular and deterministic than Markdown.
+
+Do you want a format that's safe to send from user to user in an untrusted
+system, while still being weird and loud and colorful? 
+
+Marquee does not allow inline HTML to pass through: you get what you get.
+The AST is sealed up, tight as a drum, 
+
+That's what Marquee is designed for: the intersection between safety and 
+hot piles of clown nonsense.
+
+Safe. Clown. Nonsense.
+
+If you're writing a README? Use Markdown.
+
+But Marquee is for building Geocities.
 
 ## Repository layout
 
