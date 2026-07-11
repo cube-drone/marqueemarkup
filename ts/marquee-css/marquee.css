@@ -26,6 +26,25 @@
   vertical-align: -0.25em;
 }
 
+/* Blockquotes: browser default is a mute 40px indent per side; give them a
+   spine instead. Nesting reads as stacked spines, not a staircase. */
+.mq-doc blockquote {
+  margin-block: 1em;
+  margin-inline: 0;
+  padding: 0.35rem 1rem;
+  border-left: 3px solid rgba(127, 127, 127, 0.5);
+  background: rgba(127, 127, 127, 0.08);
+  border-radius: 0 0.25rem 0.25rem 0;
+}
+
+.mq-doc blockquote > :first-child {
+  margin-top: 0;
+}
+
+.mq-doc blockquote > :last-child {
+  margin-bottom: 0;
+}
+
 .mq-doc pre.mq-code {
   overflow-x: auto;
   padding: 0.75rem;
