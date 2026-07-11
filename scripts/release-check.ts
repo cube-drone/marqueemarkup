@@ -31,6 +31,21 @@ step("typescript: test all workspaces", "npm test --workspaces");
 step("rust: parser tests", "cargo test --quiet", `${root}/rust/parser`);
 step("rust: renderer tests", "cargo test --quiet", `${root}/rust/html_renderer`);
 step(
+  "rust: clippy (warnings are errors)",
+  "cargo clippy --all-targets --quiet -- -D warnings",
+  `${root}/rust/parser`,
+);
+step(
+  "rust: clippy renderer (warnings are errors)",
+  "cargo clippy --all-targets --quiet -- -D warnings",
+  `${root}/rust/html_renderer`,
+);
+// The crate-side packaging check (the analog of the npm pack-smoke below).
+// Only the parser: `cargo package` for the renderer verifies its registry
+// dependency exists on crates.io, which is only true after first publish -
+// add it here once the parser ships.
+step("rust: cargo package (parser)", "cargo package --quiet", `${root}/rust/parser`);
+step(
   "differential fuzz (10k documents, seed 0)",
   "cargo run --release --quiet --bin diff_fuzz -- --n 10000 --seed 0",
   `${root}/rust/parser`,

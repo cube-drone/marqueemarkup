@@ -1,0 +1,43 @@
+# CI = release-check, verbatim. One source of truth: the same script that
+# gates a release gates every push, so the two can never drift apart.
+# It runs: build all workspaces -> typecheck -> test (7 packages) ->
+# cargo test (both crates) -> 10k-document differential fuzz -> consumer
+# pack-smoke (pack the parser, install the tarball, import from plain node).
+
+name: ci
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # >=22.6 required: the repo's dev loop runs TypeScript source via
+          # Node's native type stripping (--conditions=marquee-src).
+          node-version: 24
+          cache: npm
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust/parser/target
+            rust/html_renderer/target
+          key: cargo-${{ runner.os }}-${{ hashFiles('rust/**/Cargo.toml') }}
+          restore-keys: cargo-${{ runner.os }}-
+
+      - run: npm ci
+
+      - run: npm run release-check

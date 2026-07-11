@@ -1,5 +1,7 @@
 # Marquee (Markup)
 
+[![ci](https://github.com/cube-drone/marqueemarkup/actions/workflows/ci.yml/badge.svg)](https://github.com/cube-drone/marqueemarkup/actions/workflows/ci.yml)
+
 the marquee markup language: a little bit of markdown, a little bit of RST, a whole lot of dumb old internet
 
 ## Repository layout
