@@ -16,7 +16,7 @@
 // only ever enter as the `target` string - escape everything you interpolate
 // (escapeText/escapeAttr are exported for exactly that).
 
-import type { Node } from "../../parser/src/index.ts";
+import type { Node } from "@classam/marquee-parser";
 
 export type TurbolinkLevel = "full" | "title" | "bare";
 

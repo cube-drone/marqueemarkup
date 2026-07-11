@@ -284,6 +284,9 @@ fn bracket(chars: &[char], open: usize, embed: bool, frames: &mut Vec<Frame>, ba
     // Span closer: `[/name]` must name the innermost open span.
     if let Some(name) = interior.strip_prefix('/') {
         if is_name(name) {
+            if embed {
+                push_str(frames, "!"); // the ! belongs to links/embeds, not spans
+            }
             if frames.len() > 1 && frames.last().unwrap().name == name {
                 let frame = frames.pop().unwrap();
                 let children = normalize(revert_delims(frame.children, frame.delims));
@@ -304,6 +307,9 @@ fn bracket(chars: &[char], open: usize, embed: bool, frames: &mut Vec<Frame>, ba
     // Span opener: `[name ...]`, with the BBCode default-parameter idiom
     // (`[color=red]` puts `color=red` in the span's own attrs).
     if let Some((name, attrs)) = parse_span_opener(&interior) {
+        if embed {
+            push_str(frames, "!"); // the ! belongs to links/embeds, not spans
+        }
         if base + total_depth(frames) >= MAX_INLINE_DEPTH {
             let raw: String = chars[open..=k].iter().collect();
             push_str(frames, &raw);

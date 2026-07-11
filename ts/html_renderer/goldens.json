@@ -332,6 +332,14 @@
     "html": "<div class=\"mq-doc\"><p>[blink]oops</p></div>"
   },
   {
+    "name": "spans/bang-before-closer-survives",
+    "html": "<div class=\"mq-doc\"><p>wow!</p></div>"
+  },
+  {
+    "name": "spans/bang-before-opener-survives",
+    "html": "<div class=\"mq-doc\"><p>wait!<span class=\"mq-blink\">for it</span></p></div>"
+  },
+  {
     "name": "spans/attribute",
     "html": "<div class=\"mq-doc\"><p><span class=\"mq-typewriter\">slow reveal</span></p></div>"
   },

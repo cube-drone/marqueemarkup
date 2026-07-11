@@ -1,0 +1,605 @@
+//! AST -> HTML string. The safety contract: author bytes reach the output
+//! only through escape_text/escape_attr, targets only through the profile's
+//! allowlist, and attribute *names* are never author-controlled. Unknown
+//! vocabulary shrugs (children survive, effect doesn't); comments render
+//! nothing; invalid constructs render inert placeholders.
+
+use crate::escape::{escape_attr, escape_text};
+use crate::profile::{MediaKind, Profile, TurbolinkLevel};
+use marquee_parser::{Attrs, Node};
+use unicode_segmentation::UnicodeSegmentation;
+
+/// The font vocabulary (closed, two tiers). Kept in lockstep with the
+/// TypeScript renderer's FONTS map - it is the same spec vocabulary.
+pub const FONTS: &[(&str, &str)] = &[
+    // standard stacks
+    ("sans", "sans-serif"),
+    ("serif", "serif"),
+    ("mono", "monospace"),
+    ("comic", "Comic Sans MS"),
+    // the grab bag
+    ("radio-canada", "Radio Canada"),
+    ("atkinson-hyperlegible", "Atkinson Hyperlegible"),
+    ("lexend", "Lexend"),
+    ("zilla-slab", "Zilla Slab"),
+    ("playfair-display", "Playfair Display"),
+    ("cormorant", "Cormorant"),
+    ("im-fell-english", "IM Fell English"),
+    ("uncial-antiqua", "Uncial Antiqua"),
+    ("unifraktur", "UnifrakturMaguntia"),
+    ("jetbrains-mono", "JetBrains Mono"),
+    ("vt323", "VT323"),
+    ("press-start", "Press Start 2P"),
+    ("silkscreen", "Silkscreen"),
+    ("major-mono", "Major Mono Display"),
+    ("orbitron", "Orbitron"),
+    ("bungee", "Bungee"),
+    ("monoton", "Monoton"),
+    ("creepster", "Creepster"),
+    ("special-elite", "Special Elite"),
+    ("fredericka", "Fredericka the Great"),
+    ("lobster", "Lobster"),
+    ("pacifico", "Pacifico"),
+    ("caveat", "Caveat"),
+    ("comic-neue", "Comic Neue"),
+    ("audiowide", "Audiowide"),
+    ("kablammo", "Kablammo"),
+    ("henny-penny", "Henny Penny"),
+    ("oi", "Oi"),
+    ("rye", "Rye"),
+    ("bitcount", "Bitcount"),
+    ("quicksand", "Quicksand"),
+];
+
+fn font_face(token: &str) -> Option<&'static str> {
+    FONTS.iter().find(|(t, _)| *t == token).map(|(_, f)| *f)
+}
+
+/// Which grab-bag faces does this rendered HTML actually wear? Pure string
+/// scan of the mq-font-* class contract.
+pub fn used_font_tokens(html: &str) -> Vec<String> {
+    let mut used = std::collections::BTreeSet::new();
+    let mut rest = html;
+    while let Some(at) = rest.find("mq-font-") {
+        let after = &rest[at + "mq-font-".len()..];
+        let end = after
+            .bytes()
+            .take_while(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || *b == b'-')
+            .count();
+        if end > 0 {
+            used.insert(after[..end].to_string());
+        }
+        rest = &after[end..];
+    }
+    used.into_iter().collect()
+}
+
+/// Render state: the profile, plus the one piece of cross-block
+/// coordination the renderer owns - aside numbering (sequential through the
+/// document) and the pending notes that flush after the triggering block.
+struct Ctx<'a> {
+    profile: &'a dyn Profile,
+    note_n: u32,
+    pending: Vec<String>,
+}
+
+pub fn render(node: &Node, profile: &dyn Profile) -> String {
+    let mut ctx = Ctx { profile, note_n: 0, pending: Vec::new() };
+    render_node(node, &mut ctx)
+}
+
+/// Asides render just below the paragraph (or heading) that triggered
+/// them - part of regular flow, no floats, no popups.
+fn flush_notes(ctx: &mut Ctx, html: String) -> String {
+    if ctx.pending.is_empty() {
+        return html;
+    }
+    let notes: String = ctx
+        .pending
+        .drain(..)
+        .map(|n| format!("<p class=\"mq-note\">{n}</p>"))
+        .collect();
+    format!("{html}<aside class=\"mq-notes\">{notes}</aside>")
+}
+
+fn render_node(node: &Node, ctx: &mut Ctx) -> String {
+    match node {
+        Node::Document { children: c, .. } => {
+            format!("<div class=\"mq-doc\">{}</div>", children(c, ctx))
+        }
+        Node::Paragraph { children: c } => {
+            let html = format!("<p>{}</p>", children(c, ctx));
+            flush_notes(ctx, html)
+        }
+        Node::Heading { level, children: c } => {
+            let html = format!("<h{level}>{}</h{level}>", children(c, ctx));
+            flush_notes(ctx, html)
+        }
+        Node::CodeBlock { info, text } => {
+            let cls = match info.as_deref().and_then(info_token) {
+                Some(lang) => format!(" class=\"language-{}\"", escape_attr(lang)),
+                None => String::new(),
+            };
+            let body = if text.is_empty() {
+                String::new()
+            } else {
+                format!("{}\n", escape_text(text))
+            };
+            format!("<pre class=\"mq-code\"><code{cls}>{body}</code></pre>")
+        }
+        Node::Blockquote { children: c } => {
+            format!("<blockquote>{}</blockquote>", children(c, ctx))
+        }
+        Node::List { ordered, children: c } => {
+            let tag = if *ordered { "ol" } else { "ul" };
+            format!("<{tag}>{}</{tag}>", children(c, ctx))
+        }
+        Node::ListItem { children: c } => format!("<li>{}</li>", children(c, ctx)),
+        Node::ThematicBreak => "<hr>".to_string(),
+        Node::Directive { name, attrs, children: c } => directive(name, attrs, c, ctx),
+        Node::InvalidDirective { reason, .. } => {
+            let reason = serde_reason(reason);
+            format!("<div class=\"mq-invalid\" data-reason=\"{reason}\"></div>")
+        }
+        Node::Comment { .. } => String::new(), // the anti-shrug: absence
+        Node::Text { value } => escape_text(value),
+        Node::Emphasis { children: c } => format!("<em>{}</em>", children(c, ctx)),
+        Node::Strong { children: c } => format!("<strong>{}</strong>", children(c, ctx)),
+        Node::Strikethrough { children: c } => format!("<del>{}</del>", children(c, ctx)),
+        Node::CodeSpan { text } => format!("<code>{}</code>", escape_text(text)),
+        Node::Link { target, children: c } => {
+            let inner = children(c, ctx);
+            if ctx.profile.link_allowed(target) {
+                format!("<a href=\"{}\">{inner}</a>", escape_attr(target))
+            } else {
+                format!("<span class=\"mq-blocked\">{inner}</span>")
+            }
+        }
+        Node::Embed { target, alt } => embed(target, alt, ctx.profile),
+        Node::Turbolink { target } => turbolink(target, None, ctx.profile),
+        Node::Span { name, attrs, children: c } => span(name, attrs, c, ctx),
+        Node::Emoji { slug } => {
+            let resolved = ctx.profile.emoji(slug).unwrap_or_else(|| format!(":{slug}:"));
+            escape_text(&resolved)
+        }
+        Node::HardBreak => "<br>".to_string(),
+    }
+}
+
+/// The reason's snake_case wire name (matching its vector serialization).
+fn serde_reason(reason: &marquee_parser::Reason) -> &'static str {
+    use marquee_parser::Reason::*;
+    match reason {
+        BadName => "bad_name",
+        BadAttribute => "bad_attribute",
+        AttributeTooLong => "attribute_too_long",
+        DepthExceeded => "depth_exceeded",
+        MismatchedClose => "mismatched_close",
+        StrayClose => "stray_close",
+    }
+}
+
+fn children(nodes: &[Node], ctx: &mut Ctx) -> String {
+    nodes.iter().map(|n| render_node(n, ctx)).collect()
+}
+
+// -- validation gates (closed value grammars; failures degrade, never emit)
+
+fn is_hex_color(v: &str) -> bool {
+    let b = v.as_bytes();
+    (b.len() == 4 || b.len() == 7)
+        && b[0] == b'#'
+        && b[1..].iter().all(|c| c.is_ascii_hexdigit())
+}
+
+fn is_token(v: &str) -> bool {
+    let b = v.as_bytes();
+    !b.is_empty()
+        && b.len() <= 32
+        && b[0].is_ascii_lowercase()
+        && b.iter().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || *c == b'-')
+}
+
+fn is_color_value(v: &str) -> bool {
+    is_hex_color(v) || is_token(v)
+}
+
+fn is_count(v: &str) -> bool {
+    !v.is_empty() && v.len() <= 4 && v.bytes().all(|b| b.is_ascii_digit())
+}
+
+fn info_token(info: &str) -> Option<&str> {
+    let first = info.split([' ', '\t']).next().unwrap_or("");
+    let ok = !first.is_empty()
+        && first.len() <= 64
+        && first
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'_' | b'+' | b'.' | b'#' | b'-'));
+    ok.then_some(first)
+}
+
+// -- constructs
+
+fn embed(target: &str, alt: &str, profile: &dyn Profile) -> String {
+    if let Some(media) = profile.media(target) {
+        let url = escape_attr(&media.url);
+        let alt_attr = escape_attr(alt);
+        return match media.kind {
+            MediaKind::Image => {
+                format!("<img class=\"mq-embed\" src=\"{url}\" alt=\"{alt_attr}\" loading=\"lazy\">")
+            }
+            MediaKind::Audio => format!(
+                "<audio class=\"mq-embed\" controls src=\"{url}\" aria-label=\"{alt_attr}\"></audio>"
+            ),
+            MediaKind::Video => format!(
+                "<video class=\"mq-embed\" controls src=\"{url}\" aria-label=\"{alt_attr}\"></video>"
+            ),
+        };
+    }
+    // The contractual shrug applied to media: degrade to a labeled link, or
+    // to inert text when the scheme is out of policy.
+    let label = escape_text(&format!("[{}]", if alt.is_empty() { target } else { alt }));
+    if profile.link_allowed(target) {
+        format!("<a class=\"mq-embed-fallback\" href=\"{}\">{label}</a>", escape_attr(target))
+    } else {
+        format!("<span class=\"mq-embed-fallback\">{label}</span>")
+    }
+}
+
+fn turbolink(target: &str, level_attr: Option<&str>, profile: &dyn Profile) -> String {
+    if !profile.link_allowed(target) {
+        return format!("<p class=\"mq-turbolink\">{}</p>", escape_text(target));
+    }
+    let level = match level_attr {
+        Some("full") => TurbolinkLevel::Full,
+        Some("title") => TurbolinkLevel::Title,
+        Some("bare") => TurbolinkLevel::Bare,
+        _ => profile.turbolink_level(target),
+    };
+    if level != TurbolinkLevel::Bare {
+        if let Some(rich) = profile.turbolink(target, level) {
+            // Enrichment augments, never replaces: the wrapper itself
+            // carries the original link.
+            return format!(
+                "<div class=\"mq-turbolink mq-turbolink-rich\">{rich}<a class=\"mq-turbolink-source\" href=\"{}\">{}</a></div>",
+                escape_attr(target),
+                escape_text(target)
+            );
+        }
+    }
+    // The contractual floor: a plain link, always reachable.
+    format!(
+        "<p class=\"mq-turbolink\"><a href=\"{}\">{}</a></p>",
+        escape_attr(target),
+        escape_text(target)
+    )
+}
+
+/// Style knobs on a block node: validated values into --mq-* slots; the
+/// stylesheet owns which CSS property each slot feeds.
+fn style_vars(attrs: &Attrs) -> String {
+    let mut vars: Vec<String> = Vec::new();
+    if let Some(v) = attrs.get("color").filter(|v| is_color_value(v)) {
+        vars.push(format!("--mq-color:{v}"));
+    }
+    if let Some(v) = attrs.get("background").filter(|v| is_color_value(v)) {
+        vars.push(format!("--mq-bg:{v}"));
+    }
+    if vars.is_empty() {
+        String::new()
+    } else {
+        format!(" style=\"{}\"", vars.join(";"))
+    }
+}
+
+fn scheme_class(attrs: &Attrs) -> String {
+    match attrs.get("scheme").filter(|v| is_token(v)) {
+        Some(v) => format!(" mq-scheme-{v}"),
+        None => String::new(),
+    }
+}
+
+fn font_class(attrs: &Attrs) -> String {
+    match attrs.get("font").filter(|v| font_face(v).is_some()) {
+        Some(v) => format!(" mq-font-{v}"),
+        None => String::new(),
+    }
+}
+
+fn media_size(v: &str) -> Option<String> {
+    match v {
+        "small" => return Some("10rem".to_string()),
+        "medium" => return Some("20rem".to_string()),
+        "large" => return Some("32rem".to_string()),
+        "full" => return Some("100%".to_string()),
+        _ => {}
+    }
+    if is_count(v) {
+        let n: u32 = v.parse().ok()?;
+        if (1..=4096).contains(&n) {
+            return Some(format!("{n}px"));
+        }
+    }
+    None
+}
+
+fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
+    let inner = children(nodes, ctx);
+    if let Some(custom) = ctx.profile.directive(name, attrs, &inner) {
+        return custom;
+    }
+    match name {
+        // Carries metadata, renders nothing by default - but never eats an
+        // (unconventional) body.
+        "meta" => inner,
+        "page" => {
+            let layout = match attrs.get("layout").filter(|v| is_token(v)) {
+                Some(v) => format!(" mq-layout-{v}"),
+                None => String::new(),
+            };
+            format!(
+                "<div class=\"mq-page{layout}{}{}\"{}>{inner}</div>",
+                scheme_class(attrs),
+                font_class(attrs),
+                style_vars(attrs)
+            )
+        }
+        "section" => {
+            let slot = match attrs.get("slot").filter(|v| is_token(v)) {
+                Some(v) => format!(" data-slot=\"{v}\""),
+                None => String::new(),
+            };
+            format!(
+                "<section class=\"mq-section{}{}\"{slot}{}>{inner}</section>",
+                scheme_class(attrs),
+                font_class(attrs),
+                style_vars(attrs)
+            )
+        }
+        "turbolink" if attrs.contains_key("target") => {
+            turbolink(attrs.get("target").unwrap(), attrs.get("level").map(|s| s.as_str()), ctx.profile)
+        }
+        "media" => {
+            let mut vars: Vec<String> = Vec::new();
+            if let Some(w) = attrs.get("width").and_then(|v| media_size(v)) {
+                vars.push(format!("--mq-media-w:{w}"));
+            }
+            if let Some(h) = attrs.get("height").and_then(|v| media_size(v)) {
+                vars.push(format!("--mq-media-h:{h}"));
+            }
+            let style = if vars.is_empty() {
+                String::new()
+            } else {
+                format!(" style=\"{}\"", vars.join(";"))
+            };
+            format!("<div class=\"mq-media\"{style}>{inner}</div>")
+        }
+        // Unknown vocabulary: a container renders its children with an
+        // affordance that something wrapped them; a leaf renders the inert
+        // placeholder. Never eat authored content.
+        _ if !nodes.is_empty() => format!(
+            "<div class=\"mq-unknown\" data-directive=\"{}\">{inner}</div>",
+            escape_attr(name)
+        ),
+        _ => format!(
+            "<div class=\"mq-placeholder\" data-directive=\"{}\"></div>",
+            escape_attr(name)
+        ),
+    }
+}
+
+/// One rung of the font-element seven-step dial: presentational floor
+/// (works with no stylesheet, under any CSP), stylesheet class as ceiling.
+fn size_rung(value: &str, inner: &str) -> String {
+    format!("<font class=\"mq-size-{value}\" size=\"{value}\">{inner}</font>")
+}
+
+fn span(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
+    let inner = children(nodes, ctx);
+    if let Some(custom) = ctx.profile.span(name, attrs, &inner) {
+        return custom;
+    }
+    match name {
+        "sup" => format!("<sup>{inner}</sup>"),
+        "sub" => format!("<sub>{inner}</sub>"),
+        "small" => format!("<small>{inner}</small>"),
+        "big" => format!("<big>{inner}</big>"), // obsolete and eternal
+        "size" => match attrs.get("size").map(|s| s.as_str()) {
+            Some(v @ ("1" | "2" | "3" | "4" | "5" | "6" | "7")) => size_rung(v, &inner),
+            _ => inner, // off the dial: the effect degrades, the words survive
+        },
+        "miniscule" => size_rung("1", &inner),
+        "tiny" => size_rung("2", &inner),
+        "huge" => size_rung("6", &inner),
+        "enormous" => size_rung("7", &inner),
+        "color" => match attrs.get("color").filter(|v| is_color_value(v)) {
+            // Presentational floor + custom-property ceiling, one element.
+            Some(v) => format!(
+                "<font class=\"mq-color\" color=\"{v}\" style=\"--mq-color:{v}\">{inner}</font>"
+            ),
+            None => inner,
+        },
+        "font" => match attrs.get("font").map(|s| s.as_str()).and_then(font_face) {
+            Some(face) => {
+                let token = attrs.get("font").unwrap();
+                format!(
+                    "<font class=\"mq-font-{token}\" face=\"{}\">{inner}</font>",
+                    escape_attr(face)
+                )
+            }
+            None => inner, // not on the list: words in their own clothes
+        },
+        "sidenote" => {
+            // A numbered mark in the flow; the note flushes just below the
+            // triggering paragraph (see flush_notes).
+            ctx.note_n += 1;
+            let n = ctx.note_n;
+            ctx.pending.push(format!("<span class=\"mq-note-num\">{n}</span>{inner}"));
+            format!("<sup class=\"mq-noteref\">{n}</sup>")
+        }
+        "marquee" => {
+            let dir = match attrs.get("direction").filter(|v| is_token(v)) {
+                Some(v) => format!(" data-direction=\"{v}\""),
+                None => String::new(),
+            };
+            let speed = match attrs.get("speed").filter(|v| is_count(v)) {
+                Some(v) => format!(" style=\"--mq-speed:{v}\""),
+                None => String::new(),
+            };
+            format!(
+                "<span class=\"mq-marquee\"{dir}{speed}><span class=\"mq-marquee-inner\">{inner}</span></span>"
+            )
+        }
+        "blink" => {
+            let rate = match attrs.get("rate").filter(|v| is_count(v)) {
+                Some(v) => format!(" style=\"--mq-rate:{v}\""),
+                None => String::new(),
+            };
+            format!("<span class=\"mq-blink\"{rate}>{inner}</span>")
+        }
+        "rainbow" | "bounce" | "jitter" | "wave" => {
+            match attrs.get("by").map(|s| s.as_str()) {
+                Some(by @ ("letter" | "word")) => {
+                    by_segments(name, by, attrs.get("phase").map(|s| s.as_str()), nodes, ctx)
+                }
+                _ => format!("<span class=\"mq-{name}\">{inner}</span>"),
+            }
+        }
+        "typewriter" => format!("<span class=\"mq-typewriter\">{inner}</span>"),
+        _ => inner, // unknown span: pure shrug, children as plain content
+    }
+}
+
+// -- per-unit effects (by=letter / by=word): each unit in its own span with
+// a phase offset in --mq-o; the stylesheet replays the effect's keyframes
+// through a negative animation-delay. Segmentation is this renderer's own
+// (unicode-segmentation); per-renderer goldens, not cross-renderer bytes.
+
+const MAX_SPLIT_UNITS: usize = 400;
+
+struct SplitState<'s> {
+    effect: &'s str,
+    by: &'s str,
+    phase: &'s str,
+    i: usize,
+    total: usize,
+}
+
+fn by_segments(
+    effect: &str,
+    by: &str,
+    phase_attr: Option<&str>,
+    nodes: &[Node],
+    ctx: &mut Ctx,
+) -> String {
+    // Each effect has a natural phase order (jitter scatters, the rest
+    // sweep); the knob overrides either way.
+    let phase = match phase_attr {
+        Some(p @ ("scatter" | "ramp")) => p,
+        _ => {
+            if effect == "jitter" {
+                "scatter"
+            } else {
+                "ramp"
+            }
+        }
+    };
+    let total = count_units(nodes, by);
+    if total == 0 || total > MAX_SPLIT_UNITS {
+        let inner = children(nodes, ctx);
+        return format!("<span class=\"mq-{effect}\">{inner}</span>");
+    }
+    let mut state = SplitState { effect, by, phase, i: 0, total };
+    let inner = split_render(nodes, ctx, &mut state);
+    format!("<span class=\"mq-{effect} mq-split\">{inner}</span>")
+}
+
+fn segments<'t>(text: &'t str, by: &str) -> Vec<&'t str> {
+    if by == "word" {
+        text.split_word_bounds().collect()
+    } else {
+        text.graphemes(true).collect()
+    }
+}
+
+/// A segment gets wrapped if it's animatable: for words, word-like segments
+/// (spaces and bare punctuation ride along); for letters, anything that
+/// isn't whitespace.
+fn is_unit(segment: &str, by: &str) -> bool {
+    if by == "word" {
+        segment.chars().any(|c| c.is_alphanumeric())
+    } else {
+        !segment.trim().is_empty()
+    }
+}
+
+/// Offsets are deterministic (goldens exist; a document renders the same
+/// twice) in both phase orders: ramp sweeps, scatter scrambles by a fixed
+/// integer hash - randomness-shaped, never random.
+fn unit_offset(state: &SplitState) -> String {
+    let o: f64 = if state.phase == "scatter" {
+        ((state.i * 7919) % 101) as f64 / 101.0
+    } else {
+        match state.effect {
+            "rainbow" => state.i as f64 / state.total as f64,
+            "wave" => (state.i % 8) as f64 / 8.0,
+            "bounce" => (state.i % 6) as f64 / 6.0,
+            _ => (state.i % 8) as f64 / 8.0, // jitter in ramp mode: a ripple
+        }
+    };
+    let rounded = (o * 1000.0).round() / 1000.0;
+    // Trim like JS number formatting: no trailing zeros, bare 0.
+    let s = format!("{rounded}");
+    s
+}
+
+fn count_units(nodes: &[Node], by: &str) -> usize {
+    let mut n = 0;
+    for node in nodes {
+        match node {
+            Node::Text { value } => {
+                n += segments(value, by).iter().filter(|s| is_unit(s, by)).count();
+            }
+            Node::Emphasis { children: c }
+            | Node::Strong { children: c }
+            | Node::Strikethrough { children: c } => {
+                n += count_units(c, by);
+            }
+            _ => {}
+        }
+    }
+    n
+}
+
+fn split_render(nodes: &[Node], ctx: &mut Ctx, state: &mut SplitState) -> String {
+    let mut out = String::new();
+    for node in nodes {
+        match node {
+            Node::Text { value } => {
+                for segment in segments(value, state.by) {
+                    if !is_unit(segment, state.by) {
+                        out.push_str(&escape_text(segment)); // rides along
+                        continue;
+                    }
+                    let o = unit_offset(state);
+                    state.i += 1;
+                    out.push_str(&format!(
+                        "<span class=\"mq-l\" style=\"--mq-o:{o}\">{}</span>",
+                        escape_text(segment)
+                    ));
+                }
+            }
+            Node::Emphasis { children: c } => {
+                out.push_str(&format!("<em>{}</em>", split_render(c, ctx, state)));
+            }
+            Node::Strong { children: c } => {
+                out.push_str(&format!("<strong>{}</strong>", split_render(c, ctx, state)));
+            }
+            Node::Strikethrough { children: c } => {
+                out.push_str(&format!("<del>{}</del>", split_render(c, ctx, state)));
+            }
+            other => out.push_str(&render_node(other, ctx)), // whole, un-split
+        }
+    }
+    out
+}

@@ -7,7 +7,7 @@
 // the link's path in <strong>. Read alongside the "Writing a plugin" guide
 // in marquee-turbolink's README.
 
-import { escapeText, type TurbolinkPlugin } from "../../turbolink/src/index.ts";
+import { escapeText, type TurbolinkPlugin } from "@classam/turbolink";
 
 const PREFIX = "https://marquee.click";
 

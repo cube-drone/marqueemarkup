@@ -62,6 +62,25 @@
     ]}
   },
   {
+    "name": "spans/bang-before-closer-survives",
+    "marquee": "[b]wow![/b]\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "span", "name": "b", "attrs": {}, "children": [{"type": "text", "value": "wow!"}]}
+      ]}
+    ]}
+  },
+  {
+    "name": "spans/bang-before-opener-survives",
+    "marquee": "wait![blink]for it[/blink]\n",
+    "ast": {"type": "document", "version": 0, "children": [
+      {"type": "paragraph", "children": [
+        {"type": "text", "value": "wait!"},
+        {"type": "span", "name": "blink", "attrs": {}, "children": [{"type": "text", "value": "for it"}]}
+      ]}
+    ]}
+  },
+  {
     "name": "spans/attribute",
     "marquee": "[typewriter speed=30]slow reveal[/typewriter]\n",
     "ast": {"type": "document", "version": 0, "children": [

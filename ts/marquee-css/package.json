@@ -1,0 +1,34 @@
+{
+  "name": "@classam/marquee-css",
+  "version": "0.1.0",
+  "description": "The Marquee reference stylesheet: the mq-* class contract every renderer targets",
+  "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cube-drone/marqueemarkup.git",
+    "directory": "ts/marquee-css"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "files": [
+    "src",
+    "marquee.css"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./marquee.css": "./marquee.css"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.ts",
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}

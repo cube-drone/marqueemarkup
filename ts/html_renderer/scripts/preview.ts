@@ -25,15 +25,16 @@
 
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { FONTS, bareWebProfile, renderMarquee, type Profile } from "../src/index.ts";
+import { bareWebProfile, renderMarquee, usedFontTokens, type Profile } from "../src/index.ts";
+import { marqueeCss } from "@classam/marquee-css";
+import { inlineFontFaces } from "@classam/marquee-fonts";
 import {
   composeTurbolinks,
   defaultPlugins,
   renderCard,
   turbolinkStyles,
   type TurbolinkPlugin,
-} from "../../turbolink/src/index.ts";
+} from "@classam/turbolink";
 
 const EMOJI: Record<string, string> = {
   tophat: "🎩", smile: "😀", sparkles: "✨", blobcat: "🐱", wave: "👋",
@@ -173,33 +174,18 @@ if (files.length === 0) {
 }
 
 const css =
-  readFileSync(fileURLToPath(new URL("../../../css/marquee.css", import.meta.url)), "utf8") +
+  marqueeCss +
   // The composed plugins' skins, collected from the same list we composed -
   // one artifact, nothing to forget.
   turbolinkStyles(PREVIEW_PLUGINS);
 
 /** Inline @font-face (as data URIs) for exactly the grab-bag faces the
  * rendered pages actually use - real pixels, still one self-contained file,
- * still zero scripts. */
+ * still zero scripts. The "near-magic" recipe: renderer names the faces,
+ * the fonts package carries the bytes. */
 function usedFontFaces(html: string): string {
-  const fontsDir = fileURLToPath(new URL("../../../fonts/", import.meta.url));
-  const used = new Set<string>();
-  for (const m of html.matchAll(/mq-font-([a-z0-9-]+)/g)) {
-    used.add(m[1]!);
-  }
-  const rules: string[] = [];
-  for (const token of [...used].sort()) {
-    const family = FONTS[token];
-    const path = resolve(fontsDir, `${token}.woff2`);
-    if (family === undefined || !existsSync(path)) {
-      continue; // standard stacks and missing files: fallbacks handle it
-    }
-    const data = readFileSync(path).toString("base64");
-    rules.push(
-      `@font-face { font-family: "${family}"; src: url(data:font/woff2;base64,${data}) format("woff2"); font-display: swap; }`,
-    );
-  }
-  return rules.length === 0 ? "" : `<style>\n${rules.join("\n")}\n</style>\n`;
+  const rules = inlineFontFaces(usedFontTokens(html));
+  return rules === "" ? "" : `<style>\n${rules}\n</style>\n`;
 }
 
 const sections = files.map((path) => {

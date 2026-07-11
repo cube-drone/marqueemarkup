@@ -7,10 +7,10 @@ partials, not pages). The map page pastes a Google Maps link and the stock maps 
 renders it as an OpenStreetMap embed. Gallery photos come from `../../example-media/` and are
 copied in at build time.
 
-Build the whole site at once (from `ts/html_renderer/`):
+Build the whole site at once (from the repo root; or `npx marquee` once published):
 
 ```
-npm run build-site -- ../../examples/borsalino /tmp/borsalino
+npm run marquee -- examples/borsalino /tmp/borsalino
 npx serve /tmp/borsalino     # then open http://localhost:3000/index.html
 ```
 

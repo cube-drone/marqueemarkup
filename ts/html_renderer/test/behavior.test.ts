@@ -14,7 +14,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Node } from "../../parser/src/index.ts";
+import type { Node } from "@classam/marquee-parser";
 import { bareWebProfile, escapeText, render, renderMarquee } from "../src/index.ts";
 
 interface Collected {

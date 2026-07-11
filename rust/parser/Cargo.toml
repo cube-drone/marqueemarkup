@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 license = "MPL-2.0"
 description = "Reference parser for the Marquee markup language"
+repository = "https://github.com/cube-drone/marqueemarkup"
+keywords = ["markup", "parser", "marquee"]
+categories = ["parser-implementations", "text-processing"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }

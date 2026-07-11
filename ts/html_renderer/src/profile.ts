@@ -3,7 +3,7 @@
 // decision routes through here; the renderer itself never fetches, never
 // guesses trust, never widens a scheme allowlist.
 
-import type { Attrs } from "../../parser/src/index.ts";
+import type { Attrs } from "@classam/marquee-parser";
 
 export interface MediaResolution {
   kind: "image" | "audio" | "video";

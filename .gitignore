@@ -21,3 +21,6 @@ target
 #.idea/
 
 WRITING.html
+
+# npm workspaces
+node_modules/

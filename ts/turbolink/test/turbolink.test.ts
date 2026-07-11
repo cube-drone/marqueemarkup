@@ -21,7 +21,7 @@ import {
   youtubePlugin,
   type TurbolinkPlugin,
 } from "../src/index.ts";
-import { parse } from "../../parser/src/index.ts";
+import { parse } from "@classam/marquee-parser";
 
 test("youtube: watch and short URLs become nocookie embeds; title declines", () => {
   for (const url of [

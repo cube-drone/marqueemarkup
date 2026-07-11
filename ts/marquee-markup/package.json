@@ -1,0 +1,44 @@
+{
+  "name": "@classam/marquee-markup",
+  "version": "0.1.0",
+  "description": "Marquee, batteries included: parse + render to HTML in one motion, fonts and styles along for the ride, plus the `marquee` CLI",
+  "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cube-drone/marqueemarkup.git",
+    "directory": "ts/marquee-markup"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "files": [
+    "src",
+    "bin",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "marquee": "./bin/marquee.ts"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.ts",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@classam/marquee-css": "^0.1.0",
+    "@classam/marquee-fonts": "^0.1.0",
+    "@classam/marquee-html-renderer": "^0.1.0",
+    "@classam/marquee-parser": "^0.1.0",
+    "@classam/turbolink": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}

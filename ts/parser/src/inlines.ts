@@ -278,6 +278,9 @@ function bracket(
   if (interior.startsWith("/")) {
     const name = interior.slice(1);
     if (isName(name)) {
+      if (embed) {
+        pushStr(frames, "!"); // the ! belongs to links/embeds, not spans
+      }
       if (frames.length > 1 && top(frames).name === name) {
         const frame = frames.pop()!;
         const children = normalize(revertDelims(frame.children, frame.delims));
@@ -295,6 +298,9 @@ function bracket(
   // (`[color=red]` puts `color=red` in the span's own attrs).
   const opener = parseSpanOpener(interior);
   if (opener !== null) {
+    if (embed) {
+      pushStr(frames, "!"); // the ! belongs to links/embeds, not spans
+    }
     if (base + totalDepth(frames) >= MAX_INLINE_DEPTH) {
       pushStr(frames, chars.slice(open, k + 1).join(""));
     } else {

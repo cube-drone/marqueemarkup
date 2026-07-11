@@ -4,7 +4,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { composeTurbolinks, defaultPlugins, turbolinkStyles } from "../../turbolink/src/index.ts";
+import { composeTurbolinks, defaultPlugins, turbolinkStyles } from "@classam/turbolink";
 import { marqueeClickPlugin } from "../src/index.ts";
 
 test("recognizes marquee.click links and nothing else", () => {

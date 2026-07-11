@@ -1,0 +1,50 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { buildSite, marquee, marqueeFragment } from "../src/index.ts";
+
+test("marquee(): source in, complete self-contained page out", () => {
+  const page = marquee("# Hello *world*\n");
+  assert.ok(page.startsWith("<!doctype html>"));
+  assert.ok(page.includes("<h1>Hello <em>world</em></h1>"));
+  assert.ok(page.includes(".mq-doc"), "stylesheet inlined");
+  assert.ok(page.includes("<title>Marquee</title>"), "default title");
+});
+
+test("marquee(): meta title wins, fonts inline only when worn", () => {
+  const plain = marquee(':::meta title="My Page":::\n\nwords\n');
+  assert.ok(plain.includes("<title>My Page</title>"));
+  assert.ok(!plain.includes("data:font/woff2"), "no fonts worn, no fonts carried");
+  const fancy = marquee("[font=orbitron]SPACE[/font]\n");
+  assert.ok(fancy.includes("data:font/woff2"), "worn face inlined");
+  const bare = marquee("[font=orbitron]SPACE[/font]\n", { fonts: "none" });
+  assert.ok(!bare.includes("data:font/woff2"), "fonts: none opts out");
+});
+
+test("marqueeFragment(): the pieces, for embedders", () => {
+  const { html, css, title } = marqueeFragment("# Piece\n");
+  assert.ok(html.startsWith('<div class="mq-doc">'));
+  assert.ok(!html.includes("<!doctype"), "fragment is not a page");
+  assert.ok(css.includes(".mq-turbolink-card"), "plugin skins collected");
+  assert.equal(title, "Marquee");
+});
+
+test("buildSite(): the whole borsalino, one call", () => {
+  const site = fileURLToPath(new URL("../../../examples/borsalino", import.meta.url));
+  const out = mkdtempSync(join(tmpdir(), "marquee-site-"));
+  try {
+    const report = buildSite(site, out);
+    assert.deepEqual(report.pages.sort(), ["gallery", "index", "map", "menu"]);
+    assert.equal(report.mediaFiles, 5);
+    assert.ok(report.fontFaces.includes("playfair-display"));
+    const index = readFileSync(join(out, "index.html"), "utf8");
+    assert.ok(index.includes("BORSALINO"), "shared nav included");
+    assert.ok(index.includes('href="menu.html"'), "doc-id links resolved");
+    assert.ok(readdirSync(join(out, "fonts")).length === report.fontFaces.length);
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+  }
+});

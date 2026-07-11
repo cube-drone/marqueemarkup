@@ -1,16 +1,33 @@
 {
-  "name": "marquee-turbolink",
+  "name": "@classam/turbolink",
   "version": "0.1.0",
-  "private": true,
   "description": "Pluggable turbolink rendering for Marquee: link expanders as plugins, plain link as the floor",
   "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cube-drone/marqueemarkup.git",
+    "directory": "ts/turbolink"
+  },
   "type": "module",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": "./src/index.ts"
   },
   "scripts": {
     "test": "node --test test/*.test.ts",
     "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@classam/marquee-parser": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

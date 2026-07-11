@@ -1,0 +1,20 @@
+{
+  "name": "marqueemarkup",
+  "private": true,
+  "description": "The Marquee markup language: spec, conformance vectors, and reference implementations",
+  "type": "module",
+  "workspaces": [
+    "ts/parser",
+    "ts/turbolink",
+    "ts/turbolink-example-plugin",
+    "ts/html_renderer",
+    "ts/marquee-css",
+    "ts/marquee-fonts",
+    "ts/marquee-markup"
+  ],
+  "scripts": {
+    "test": "npm test --workspaces",
+    "check": "npm run check --workspaces",
+    "marquee": "node ts/marquee-markup/bin/marquee.ts"
+  }
+}

@@ -1,10 +1,23 @@
 {
-  "name": "marquee-html-renderer",
+  "name": "@classam/marquee-html-renderer",
   "version": "0.1.0",
-  "private": true,
   "description": "Reference static HTML renderer for the Marquee markup language",
   "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cube-drone/marqueemarkup.git",
+    "directory": "ts/html_renderer"
+  },
   "type": "module",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "files": [
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": "./src/index.ts"
   },
@@ -12,11 +25,15 @@
     "test": "node --test test/*.test.ts",
     "check": "tsc --noEmit",
     "bless": "node scripts/bless.ts",
-    "preview": "node scripts/preview.ts",
-    "build-site": "node scripts/build-site.ts",
-    "fetch-fonts": "node scripts/fetch-fonts.ts"
+    "preview": "node scripts/preview.ts"
+  },
+  "dependencies": {
+    "@classam/marquee-parser": "^0.1.0"
   },
   "devDependencies": {
+    "@classam/marquee-css": "^0.1.0",
+    "@classam/marquee-fonts": "^0.1.0",
+    "@classam/turbolink": "^0.1.0",
     "@types/node": "^24.0.0",
     "typescript": "^5.9.0"
   }
