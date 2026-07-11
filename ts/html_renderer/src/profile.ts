@@ -29,7 +29,7 @@ export interface Profile {
   emoji(slug: string): EmojiResolution | null;
   /** Rendered turbolink content for a target, or null → the plain-link
    * floor. Embedders compose this from plugins (see marquee-turbolink: an
-   * image in a box, play controls, a YouTube embed, Ringtome-native
+   * image in a box, play controls, a YouTube embed, a host's native
    * displays). Trusted embedder code, like `directive`: author bytes only
    * enter as the target string. MUST be sync and fetchless - gathering
    * happens in a plugin's resolve() phase, never mid-render. */

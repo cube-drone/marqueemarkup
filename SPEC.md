@@ -1,12 +1,12 @@
 # Marquee — Language Specification
 
 **Status: DRAFT v0.** The grammar's *shape* is settled; the vocabulary is deliberately
-unfinished (it grows from real usage - see Ringtome's NOTES_APP.md on the corpus). This
-document is released under **CC0**: a spec that isn't freely implementable isn't a spec.
+unfinished. 
+
+This document is released under **[CC0](https://creativecommons.org/public-domain/)**.
 
 Marquee is a markup language for pages and posts: a little bit of markdown, a little bit of
-RST, a whole lot of dumb old internet. It is a **standalone product** - Ringtome is its first
-embedder, not its owner - and it renders on the regular web.
+RST, a whole lot of dumb old internet. 
 
 ## Design principles
 
@@ -17,7 +17,7 @@ embedder, not its owner - and it renders on the regular web.
 2. **One input, one parse, everywhere.** Marquee will be parsed by many independent
    implementations on both sides of trust boundaries. Grammar ambiguity is parser-differential
    risk (content that reads as prose to a validator and as an active construct to a renderer -
-   the mXSS genre) and it is also just broken cozy ("my page looks like my page on every
+   the mXSS genre) and it is also just broken ("my page looks like my page on every
    client"). The grammar is therefore small and unambiguous, specified by this document plus
    **published test vectors** (input → exact AST), CommonMark's philosophy deliberately
    refused. Prior art in spirit: Djot.
@@ -142,7 +142,7 @@ Inlines:
   parser-side, `:::turbolink` is ordinary vocabulary (a `directive` node, like `:::meta`), and
   the `turbolink{target}` core node comes only from the sugar. Marquee owns only the node;
   **where the summary comes from is entirely render/embedder-side** - OpenGraph/meta tags
-  fetched from a web URL, native metadata (title, etc.) for a `ringtome://` target - and
+  fetched from a web URL, native metadata (title, etc.) for an embedder's own scheme - and
   because enriching a web link means *fetching* it, that obeys the fetch-policy/care-modes dial
   (a privacy-max reader gets a plain link, not a fetched preview). Degrades to a plain link
   always - and an *enriched* rendering keeps the original link reachable beside the content:
@@ -226,7 +226,7 @@ two things that make front matter a wart.
   means* - the schema it deliberately does not own). No-spooky-action: a value, once declared, is
   fixed; a later line cannot silently reach back and change it.
 - **Reconciliation with external records is host policy.** A standalone file self-describes via
-  `:::meta`. A host with its own record (Ringtome's post fields) decides precedence - the sane
+  `:::meta`. A host with its own record (a platform's post fields) decides precedence - the sane
   default is *import-time seeding*: `:::meta` populates the record on ingest, then the record is
   authoritative (a host-native document may carry no `:::meta` at all, its record being the
   metadata). Marquee guarantees only that the document *can* carry its own description when
@@ -365,7 +365,7 @@ Style is where the spec says "no" most, so here is the positive model, in one pl
 
 ```
 :::include doc=NAV_ID:::                        (relative: a sibling in the same context)
-:::include doc=ringtome://identity/NAV_ID:::    (absolute: someone else's, where permitted)
+:::include doc=example://identity/NAV_ID:::     (absolute: someone else's, where permitted)
 ```
 
 - Includes are **live by default** (a relative or location-addressed reference: edit your nav
@@ -373,8 +373,8 @@ Style is where the spec says "no" most, so here is the positive model, in one pl
   Live-vs-pinned is the target duality, chosen per reference.
 - The language enforces mechanics: include depth cap (v0: includes may not include), cycle =
   strict error. The *trust scope* - whose documents may be included - is embedder policy
-  (Ringtome's profile: same-identity only in v1; someone else's mutable content inside your
-  signed page is a defacement vector to opt into deliberately, later).
+  (a sane first profile: same-author only; someone else's mutable content inside your
+  page is a defacement vector to opt into deliberately, later).
 - Honesty note: a live include means a page's rendered content can change after signing. That
   is the feature (shared nav) and the hazard (what moderation saw ≠ what readers see later);
   embedders choose their exposure via trust scope and pin policies.
@@ -387,7 +387,7 @@ a resolved directive and a stateful widget are one species (host-provided behavi
 parser is as blind to it as to every other directive name.
 
 ```
-:::computed lang=ringtome-tql query="...":::      (opaque: Marquee neither parses nor understands the query)
+:::computed lang=taxonomy-ql query="...":::       (opaque: Marquee neither parses nor understands the query)
 :::computed lang=sql query="SELECT ...":::         (equally valid syntactically - Marquee has no opinion)
 ```
 
@@ -396,7 +396,7 @@ animation and targets: contract yes, meaning no):
 
 - The query string and its language are **opaque** - passed through to the embedder's resolver.
   Marquee defines no query language, no role vocabulary, no taxonomy shapes. Those belong to the
-  embedder's own system (for Ringtome, a future taxonomy query language - out of scope here).
+  embedder's own system (a taxonomy query language, a search DSL - out of scope here).
 - **`:::computed` is the mechanism, not the author surface - it is verbose on purpose.** An
   embedder should offer friendly named directives (`:::next-in stream=my-comic:::`) as ordinary
   vocabulary over it; the raw form is plumbing a hand-author rarely writes, the way nobody writes
@@ -459,7 +459,7 @@ parenthetical. No
 grammar change: it is a `span{name: "sidenote"}` like any other, just one the spec defines rather
 than the embedder. (Godot's RichTextLabel speaks BBCode with
 effect tags natively; a game-engine Marquee renderer for RPG dialogue is an intended
-out-of-Ringtome embedder, and the effect set is chosen with it in mind.) The vocabulary is meant
+embedder, and the effect set is chosen with it in mind.) The vocabulary is meant
 to *grow* - the early web's charm was people experimenting with a widening typographic palette,
 and additive vocabulary + version bumps are that path. The discipline that keeps it convergent
 rather than tag-soup: growth adds **closed, named constructs** (a future `[spiral]`, `:::columns`,
@@ -487,8 +487,8 @@ generic `embed` node, so the AST is identical across implementations). HTML's st
 `<source>` ladders exist only because HTML cannot mandate a codec baseline across vendors;
 Marquee's conformance model can, so it does not need them:
 
-- **Allowed formats are a closed set** (embedder policy - Ringtome's media-type admission test
-  decides what may enter as a blob at all). One known-good file, never a fallback ladder.
+- **Allowed formats are a closed set** (embedder policy - a host's media-type admission test
+  decides what may enter its store at all). One known-good file, never a fallback ladder.
 - **Renderers decode what they can and degrade to a link/placeholder otherwise** - the
   contractual shrug applied to media: a text-only client renders `[video: trailer.mp4]` as a
   link, a capable one plays it, nobody is nonconforming.
@@ -524,8 +524,8 @@ entirely downstream - Marquee owns none of it:
 - **Standard shortcodes** (`:smile:` → 😀) resolve against a **referenced standard table**
   (CLDR / gemoji), not a list Marquee invents and maintains - a contested 3,000-entry table is
   not the language's to own.
-- **Custom emoji** resolve against a **slug → image-blob map** - which is the document slug
-  register (Ringtome, Addressing) with image blobs as values instead of doc ids. Custom emoji
+- **Custom emoji** resolve against a **slug → image map** - whatever slug-to-document
+  register the embedder already has, with images as values instead of doc ids. Custom emoji
   is named indirection over an inline image; the indirection is existing machinery.
 - **Whose map** is the same anti-global-namespace answer as every naming question here: a
   published artifact scoped to an identity or community, resolved like any other slug (a
@@ -550,9 +550,9 @@ mechanism - the web's own, adopted whole:
 
 - **Relative references** (`nav`, `../shared/nav`, `/home/nav`) resolve against the containing
   document's **base URI**, which the embedder supplies: on the web, the document's URL, exactly
-  as HTML; in Ringtome, the document's own `ringtome://root/...` address - so a bare `id` names
-  a sibling document in the same identity, and author-context resolution is a *corollary of the
-  standard*, not a bespoke rule. The known cost, accepted with eyes open: relative references
+  as HTML; on a platform with its own addressing, the document's own address under that
+  scheme - so a bare `id` names a sibling document in the same authoring context, and
+  author-context resolution is a *corollary of the standard*, not a bespoke rule. The known cost, accepted with eyes open: relative references
   are location-dependent (move the document, break the short links) - the web's bargain since
   1993, and the absolute form always exists.
 - **Transclusion base rule:** an included document's own relative references resolve against
@@ -560,8 +560,8 @@ mechanism - the web's own, adopted whole:
   the same links on every page that includes it, or convergence dies.
 - **Absolute forms**: `https:` / `http:` (the regular web - Marquee is useful outside any p2p
   system; web images, videos, and links are first-class in the grammar; whether they are
-  *fetched* is embedder policy), embedder-registered schemes (`ringtome://identity/id` - the
-  whole shebang, required for cross-identity references), and `blob:HASH`.
+  *fetched* is embedder policy), embedder-registered schemes (`example://identity/id` - the
+  fully qualified form, required for references that cross authoring contexts), and `blob:HASH`.
 - **Live vs. pinned is per-scheme**: relative references and location-addressed schemes are
   *live* (resolution yields the current version); hash-addressed schemes (`blob:`) are *pinned*
   (this exact content forever). Choose per reference.
@@ -574,7 +574,7 @@ mechanism - the web's own, adopted whole:
 
 ## Embedder profiles
 
-An embedder (Ringtome, a static-site generator, anything) declares:
+An embedder (a hosted platform, a static-site generator, anything) declares:
 
 - **Allowed schemes** per construct (e.g. links may be `https:` while embeds are `blob:` only).
 - **Fetch policy for remote targets** - the "care modes" dial: fetch directly (average-user
@@ -590,16 +590,14 @@ An embedder (Ringtome, a static-site generator, anything) declares:
 short document (one renderer for pages, posts, notes, *and* messages - the old-internet norm
 where posting and chatting shared markup). The profile permits inline formatting, embeds, and
 emoji while forbidding page layout, includes, and resolved directives (no `:::page` in a text
-bubble). It is also the first *inter-identity* Marquee - content crossing between people - which
-is where the private "tell them" disclosure lane grows into direct messages.
+bubble). It is also the first *inter-identity* Marquee - content crossing between people.
 
-The **Ringtome profile** (maintained in the Ringtome repo, not here): a document's base URI is
-its own `ringtome://root/...` address, so a bare relative `id` resolves within the authoring
-identity (the id being the store layer's stable `doc_id`: the private register key for notes,
-the reserved payload field for posts) and cross-identity references are fully qualified;
-embeds `blob:` + `ringtome://` natively; `https:` media allowed with node-proxy fetch as default and care modes
-present; includes same-identity only; the cozy widget set; turbolinks on by default for
-`ringtome://` targets and title-only for the web.
+A worked example - one plausible **native-platform profile** (maintained wherever that
+platform lives, not here): a document's base URI is its own address under the platform's
+scheme, so a bare relative `id` resolves within the authoring context and cross-context
+references are fully qualified; embeds `blob:` + the native scheme natively; `https:` media
+allowed with node-proxy fetch as default and care modes present; includes same-author only;
+the cozy widget set; turbolinks on by default for native targets and title-only for the web.
 
 ## Reserved vocabulary
 
@@ -688,9 +686,9 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   MUST render nothing, in every renderer. It stays in the AST (authoring tools show and edit
   your notes-to-self), never in the reader's view. **Comments are invisible to readers, never
   secret from them:** the bytes travel, view-source is real, and thirty years of leaked HTML
-  comments are the fable. The Ringtome profile therefore *strips comments at the publication
-  act* (free - publication already re-encodes, copy-don't-flip); standalone bare-web files ship
-  their comments in the file, exactly like HTML, and the spec says so plainly.
+  comments are the fable. A hosted-platform profile can therefore *strip comments at the
+  publication step* (free wherever publication already re-encodes the document); standalone
+  bare-web files ship their comments in the file, exactly like HTML, and the spec says so plainly.
 
 ## Conformance
 
@@ -723,8 +721,8 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   everyone recovered differently.
 - Version tag on every document; unknown *versions* are refused, unknown *vocabulary within a
   known version* renders placeholders.
-- **Version declaration.** Embedders supply the dialect version out-of-band (Ringtome: the
-  payload type / the `format` field - its type registry already owns this). Standalone files
+- **Version declaration.** Embedders supply the dialect version out-of-band (a platform's
+  content-type registry / `format` field already owns this). Standalone files
   may declare in-band with a shebang-shaped first line, `#!marquee 0` - exactly `#!marquee`,
   one space, a decimal integer, recognized on line 1 only; grammatically free (`#!` is not a
   heading, and any other `#!` line is prose), stripped at the front door into
@@ -746,7 +744,7 @@ to a different system entirely:
   existing to test against). Shapes are settled; contents wait on use.
 - [ ] Tables (`:::table` name reserved, see Reserved vocabulary): if the corpus asks, decide the
   body-model fork - structured children (vocabulary) vs. pipe body (a raw-content grammar addition).
-- [ ] **Not Marquee's** (named so nobody hunts for them here): the taxonomy query language
+- [ ] **Not Marquee's** (named so nobody hunts for them here): the query language
   resolved directives carry; the custom-emoji map artifact and the messaging vocabulary profile.
-  All belong to the embedder (Ringtome). Marquee owns the `emoji`/`directive`/`embed` grammar
+  All belong to the embedder. Marquee owns the `emoji`/`directive`/`embed` grammar
   and treats their contents as opaque.

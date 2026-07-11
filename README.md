@@ -159,7 +159,7 @@ piecemeal as public infrastructure — npm: `@cube-drone/marquee-parser`,
 `@cube-drone/marquee-html-renderer`, `@cube-drone/marquee-turbolink`; crates.io:
 `cube-drone-marquee-parser` and `cube-drone-marquee-html-renderer` (crates.io has no scopes, so
 the registry names wear the cube-drone prefix while the code stays `use marquee_parser`) — and
-downstream embedders (Ringtome included) consume them through the public registries like
+downstream embedders consume them through the public registries like
 anybody else. The TypeScript side is an npm workspace: `npm install` once at the root,
 `npm test` runs every package.
 

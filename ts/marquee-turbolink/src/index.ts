@@ -2,7 +2,8 @@
 //
 // A plugin owns the *presentation* of the link kinds it recognizes - an
 // image in a medium box, audio controls, a playable YouTube embed, a Spotify
-// widget, Ringtome-privileged content, the Binglebongle plugin of 2035. The
+// widget, a host platform's native content, the Binglebongle plugin of 2035.
+// The
 // Marquee renderer owns only the floor (a plain link, always) and the socket
 // (Profile.turbolink). Embedders compose the chain they trust.
 //

@@ -61,7 +61,7 @@ Writing these *is* a spec test. What came up (all now fixed in SPEC.md):
   paragraph: the language captures them cleanly, but a renderer floating that many margin notes
   needs a real placement strategy (stack / number / collapse-on-narrow). "First-class" means
   in-the-spec, not trivial-to-render-well.
-- **The post would want Ringtome content labels** (it discusses suicide and child abuse) — not a
+- **The post would want host-side content labels** (it discusses suicide and child abuse) — not a
   Marquee concern (the language doesn't moderate), but the first real-data demonstration of the
   reserved `labels` consent field's need rather than a hypothesized one.
 - **Real data (`real-blog-house-of-leaves.mq`) validated the language against writing I did not
@@ -91,8 +91,8 @@ Writing these *is* a spec test. What came up (all now fixed in SPEC.md):
     Marquee is *standalone*, so a document must be able to self-describe (a `.mq` on a plain
     server has no post record) - and the attribute grammar already *is* a key-value format, so
     document metadata costs zero new parsing (no embedded YAML). Marquee carries it; keys stay
-    consumer-defined; a Ringtome import seeds the post record from `:::meta`. The author's
-    self-declared `tags` here *seed* the external taxonomy system (NOTES_APP) at import -
+    consumer-defined; a platform import seeds its post record from `:::meta`. The author's
+    self-declared `tags` here *seed* the host's external taxonomy system at import -
     self-description feeding the queryable/curatable structure, not competing with it.
 - **Speaker names are metadata, not content — and the "demo from primitives" conceit broke.**
   The first draft put the speaker inside the typewriter span, so the name typewrote letter by

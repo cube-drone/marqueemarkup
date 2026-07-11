@@ -28,7 +28,7 @@ import { composeTurbolinks, defaultPlugins } from "marquee-turbolink";
 
 const profile = {
   ...bareWebProfile,
-  turbolink: composeTurbolinks([myRingtomePlugin, ...defaultPlugins]),
+  turbolink: composeTurbolinks([myPlatformPlugin, ...defaultPlugins]),
 };
 ```
 
@@ -48,7 +48,7 @@ artifact: emit it in a `<style>` block, or write it to a bundle file at build ti
 a plugin imports its style; there is no per-plugin file scavenger hunt to get wrong.
 
 ```ts
-const plugins = [myRingtomePlugin, ...defaultPlugins];
+const plugins = [myPlatformPlugin, ...defaultPlugins];
 const profile = { ...bareWebProfile, turbolink: composeTurbolinks(plugins) };
 const styles = turbolinkStyles(plugins); // one string, same list, nothing forgotten
 ```

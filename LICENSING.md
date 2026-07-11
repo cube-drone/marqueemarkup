@@ -9,6 +9,3 @@ Matched to each artifact's adoption physics:
   the host, while changes to the parser itself stay open. (Chosen over LGPL because Rust's
   static linking makes LGPL's relink clause miserable; MPL is the Rust ecosystem's
   weak-copyleft standard.)
-- **The Ringtome node and clients (other repos): AGPL-3.0.** The thing people *run* carries
-  strong copyleft - "inspect the source of the node you're trusting" is the trust model
-  expressed as a license right, and the network-use clause closes the hosted-fork loophole.
