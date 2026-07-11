@@ -6,7 +6,7 @@ Marquee is a markup language!
 
 It's designed to a mash-up of Markdown, BBCode, RST, and the old web. 
 
-## Why Wouldn't I Just Use Markdown? Or RST?
+## Why Wouldn't I Just Use Markdown?
 
 Sheer vibes. Stubborn nostalgia. And, secretly? _Draconian control_.
 
