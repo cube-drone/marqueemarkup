@@ -104,10 +104,14 @@ Nested animations: [marquee][blink][rainbow]still open at 3am[/rainbow][/blink][
 
 Code:
 
-\```
+````
+```
 for hat in attic.hats():
     print(hat.vibe, hat.dampness)
-\```
+```
+````
+
+You can also `inline code` like `this`. 
 
 Quotes:
 
