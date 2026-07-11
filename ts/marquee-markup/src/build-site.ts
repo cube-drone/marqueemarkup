@@ -27,7 +27,15 @@ import {
 import { marqueeCss } from "@cube-drone/marquee-css";
 import { standardEmoji } from "@cube-drone/marquee-emoji";
 import { externalFontFaces, fontFilePath } from "@cube-drone/marquee-fonts";
-import { composeTurbolinks, defaultPlugins, turbolinkStyles, type TurbolinkPlugin } from "@cube-drone/marquee-turbolink";
+import {
+  composeTurbolinks,
+  defaultPlugins,
+  opengraphPlugin,
+  resolveTargets,
+  turbolinkStyles,
+  turbolinkTargets,
+  type TurbolinkPlugin,
+} from "@cube-drone/marquee-turbolink";
 import { metaTitle } from "./index.ts";
 
 export interface SiteOptions {
@@ -50,10 +58,43 @@ export interface SiteReport {
   outDir: string;
 }
 
+/** Synchronous, fetchless site build - turbolinks with nothing gathered
+ * degrade to plain links. */
 export function buildSite(siteDirArg: string, outDirArg: string, opts: SiteOptions = {}): SiteReport {
+  return buildSiteCore(siteDirArg, outDirArg, opts, opts.plugins ?? defaultPlugins, undefined);
+}
+
+/** buildSite(), plus the network: gathers every page's turbolink targets,
+ * runs the composed plugins' async resolve() phase once (OpenGraph joins
+ * the chain automatically - and this executes plugin fetch code, so trust
+ * your chain), then builds with the gathered data. */
+export async function buildSiteFetch(
+  siteDirArg: string,
+  outDirArg: string,
+  opts: SiteOptions = {},
+): Promise<SiteReport> {
+  const base = opts.plugins ?? defaultPlugins;
+  const plugins = base.some((p) => p.name === opengraphPlugin.name)
+    ? base
+    : [...base, opengraphPlugin];
+  const siteDir = resolve(siteDirArg);
+  const targets: string[] = [];
+  for (const file of readdirSync(siteDir).filter((f) => f.endsWith(".mq"))) {
+    targets.push(...turbolinkTargets(parse(readFileSync(join(siteDir, file), "utf8"))));
+  }
+  const resolved = await resolveTargets(targets, plugins);
+  return buildSiteCore(siteDirArg, outDirArg, opts, plugins, resolved);
+}
+
+function buildSiteCore(
+  siteDirArg: string,
+  outDirArg: string,
+  opts: SiteOptions,
+  plugins: TurbolinkPlugin[],
+  resolved: Map<string, unknown> | undefined,
+): SiteReport {
   const siteDir = resolve(siteDirArg);
   const outDir = resolve(outDirArg);
-  const plugins = opts.plugins ?? defaultPlugins;
   const emojiTable: Record<string, EmojiResolution> = {
     ...(opts.emojiDefaults === false ? {} : standardEmoji),
     ...opts.emoji,
@@ -101,7 +142,7 @@ export function buildSite(siteDirArg: string, outDirArg: string, opts: SiteOptio
         }
         return bareWebProfile.media(target);
       },
-      turbolink: composeTurbolinks(plugins),
+      turbolink: composeTurbolinks(plugins, resolved),
       emoji: (slug: string) => emojiTable[slug] ?? null,
       directive(name, attrs, _children) {
         if (name !== "include" || depth > 0) {

@@ -21,7 +21,12 @@ Or use the CLI:
 ```
 npx marquee hello.mq > hello.html     one self-contained page
 npx marquee mysite/ dist/             a whole website
+npx marquee --nofetch hello.mq        no network: web turbolinks stay plain links
 ```
+
+Batteries included, no surprises: by default the CLI runs the turbolink fetch-ahead pass, so
+a bare web link unfurls into a real OpenGraph summary card. `--nofetch` skips all network for
+the spartan, safer output.
 
 The site form renders every `.mq` in the folder (files named `_*.mq` are shared partials for
 `:::include doc=_nav:::` — nav and footer once, every page), resolves page-to-page links,
@@ -29,6 +34,12 @@ copies referenced media, and ships only the font faces the site actually uses.
 
 If `marquee` is a little too all-inclusive for your tastes: 
 
+- `marqueeFetch(source, opts)` → `marquee()` plus the network (async): runs the composed
+  plugins' `resolve()` phase ahead of the render — OpenGraph summaries for bare web links,
+  plus whatever gathering your own plugins declare. **This executes plugin fetch code**, even
+  malicious code if you've somehow loaded a plugin you shouldn't trust — the chain is yours.
+  Rendering itself stays sync and fetchless; failed fetches degrade to plain links.
+- `buildSiteFetch(siteDir, outDir, opts)` → the same fetch-ahead pass over a whole site
 - `marqueeBody(source, opts)` → just what goes inside `<body>`
 - `marqueeHead(source, opts)` → just what goes inside `<head>` (title + one `<style>` block)
 - `marqueeFragment(source, opts)` → `{ body, css, title, fontTokens }` — all the pieces

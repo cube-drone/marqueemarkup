@@ -28,7 +28,10 @@ import { externalFontFaces, inlineFontFaces } from "@cube-drone/marquee-fonts";
 import {
   composeTurbolinks,
   defaultPlugins,
+  opengraphPlugin,
+  resolveTargets,
   turbolinkStyles,
+  turbolinkTargets,
   type TurbolinkPlugin,
 } from "@cube-drone/marquee-turbolink";
 
@@ -58,19 +61,28 @@ export interface MarqueeOptions {
   profile?: Partial<Profile>;
 }
 
-function assembleProfile(opts: MarqueeOptions): { profile: Profile; plugins: TurbolinkPlugin[] } {
-  const plugins = opts.plugins ?? defaultPlugins;
+function assembleProfile(
+  opts: MarqueeOptions,
+  plugins: TurbolinkPlugin[],
+  resolved?: Map<string, unknown>,
+): Profile {
   const emoji: Record<string, EmojiResolution> = {
     ...(opts.emojiDefaults === false ? {} : standardEmoji),
     ...opts.emoji,
   };
-  const profile: Profile = {
+  return {
     ...bareWebProfile,
-    turbolink: composeTurbolinks(plugins),
+    turbolink: composeTurbolinks(plugins, resolved),
     emoji: (slug: string) => emoji[slug] ?? null,
     ...opts.profile,
   };
-  return { profile, plugins };
+}
+
+/** The fetch-mode plugin chain: yours (or the defaults) with the OpenGraph
+ * expander appended, unless you already composed one in. */
+function fetchChain(opts: MarqueeOptions): TurbolinkPlugin[] {
+  const base = opts.plugins ?? defaultPlugins;
+  return base.some((p) => p.name === opengraphPlugin.name) ? base : [...base, opengraphPlugin];
 }
 
 /** The document's own `:::meta title`, if it declares one. */
@@ -86,15 +98,27 @@ export function metaTitle(doc: Node): string | undefined {
   return undefined;
 }
 
+interface Fragment {
+  body: string;
+  css: string;
+  title: string;
+  fontTokens: string[];
+}
+
 /** Parse and render to embeddable pieces: what goes in the body, the CSS
  * that belongs in the head (stylesheet + composed plugin skins + fonts per
  * options), the title, and which font faces the page wears. */
-export function marqueeFragment(
-  source: string,
-  opts: MarqueeOptions = {},
-): { body: string; css: string; title: string; fontTokens: string[] } {
-  const { profile, plugins } = assembleProfile(opts);
-  const doc = parse(source);
+export function marqueeFragment(source: string, opts: MarqueeOptions = {}): Fragment {
+  return fragmentCore(parse(source), opts, opts.plugins ?? defaultPlugins);
+}
+
+function fragmentCore(
+  doc: Node,
+  opts: MarqueeOptions,
+  plugins: TurbolinkPlugin[],
+  resolved?: Map<string, unknown>,
+): Fragment {
+  const profile = assembleProfile(opts, plugins, resolved);
   const body = render(doc, profile);
   const fontTokens = usedFontTokens(body);
   let css = `${marqueeCss}\n${turbolinkStyles(plugins)}`;
@@ -122,10 +146,7 @@ export function marqueeHead(source: string, opts: MarqueeOptions = {}): string {
   return `<title>${escapeText(title)}</title>\n<style>\n${css}\n</style>`;
 }
 
-/** The one smooth motion: Marquee source in, a complete self-contained
- * HTML page out. */
-export function marquee(source: string, opts: MarqueeOptions = {}): string {
-  const { body, css, title } = marqueeFragment(source, opts);
+function pageShell({ body, css, title }: Fragment): string {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -144,7 +165,28 @@ ${body}
 `;
 }
 
-export { buildSite, type SiteReport } from "./build-site.ts";
+/** The one smooth motion: Marquee source in, a complete self-contained
+ * HTML page out. Synchronous and fetchless - turbolinks with nothing
+ * gathered degrade to plain links. */
+export function marquee(source: string, opts: MarqueeOptions = {}): string {
+  return pageShell(marqueeFragment(source, opts));
+}
+
+/** marquee(), plus the network: runs the composed plugins' async resolve()
+ * phase ahead of the render - OpenGraph summaries for bare web links
+ * (opengraphPlugin joins the chain automatically), plus whatever gathering
+ * your own plugins declare. That means this function EXECUTES plugin fetch
+ * code: compose the chain from plugins you trust, because a malicious one
+ * runs here too. Rendering itself stays sync and fetchless; a failed fetch
+ * degrades to the plain link. */
+export async function marqueeFetch(source: string, opts: MarqueeOptions = {}): Promise<string> {
+  const plugins = fetchChain(opts);
+  const doc = parse(source);
+  const resolved = await resolveTargets(turbolinkTargets(doc), plugins);
+  return pageShell(fragmentCore(doc, opts, plugins, resolved));
+}
+
+export { buildSite, buildSiteFetch, type SiteReport } from "./build-site.ts";
 
 // The full toolbox, re-exported: growth never requires switching packages.
 export { parse, UnsupportedVersionError } from "@cube-drone/marquee-parser";

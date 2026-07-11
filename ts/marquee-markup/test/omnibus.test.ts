@@ -1,10 +1,30 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildSite, marquee, marqueeBody, marqueeFragment, marqueeHead } from "../src/index.ts";
+import {
+  buildSite,
+  buildSiteFetch,
+  defaultPlugins,
+  marquee,
+  marqueeBody,
+  marqueeFetch,
+  marqueeFragment,
+  marqueeHead,
+  type TurbolinkPlugin,
+} from "../src/index.ts";
+
+/** A resolve-bearing plugin with no network: proves the fetch-ahead path
+ * without touching it. demo: targets dodge the OpenGraph plugin's match. */
+const demoPlugin: TurbolinkPlugin = {
+  name: "demo",
+  match: (t) => t.startsWith("demo://"),
+  resolve: async (t) => ({ shout: t.slice("demo://".length).toUpperCase() }),
+  render: (_t, { data }) =>
+    data === undefined ? null : `<b class="demo-shout">${(data as { shout: string }).shout}</b>`,
+};
 
 test("marquee(): source in, complete self-contained page out", () => {
   const page = marquee("# Hello *world*\n");
@@ -72,6 +92,40 @@ test("fonts: external mode emits urls and names the tokens", () => {
   assert.ok(css.includes('url("assets/f/orbitron.woff2")'));
   assert.ok(!css.includes("data:font"), "external mode carries no bytes");
   assert.deepEqual(fontTokens, ["orbitron"]);
+});
+
+test("marqueeFetch(): resolve() runs ahead, render consumes the data", async () => {
+  const source = "demo://hello-world\n";
+  // An embedder registering its own scheme: plugins expand it, the profile
+  // allows it (bare-web policy would rightly block demo: links).
+  const opts = {
+    plugins: [demoPlugin, ...defaultPlugins],
+    profile: { linkAllowed: () => true },
+  };
+  const fetched = await marqueeFetch(source, opts);
+  assert.ok(fetched.includes('<b class="demo-shout">HELLO-WORLD</b>'), "resolved data rendered");
+  assert.ok(fetched.includes("mq-turbolink-rich"), "wrapped as an enriched turbolink");
+  const dry = marquee(source, opts);
+  assert.ok(!dry.includes("demo-shout"), "sync marquee never runs resolve()");
+  assert.ok(dry.includes('href="demo://hello-world"'), "degrades to the plain-link floor");
+});
+
+test("buildSiteFetch(): the fetch-ahead pass covers a whole site", async () => {
+  const site = mkdtempSync(join(tmpdir(), "marquee-fetch-site-"));
+  const out = mkdtempSync(join(tmpdir(), "marquee-fetch-out-"));
+  try {
+    writeFileSync(join(site, "index.mq"), "# Hi\n\ndemo://front-page\n");
+    const report = await buildSiteFetch(site, out, {
+      plugins: [demoPlugin, ...defaultPlugins],
+      profile: { linkAllowed: () => true },
+    });
+    assert.deepEqual(report.pages, ["index"]);
+    const index = readFileSync(join(out, "index.html"), "utf8");
+    assert.ok(index.includes('<b class="demo-shout">FRONT-PAGE</b>'));
+  } finally {
+    rmSync(site, { recursive: true, force: true });
+    rmSync(out, { recursive: true, force: true });
+  }
 });
 
 test("buildSite(): the whole borsalino, one call", () => {
