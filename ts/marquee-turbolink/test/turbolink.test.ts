@@ -125,6 +125,31 @@ test("resolveTargets feeds compose; opengraph renders resolved data", async () =
   assert.equal(composeTurbolinks([fake])("https://e.x/post", "full"), null, "no resolve pass: floor");
 });
 
+test("resolveTargets: targets resolve concurrently, plugin order per target holds", async () => {
+  let active = 0;
+  let maxActive = 0;
+  const order: string[] = [];
+  const slow = (name: string, data: unknown): TurbolinkPlugin => ({
+    name,
+    match: () => true,
+    resolve: async (target) => {
+      active += 1;
+      maxActive = Math.max(maxActive, active);
+      await new Promise((r) => setTimeout(r, 20));
+      active -= 1;
+      order.push(`${name}:${target}`);
+      return data;
+    },
+    render: () => null,
+  });
+  const first = slow("first", { won: true });
+  const second = slow("second", { won: false });
+  const resolved = await resolveTargets(["t://a", "t://b", "t://c"], [first, second]);
+  assert.equal(maxActive, 3, "all targets in flight at once");
+  assert.ok(resolved.has("first\nt://a") && !resolved.has("second\nt://a"), "first resolver wins per target");
+  assert.equal(order.filter((o) => o.startsWith("second")).length, 0, "the winner short-circuits the chain");
+});
+
 test("turbolinkTargets: the fetch-ahead shopping list from a real document", () => {
   const doc = parse("https://e.x/one\n\n:::turbolink target=https://e.x/two level=title:::\n\nprose\n");
   assert.deepEqual(turbolinkTargets(doc), ["https://e.x/one", "https://e.x/two"]);

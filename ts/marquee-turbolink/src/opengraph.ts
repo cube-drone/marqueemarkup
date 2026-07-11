@@ -54,7 +54,13 @@ export const opengraphPlugin: TurbolinkPlugin = {
   name: "opengraph",
   match: (t) => /^https?:\/\//.test(t),
   async resolve(target) {
-    const res = await fetch(target, { headers: { "user-agent": UA } });
+    // Generous but finite: a hung server costs ten seconds, never a hung
+    // build. (A timed-out fetch throws; resolveTargets already treats a
+    // failed fetch as a plain link.)
+    const res = await fetch(target, {
+      headers: { "user-agent": UA },
+      signal: AbortSignal.timeout(10_000),
+    });
     if (!res.ok) {
       return null;
     }

@@ -80,28 +80,33 @@ export function composeTurbolinks(
 }
 
 /** The fetch-ahead pass: run every matching plugin's resolve() over a
- * target list, yielding the map composeTurbolinks() consumes. */
+ * target list, yielding the map composeTurbolinks() consumes. Targets
+ * resolve concurrently (wall-clock is the slowest fetch, not the sum);
+ * within one target, plugins still run in order - first resolver wins,
+ * like first renderer. */
 export async function resolveTargets(
   targets: string[],
   plugins: TurbolinkPlugin[],
 ): Promise<Map<string, unknown>> {
   const resolved = new Map<string, unknown>();
-  for (const target of new Set(targets)) {
-    for (const plugin of plugins) {
-      if (plugin.resolve === undefined || !plugin.match(target)) {
-        continue;
-      }
-      try {
-        const data = await plugin.resolve(target);
-        if (data !== null && data !== undefined) {
-          resolved.set(`${plugin.name}\n${target}`, data);
-          break; // first resolver wins, like first renderer
+  await Promise.all(
+    [...new Set(targets)].map(async (target) => {
+      for (const plugin of plugins) {
+        if (plugin.resolve === undefined || !plugin.match(target)) {
+          continue;
         }
-      } catch {
-        // a failed fetch is a plain link, not a failed render
+        try {
+          const data = await plugin.resolve(target);
+          if (data !== null && data !== undefined) {
+            resolved.set(`${plugin.name}\n${target}`, data);
+            break; // first resolver wins, like first renderer
+          }
+        } catch {
+          // a failed fetch is a plain link, not a failed render
+        }
       }
-    }
-  }
+    }),
+  );
   return resolved;
 }
 
