@@ -4,7 +4,7 @@
 // vocabulary shrugs (children survive, effect doesn't); comments render
 // nothing; invalid constructs render inert placeholders.
 
-import type { Attrs, Node } from "@classam/marquee-parser";
+import type { Attrs, Node } from "@cube-drone/marquee-parser";
 import { bareWebProfile, type Profile, type TurbolinkLevel } from "./profile.ts";
 
 /** Render state: the profile, plus the one piece of cross-block
@@ -156,7 +156,7 @@ export const FONTS: Record<string, string> = {
 
 /** Which grab-bag faces does this rendered HTML actually wear? Pure string
  * scan of the mq-font-* class contract - feed the result to
- * @classam/marquee-fonts (externalFontFaces / inlineFontFaces) to deliver
+ * @cube-drone/marquee-fonts (externalFontFaces / inlineFontFaces) to deliver
  * exactly those faces and not one byte more. */
 export function usedFontTokens(html: string): string[] {
   const used = new Set<string>();

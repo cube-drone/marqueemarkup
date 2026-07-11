@@ -1,4 +1,4 @@
-// @classam/marquee-fonts: the grab bag, deliverable two ways.
+// @cube-drone/marquee-fonts: the grab bag, deliverable two ways.
 //
 // This package is OPTIONAL. The renderer works fully without it - every
 // font name degrades to its fallback stack, readable always. Install it
@@ -10,7 +10,7 @@
 //   inline base64 (a self-contained single-file page, "near-magically")
 //     const styles = inlineFontFaces(usedFontTokens(html))
 //
-// usedFontTokens() comes from @classam/marquee-html-renderer, which owns the
+// usedFontTokens() comes from @cube-drone/marquee-html-renderer, which owns the
 // mq-font-* class contract. Fonts are never fetched from a third-party CDN;
 // that is the point of this package existing.
 

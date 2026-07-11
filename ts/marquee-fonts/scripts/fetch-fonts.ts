@@ -9,7 +9,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { FONTS } from "@classam/marquee-html-renderer";
+import { FONTS } from "@cube-drone/marquee-html-renderer";
 
 const STANDARD = new Set(["sans", "serif", "mono", "comic"]);
 const UA =

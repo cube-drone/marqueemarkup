@@ -1,5 +1,5 @@
 {
-  "name": "@classam/marquee-parser",
+  "name": "@cube-drone/marquee-parser",
   "version": "0.1.0",
   "description": "Reference parser for the Marquee markup language",
   "license": "MPL-2.0",

@@ -5,7 +5,7 @@
 // motion; the JS halves of the animation contract (start-on-visibility,
 // tap-to-skip) belong to the interactive renderer.
 
-import { parse } from "@classam/marquee-parser";
+import { parse } from "@cube-drone/marquee-parser";
 import { render } from "./render.ts";
 import type { Profile } from "./profile.ts";
 

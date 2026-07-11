@@ -15,17 +15,17 @@
 
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
-import { parse } from "@classam/marquee-parser";
+import { parse } from "@cube-drone/marquee-parser";
 import {
   bareWebProfile,
   escapeText,
   render,
   usedFontTokens,
   type Profile,
-} from "@classam/marquee-html-renderer";
-import { marqueeCss } from "@classam/marquee-css";
-import { externalFontFaces, fontFilePath } from "@classam/marquee-fonts";
-import { composeTurbolinks, defaultPlugins, turbolinkStyles, type TurbolinkPlugin } from "@classam/turbolink";
+} from "@cube-drone/marquee-html-renderer";
+import { marqueeCss } from "@cube-drone/marquee-css";
+import { externalFontFaces, fontFilePath } from "@cube-drone/marquee-fonts";
+import { composeTurbolinks, defaultPlugins, turbolinkStyles, type TurbolinkPlugin } from "@cube-drone/marquee-turbolink";
 import { metaTitle } from "./index.ts";
 
 export interface SiteOptions {

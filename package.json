@@ -6,8 +6,8 @@
   "type": "module",
   "workspaces": [
     "ts/parser",
-    "ts/turbolink",
-    "ts/turbolink-example-plugin",
+    "ts/marquee-turbolink",
+    "ts/marquee-turbolink-example-plugin",
     "ts/html_renderer",
     "ts/marquee-css",
     "ts/marquee-fonts",

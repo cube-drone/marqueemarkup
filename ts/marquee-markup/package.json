@@ -1,5 +1,5 @@
 {
-  "name": "@classam/marquee-markup",
+  "name": "@cube-drone/marquee-markup",
   "version": "0.1.0",
   "description": "Marquee, batteries included: parse + render to HTML in one motion, fonts and styles along for the ride, plus the `marquee` CLI",
   "license": "MPL-2.0",
@@ -31,11 +31,11 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@classam/marquee-css": "^0.1.0",
-    "@classam/marquee-fonts": "^0.1.0",
-    "@classam/marquee-html-renderer": "^0.1.0",
-    "@classam/marquee-parser": "^0.1.0",
-    "@classam/turbolink": "^0.1.0"
+    "@cube-drone/marquee-css": "^0.1.0",
+    "@cube-drone/marquee-fonts": "^0.1.0",
+    "@cube-drone/marquee-html-renderer": "^0.1.0",
+    "@cube-drone/marquee-parser": "^0.1.0",
+    "@cube-drone/marquee-turbolink": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

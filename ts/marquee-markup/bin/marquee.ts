@@ -9,6 +9,14 @@
 import { readFileSync, statSync, writeFileSync } from "node:fs";
 import { buildSite, marquee } from "../src/index.ts";
 
+// Piping into `head` is not an emergency.
+process.stdout.on("error", (err: NodeJS.ErrnoException) => {
+  if (err.code === "EPIPE") {
+    process.exit(0);
+  }
+  throw err;
+});
+
 function usage(): never {
   console.error(
     [

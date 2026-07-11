@@ -5,7 +5,7 @@
 //     npm run set-version -- 0.2.0
 //
 // Touches: the root package.json, every workspace package.json (version AND
-// internal @classam/* dependency ranges), and both Cargo.tomls (version AND
+// internal @cube-drone/* dependency ranges), and both Cargo.tomls (version AND
 // the path-dependency's version). Prints what changed; committing and
 // tagging stay yours.
 
@@ -39,7 +39,7 @@ for (const dir of rootPkg.workspaces as string[]) {
       continue;
     }
     for (const name of Object.keys(deps)) {
-      if (name.startsWith("@classam/")) {
+      if (name.startsWith("@cube-drone/")) {
         deps[name] = `^${version}`;
       }
     }
@@ -54,9 +54,10 @@ function setCargoVersion(path: string): void {
   let toml = readFileSync(path, "utf8");
   // The [package] version: first `version = "..."` line.
   toml = toml.replace(/^version = "[^"]*"$/m, `version = "${version}"`);
-  // Path dependencies on sibling crates carry the lockstep version too.
+  // Path dependencies on sibling crates carry the lockstep version too
+  // (tolerant of dependency-renaming: `package = "..."` may precede path).
   toml = toml.replace(
-    /^(marquee-[a-z-]+ = \{ path = "[^"]*", version = ")[^"]*("[^\n]*)$/m,
+    /^(marquee-[a-z-]+ = \{[^\n]*version = ")[^"]*("[^\n]*)$/m,
     `$1${version}$2`,
   );
   writeFileSync(path, toml);

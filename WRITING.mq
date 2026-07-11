@@ -242,7 +242,7 @@ Fonts are picked from a closed list, never uploaded: [font=orbitron]SPACE STATIO
 [font=press-start]INSERT COIN[/font], [font=lobster]a fancy lobster[/font],
 [font=creepster]the abomination approves[/font], [font=comic]the people's classic[/font],
 [font=kablammo]KABLAMMO[/font], and [font=rye]howdy, partner[/font].
-(Thirty-one real, self-hosted faces ship in the `@classam/marquee-fonts` package, each with
+(Thirty-one real, self-hosted faces ship in the `@cube-drone/marquee-fonts` package, each with
 its license riding along — your host serves them itself, or inlines just the ones a page
 wears; no reader ever pings a font CDN.)
 

@@ -1,6 +1,6 @@
-// @classam/marquee-markup: Marquee, batteries included.
+// @cube-drone/marquee-markup: Marquee, batteries included.
 //
-//     import { marquee } from "@classam/marquee-markup";
+//     import { marquee } from "@cube-drone/marquee-markup";
 //     writeFileSync("hello.html", marquee("# hello *world*"));
 //
 // One motion: parse, render, style, inline the fonts the page actually
@@ -10,25 +10,25 @@
 //
 // Everything underneath is re-exported, so outgrowing the convenience never
 // means switching packages: the same parse/render/Profile/plugin machinery
-// from @classam/marquee-parser, -html-renderer, -css, -fonts, and
-// @classam/turbolink is all reachable from here.
+// from @cube-drone/marquee-parser, -html-renderer, -css, -fonts, and
+// @cube-drone/marquee-turbolink is all reachable from here.
 
-import { parse, type Node } from "@classam/marquee-parser";
+import { parse, type Node } from "@cube-drone/marquee-parser";
 import {
   bareWebProfile,
   escapeText,
   render,
   usedFontTokens,
   type Profile,
-} from "@classam/marquee-html-renderer";
-import { marqueeCss } from "@classam/marquee-css";
-import { inlineFontFaces } from "@classam/marquee-fonts";
+} from "@cube-drone/marquee-html-renderer";
+import { marqueeCss } from "@cube-drone/marquee-css";
+import { inlineFontFaces } from "@cube-drone/marquee-fonts";
 import {
   composeTurbolinks,
   defaultPlugins,
   turbolinkStyles,
   type TurbolinkPlugin,
-} from "@classam/turbolink";
+} from "@cube-drone/marquee-turbolink";
 
 export interface MarqueeOptions {
   /** Page title; defaults to the document's `:::meta title`, then "Marquee". */
@@ -109,8 +109,8 @@ ${html}
 export { buildSite, type SiteReport } from "./build-site.ts";
 
 // The full toolbox, re-exported: growth never requires switching packages.
-export { parse, UnsupportedVersionError } from "@classam/marquee-parser";
-export type { Attrs, Node, Reason } from "@classam/marquee-parser";
+export { parse, UnsupportedVersionError } from "@cube-drone/marquee-parser";
+export type { Attrs, Node, Reason } from "@cube-drone/marquee-parser";
 export {
   FONTS,
   bareWebProfile,
@@ -119,15 +119,15 @@ export {
   render,
   renderMarquee,
   usedFontTokens,
-} from "@classam/marquee-html-renderer";
-export type { MediaResolution, Profile, TurbolinkLevel } from "@classam/marquee-html-renderer";
-export { marqueeCss } from "@classam/marquee-css";
+} from "@cube-drone/marquee-html-renderer";
+export type { MediaResolution, Profile, TurbolinkLevel } from "@cube-drone/marquee-html-renderer";
+export { marqueeCss } from "@cube-drone/marquee-css";
 export {
   FONT_MANIFEST,
   externalFontFaces,
   fontFilePath,
   inlineFontFaces,
-} from "@classam/marquee-fonts";
+} from "@cube-drone/marquee-fonts";
 export {
   composeTurbolinks,
   defaultPlugins,
@@ -136,5 +136,5 @@ export {
   resolveTargets,
   turbolinkStyles,
   turbolinkTargets,
-} from "@classam/turbolink";
-export type { TurbolinkContext, TurbolinkPlugin, TurbolinkSummary } from "@classam/turbolink";
+} from "@cube-drone/marquee-turbolink";
+export type { TurbolinkContext, TurbolinkPlugin, TurbolinkSummary } from "@cube-drone/marquee-turbolink";

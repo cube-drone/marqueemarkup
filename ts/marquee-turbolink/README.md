@@ -69,7 +69,7 @@ Tests are this package's own (`npm test`) — renderer goldens never depend on p
 ## Writing a plugin
 
 The complete worked example lives in
-[`ts/turbolink-example-plugin`](../turbolink-example-plugin/): a plugin that recognizes
+[`ts/marquee-turbolink-example-plugin`](../turbolink-example-plugin/): a plugin that recognizes
 `https://marquee.click/...` links, performs a ritual HTTP request in its resolve phase and
 throws the answer away, then renders the link's path in `<strong>`. It does almost nothing —
 correctly — so every part of the contract is legible. The walkthrough:

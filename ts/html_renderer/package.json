@@ -1,5 +1,5 @@
 {
-  "name": "@classam/marquee-html-renderer",
+  "name": "@cube-drone/marquee-html-renderer",
   "version": "0.1.0",
   "description": "Reference static HTML renderer for the Marquee markup language",
   "license": "MPL-2.0",
@@ -28,12 +28,12 @@
     "preview": "node scripts/preview.ts"
   },
   "dependencies": {
-    "@classam/marquee-parser": "^0.1.0"
+    "@cube-drone/marquee-parser": "^0.1.0"
   },
   "devDependencies": {
-    "@classam/marquee-css": "^0.1.0",
-    "@classam/marquee-fonts": "^0.1.0",
-    "@classam/turbolink": "^0.1.0",
+    "@cube-drone/marquee-css": "^0.1.0",
+    "@cube-drone/marquee-fonts": "^0.1.0",
+    "@cube-drone/marquee-turbolink": "^0.1.0",
     "@types/node": "^24.0.0",
     "typescript": "^5.9.0"
   }

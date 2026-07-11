@@ -1,4 +1,4 @@
-# @classam/marquee-css
+# @cube-drone/marquee-css
 
 The Marquee reference stylesheet: the `mq-*` class contract every renderer targets — effects
 under `prefers-reduced-motion` (the exit is contractual), the layout grids, the schemes, the
@@ -7,8 +7,8 @@ size dial, placeholders and affordances.
 Two ways in:
 
 ```ts
-import "@classam/marquee-css/marquee.css";      // bundlers: the file itself
-import { marqueeCss } from "@classam/marquee-css"; // node: the string, to inline or write
+import "@cube-drone/marquee-css/marquee.css";      // bundlers: the file itself
+import { marqueeCss } from "@cube-drone/marquee-css"; // node: the string, to inline or write
 ```
 
 Without this stylesheet a rendered document is still readable semantic HTML (and

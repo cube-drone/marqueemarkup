@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { FONT_MANIFEST, externalFontFaces, fontFilePath, inlineFontFaces } from "../src/index.ts";
-import { FONTS } from "@classam/marquee-html-renderer";
+import { FONTS } from "@cube-drone/marquee-html-renderer";
 
 const STANDARD = new Set(["sans", "serif", "mono", "comic"]);
 

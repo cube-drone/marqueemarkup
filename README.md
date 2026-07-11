@@ -6,8 +6,10 @@ the marquee markup language: a little bit of markdown, a little bit of RST, a wh
 
 This is a monorepo: the spec, the conformance vectors, and every reference implementation
 version together, because they are one conformance unit. The implementations publish
-piecemeal as public infrastructure — npm: `@classam/marquee-parser`,
-`@classam/marquee-html-renderer`, `@classam/turbolink`; crates.io: `marquee-parser` — and
+piecemeal as public infrastructure — npm: `@cube-drone/marquee-parser`,
+`@cube-drone/marquee-html-renderer`, `@cube-drone/marquee-turbolink`; crates.io:
+`cube-drone-marquee-parser` and `cube-drone-marquee-html-renderer` (crates.io has no scopes, so
+the registry names wear the cube-drone prefix while the code stays `use marquee_parser`) — and
 downstream embedders (Ringtome included) consume them through the public registries like
 anybody else. The TypeScript side is an npm workspace: `npm install` once at the root,
 `npm test` runs every package.
@@ -26,11 +28,11 @@ anybody else. The TypeScript side is an npm workspace: `npm install` once at the
 - `ts/parser/` — reference parser, TypeScript (`npm test` runs the same vectors; `npm run check` typechecks)
 - `ts/html_renderer/` — reference static HTML renderer (fragment out, embedder policy via `Profile`;
   behavioral suite encodes the spec's renderer obligations, self-goldens catch regressions)
-- `ts/turbolink/` — pluggable turbolink rendering: link expanders as plugins (YouTube, Spotify, media,
+- `ts/marquee-turbolink/` — pluggable turbolink rendering: link expanders as plugins (YouTube, Spotify, media,
   OpenGraph-fetch-ahead), composed by the embedder into `Profile.turbolink`; each plugin declares the
   CSS for the markup it emits, and `turbolinkStyles()` collects the composed chain's skins into one artifact
-- `ts/turbolink-example-plugin/` — the worked example for plugin authors, paired with the
-  "Writing a plugin" guide in `ts/turbolink/README.md`
+- `ts/marquee-turbolink-example-plugin/` — the worked example for plugin authors, paired with the
+  "Writing a plugin" guide in `ts/marquee-turbolink/README.md`
 - `ts/marquee-css/` — the reference stylesheet as a package: the `mq-*` class contract renderers
   target, effects under `prefers-reduced-motion`, layouts, schemes (file + string export)
 - `ts/marquee-fonts/` — the 31-face grab bag as an *optional* package: `externalFontFaces()` for

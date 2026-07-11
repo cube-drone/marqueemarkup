@@ -26,15 +26,15 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
 import { bareWebProfile, renderMarquee, usedFontTokens, type Profile } from "../src/index.ts";
-import { marqueeCss } from "@classam/marquee-css";
-import { inlineFontFaces } from "@classam/marquee-fonts";
+import { marqueeCss } from "@cube-drone/marquee-css";
+import { inlineFontFaces } from "@cube-drone/marquee-fonts";
 import {
   composeTurbolinks,
   defaultPlugins,
   renderCard,
   turbolinkStyles,
   type TurbolinkPlugin,
-} from "@classam/turbolink";
+} from "@cube-drone/marquee-turbolink";
 
 const EMOJI: Record<string, string> = {
   tophat: "🎩", smile: "😀", sparkles: "✨", blobcat: "🐱", wave: "👋",

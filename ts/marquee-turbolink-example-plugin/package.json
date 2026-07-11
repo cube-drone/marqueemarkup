@@ -1,5 +1,5 @@
 {
-  "name": "@classam/turbolink-example-plugin",
+  "name": "@cube-drone/marquee-turbolink-example-plugin",
   "version": "0.1.0",
   "private": true,
   "description": "The worked example: a turbolink plugin with every part of the contract on display",
@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cube-drone/marqueemarkup.git",
-    "directory": "ts/turbolink-example-plugin"
+    "directory": "ts/marquee-turbolink-example-plugin"
   },
   "type": "module",
   "engines": {
@@ -21,7 +21,7 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@classam/turbolink": "^0.1.0"
+    "@cube-drone/marquee-turbolink": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

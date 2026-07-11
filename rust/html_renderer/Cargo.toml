@@ -1,5 +1,6 @@
 [package]
-name = "marquee-html-renderer"
+# Registry name wears the cube-drone prefix (see ../parser/Cargo.toml).
+name = "cube-drone-marquee-html-renderer"
 version = "0.1.0"
 edition = "2021"
 license = "MPL-2.0"
@@ -8,7 +9,12 @@ repository = "https://github.com/cube-drone/marqueemarkup"
 keywords = ["markup", "html", "renderer", "marquee"]
 categories = ["template-engine", "text-processing"]
 
+[lib]
+name = "marquee_html_renderer"
+
 [dependencies]
-marquee-parser = { path = "../parser", version = "0.1.0" }
+# Dependency-renamed so code says `use marquee_parser::` while the registry
+# says cube-drone-marquee-parser.
+marquee-parser = { package = "cube-drone-marquee-parser", path = "../parser", version = "0.1.0" }
 unicode-segmentation = "1"
 serde_json = "1"

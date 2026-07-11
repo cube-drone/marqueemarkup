@@ -1,13 +1,13 @@
-# @classam/marquee-markup
+# @cube-drone/marquee-markup
 
 Marquee, batteries included. One install, everything working:
 
 ```
-npm install @classam/marquee-markup
+npm install @cube-drone/marquee-markup
 ```
 
 ```ts
-import { marquee } from "@classam/marquee-markup";
+import { marquee } from "@cube-drone/marquee-markup";
 import { readFileSync, writeFileSync } from "node:fs";
 
 writeFileSync("hello.html", marquee(readFileSync("hello.mq", "utf8")));
@@ -36,7 +36,7 @@ More control, same package:
   don't switch packages, you just reach deeper
 
 This package deliberately includes the ~1.3MB font grab bag; that's what batteries-included
-means. If you want a leaner diet, compose the pieces yourself: `@classam/marquee-parser`,
-`@classam/marquee-html-renderer`, `@classam/marquee-css`, `@classam/marquee-fonts` (optional),
-`@classam/turbolink`. To learn the language itself, read
+means. If you want a leaner diet, compose the pieces yourself: `@cube-drone/marquee-parser`,
+`@cube-drone/marquee-html-renderer`, `@cube-drone/marquee-css`, `@cube-drone/marquee-fonts` (optional),
+`@cube-drone/marquee-turbolink`. To learn the language itself, read
 [WRITING.md](https://github.com/cube-drone/marqueemarkup/blob/main/WRITING.md).

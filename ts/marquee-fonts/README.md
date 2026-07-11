@@ -1,4 +1,4 @@
-# @classam/marquee-fonts
+# @cube-drone/marquee-fonts
 
 The grab bag: the curated faces behind Marquee's closed `font` name list — 31 WOFF2s (latin
 subsets), each with its license text beside it. The OFL permits exactly this redistribution
@@ -6,7 +6,7 @@ and requires the license ride along; thirty faces are SIL OFL, and the one excep
 `special-elite` (Astigmatic), which is **Apache 2.0** (`special-elite.LICENSE.txt`).
 
 **This package is optional.** The renderer works fully without it: every font name degrades
-to its fallback stack in `@classam/marquee-css`, readable always. Install it when you want
+to its fallback stack in `@cube-drone/marquee-css`, readable always. Install it when you want
 the actual faces.
 
 **Self-hosted on principle:** an embedder serves these files itself. Linking a third-party
@@ -17,8 +17,8 @@ Two deliveries, both fed by the renderer's `usedFontTokens(html)` scan so you sh
 what your pages wear:
 
 ```ts
-import { usedFontTokens } from "@classam/marquee-html-renderer";
-import { externalFontFaces, fontFilePath, inlineFontFaces } from "@classam/marquee-fonts";
+import { usedFontTokens } from "@cube-drone/marquee-html-renderer";
+import { externalFontFaces, fontFilePath, inlineFontFaces } from "@cube-drone/marquee-fonts";
 
 const tokens = usedFontTokens(body);
 
