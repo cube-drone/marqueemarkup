@@ -53,12 +53,12 @@ reference implementations would not be.
 
 Notes:
 
-- **BLOCKER until fixed: npm packages currently ship raw TypeScript source, and Node refuses
-  to type-strip files under `node_modules`** (`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`,
-  verified empirically via `npm pack` + install). Works in-repo only because workspace
-  symlinks realpath out of `node_modules`. Before first publish, every package needs a `tsc`
-  build emitting `dist/` (JS + `.d.ts`) with `exports` pointing at it; the crates are
-  unaffected and already pass `cargo publish --dry-run`.
+- Packages ship compiled `dist/` (JS + `.d.ts`; built automatically by `prepack` on publish)
+  because Node refuses to type-strip under `node_modules`. In-repo development still runs raw
+  source with zero build steps via the `marquee-src` exports condition (test/dev scripts pass
+  `--conditions=marquee-src`; tsconfigs use `customConditions`). `release-check` ends with a
+  consumer smoke test — pack, install, import from plain node — so this can never silently
+  regress.
 - `@cube-drone/marquee-turbolink-example-plugin` stays `private: true` (a teaching artifact); flip that
   flag if it should ever be installable.
 - Vectors and the spec are CC0 and travel with the repo, not the packages; the version tag is

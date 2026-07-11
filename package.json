@@ -16,7 +16,8 @@
   "scripts": {
     "test": "npm test --workspaces",
     "check": "npm run check --workspaces",
-    "marquee": "node ts/marquee-markup/bin/marquee.ts",
+    "build": "npm run build --workspaces",
+    "marquee": "node --conditions=marquee-src ts/marquee-markup/bin/marquee.ts",
     "set-version": "node scripts/set-version.ts",
     "release-check": "node scripts/release-check.ts"
   }

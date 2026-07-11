@@ -10,7 +10,16 @@
     "erasableSyntaxOnly": true,
     "allowImportingTsExtensions": true,
     "noEmit": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ],
+    "customConditions": [
+      "marquee-src"
+    ]
   },
-  "include": ["src/**/*.ts", "bin/**/*.ts", "test/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "bin/**/*.ts",
+    "test/**/*.ts"
+  ]
 }

@@ -13,6 +13,7 @@
     "node": ">=22.6.0"
   },
   "files": [
+    "dist",
     "src",
     "fonts",
     "fonts.css",
@@ -22,14 +23,20 @@
     "access": "public"
   },
   "exports": {
-    ".": "./src/index.ts",
+    ".": {
+      "marquee-src": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
     "./fonts.css": "./fonts.css",
     "./fonts/*": "./fonts/*"
   },
   "scripts": {
-    "test": "node --test test/*.test.ts",
+    "test": "node --conditions=marquee-src --test test/*.test.ts",
     "check": "tsc --noEmit",
-    "fetch-fonts": "node scripts/fetch-fonts.ts"
+    "fetch-fonts": "node --conditions=marquee-src scripts/fetch-fonts.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build"
   },
   "devDependencies": {
     "@cube-drone/marquee-html-renderer": "^0.1.0",

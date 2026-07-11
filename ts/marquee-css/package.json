@@ -13,6 +13,7 @@
     "node": ">=22.6.0"
   },
   "files": [
+    "dist",
     "src",
     "marquee.css"
   ],
@@ -20,12 +21,18 @@
     "access": "public"
   },
   "exports": {
-    ".": "./src/index.ts",
+    ".": {
+      "marquee-src": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
     "./marquee.css": "./marquee.css"
   },
   "scripts": {
-    "test": "node --test test/*.test.ts",
-    "check": "tsc --noEmit"
+    "test": "node --conditions=marquee-src --test test/*.test.ts",
+    "check": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

@@ -24,3 +24,4 @@ WRITING.html
 
 # npm workspaces
 node_modules/
+dist/

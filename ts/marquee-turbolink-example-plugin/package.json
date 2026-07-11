@@ -14,11 +14,17 @@
     "node": ">=22.6.0"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "marquee-src": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "scripts": {
-    "test": "node --test test/*.test.ts",
-    "check": "tsc --noEmit"
+    "test": "node --conditions=marquee-src --test test/*.test.ts",
+    "check": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build"
   },
   "dependencies": {
     "@cube-drone/marquee-turbolink": "^0.1.0"

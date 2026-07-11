@@ -13,6 +13,7 @@
     "node": ">=22.6.0"
   },
   "files": [
+    "dist",
     "src",
     "bin",
     "README.md"
@@ -21,14 +22,20 @@
     "access": "public"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "marquee-src": "./src/index.ts",
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    }
   },
   "bin": {
-    "marquee": "./bin/marquee.ts"
+    "marquee": "./dist/bin/marquee.js"
   },
   "scripts": {
-    "test": "node --test test/*.test.ts",
-    "check": "tsc --noEmit"
+    "test": "node --conditions=marquee-src --test test/*.test.ts",
+    "check": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build"
   },
   "dependencies": {
     "@cube-drone/marquee-css": "^0.1.0",

@@ -25,6 +25,7 @@ if (dirty !== "") {
   process.exit(1);
 }
 
+step("typescript: build all workspaces (dist)", "npm run build --workspaces");
 step("typescript: typecheck all workspaces", "npm run check --workspaces");
 step("typescript: test all workspaces", "npm test --workspaces");
 step("rust: parser tests", "cargo test --quiet", `${root}/rust/parser`);
@@ -34,5 +35,35 @@ step(
   "cargo run --release --quiet --bin diff_fuzz -- --n 10000 --seed 0",
   `${root}/rust/parser`,
 );
+
+// The consumer smoke: pack the parser (the dependency-free package), install
+// the tarball in a temp project, and import it from PLAIN node - no
+// workspace symlinks, no conditions, no bundler. This is the exact test
+// that once caught raw-.ts publishing being broken under node_modules.
+{
+  const { mkdtempSync, readdirSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const tmp = mkdtempSync(join(tmpdir(), "marquee-release-"));
+  try {
+    step(
+      "consumer smoke: pack the parser",
+      `npm pack --workspace=@cube-drone/marquee-parser --pack-destination ${tmp}`,
+    );
+    const tarball = readdirSync(tmp).find((f) => f.endsWith(".tgz"));
+    if (tarball === undefined) {
+      console.error("release-check FAILED: no tarball produced");
+      process.exit(1);
+    }
+    step("consumer smoke: fresh install", `npm init -y >/dev/null && npm install --no-fund --no-audit ./${tarball}`, tmp);
+    step(
+      "consumer smoke: import from plain node",
+      `node --input-type=module -e "import('@cube-drone/marquee-parser').then(m => { if (m.parse('# hi\\n').type !== 'document') throw new Error('bad parse'); console.log('consumer import OK'); })"`,
+      tmp,
+    );
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+}
 
 console.log("\nrelease-check: all green. See RELEASING.md for the publish order.");
