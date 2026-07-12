@@ -180,7 +180,7 @@ fonts the page wears, and hands back a self-contained HTML page. Or use the CLI:
 npx marquee hello.mq > hello.html     one self-contained page
 ```
 
-More docs live [here](./ts/marquee-markup/README.md).
+JS docs live [here](./ts/marquee-markup/README.md).
 
 
 ## What If I Don't _Want_ To Program in JS?
@@ -199,7 +199,7 @@ _(muffled thump)_
 
 My assistant has been removed. 
 
-These docs are [here](./rust/markup/README.md)
+Rust docs are [here](./rust/markup/README.md)
 
 
 ## Repository Layout
