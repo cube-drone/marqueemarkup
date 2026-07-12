@@ -40,4 +40,14 @@ jobs:
 
       - run: npm ci
 
+      # The restored target/ dirs can carry stale artifacts for OUR crates:
+      # checkout gives sources fresh mtimes, cargo trusts the cached
+      # fingerprints, and tests silently run yesterday's compile (observed
+      # live: pre-raise caps vs post-raise vectors). Evict the workspace
+      # crates from the cache every run; dependency artifacts stay cached,
+      # which is the part worth caching.
+      - run: |
+          (cd rust/parser && cargo clean -p cube-drone-marquee-parser)
+          (cd rust/html_renderer && cargo clean -p cube-drone-marquee-parser -p cube-drone-marquee-html-renderer)
+
       - run: npm run release-check
