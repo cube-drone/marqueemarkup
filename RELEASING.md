@@ -1,16 +1,16 @@
 # Releasing
 
+If you're not me, this document isn't for you, because you don't have to publish this
+fuckin' 18 package jambaroo. 
 
-## The flow: one flick of the wrist
-
-### The First Time (To Establish Packages)
+## The First Time (To Establish Packages)
 ```
 cp publish.env.example publish.env    # once: fill in the tokens (the file
                                       # explains how to mint each one)
 npm run release                       # prompts micro/minor/major, does the rest
 ```
 
-### Every Subsequent Time (Once You Have )
+## Every Subsequent Time (Once You Have )
 
 ```
 npm run release -- --tag-only 

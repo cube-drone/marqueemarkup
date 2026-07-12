@@ -1,11 +1,4 @@
 # Licensing
 
-Matched to each artifact's adoption physics:
-
-- **SPEC.md and everything in `vectors/`: CC0.** A conformance boundary that isn't freely
-  implementable isn't one. Independent implementations are the goal, not a leak.
-- **Reference parsers (this repo's code): MPL-2.0** (the `LICENSE` file). Weak copyleft,
-  file-scoped: embeddable in any client - proprietary, GPL, or otherwise - without infecting
-  the host, while changes to the parser itself stay open. (Chosen over LGPL because Rust's
-  static linking makes LGPL's relink clause miserable; MPL is the Rust ecosystem's
-  weak-copyleft standard.)
+* **SPEC.md** and everything in `vectors/` is **CCO** (public domain): freely implementable. Make your own. See if I care.
+* **Everything Else** is MPL-2.0: "weakly" copyleft - read the whole thing for more details, but if you make changes to Marquee you _must_ make them available openly, but it doesn't infect all of the rest of your code like a GPL does. 
