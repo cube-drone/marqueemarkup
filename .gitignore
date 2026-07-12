@@ -28,3 +28,6 @@ dist/
 
 # publish credentials (see publish.env.example)
 publish.env
+
+# packaged extensions (rebuild with npm run package)
+*.vsix

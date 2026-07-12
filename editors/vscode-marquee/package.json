@@ -1,6 +1,6 @@
 {
-  "name": "marquee-language",
-  "displayName": "Marquee",
+  "name": "cube-drone-marquee-markup",
+  "displayName": "Marquee Markup",
   "description": "Syntax highlighting for the Marquee markup language (.mq) - a little bit of markdown, a little bit of RST, a whole lot of dumb old internet",
   "version": "0.2.0",
   "publisher": "cube-drone",
@@ -43,7 +43,7 @@
     "test": "vscode-tmgrammar-test -g syntaxes/marquee.tmLanguage.json \"tests/*.mq\"",
     "check": "node -e \"JSON.parse(require('fs').readFileSync('syntaxes/marquee.tmLanguage.json','utf8')); JSON.parse(require('fs').readFileSync('language-configuration.json','utf8')); console.log('grammar json OK')\"",
     "build": "node -e \"console.log('nothing to build: a grammar extension is declarative')\"",
-    "package": "vsce package --no-dependencies"
+    "package": "npx --yes @vscode/vsce package --no-dependencies"
   },
   "devDependencies": {
     "vscode-tmgrammar-test": "^0.1.3"

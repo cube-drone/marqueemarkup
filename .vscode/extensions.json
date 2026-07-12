@@ -1,0 +1,5 @@
+{
+  // Anyone opening this repo in VS Code gets offered the Marquee grammar -
+  // which this repo is, among other things, the home of.
+  "recommendations": ["cube-drone.cube-drone-marquee-markup"]
+}
