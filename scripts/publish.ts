@@ -214,6 +214,15 @@ if (!uploadsOnly) {
   } else {
     sh(`node scripts/set-version.ts ${version}`);
     sh("npm install --package-lock-only --no-fund --no-audit"); // lockfile follows the manifests
+    // Cargo.locks follow the manifests too: any cargo command re-resolves,
+    // and `cargo metadata` is the cheapest one that writes the lock. Without
+    // this, the release commit ships lockfiles still naming the OLD version,
+    // and the first cargo command in CI dirties the tree -> gate refusal.
+    for (const crate of CARGO_ORDER) {
+      sh("cargo metadata --format-version 1 --quiet > /dev/null", {
+        cwd: join(root, crate.dir),
+      });
+    }
     // First release: manifests may already carry the version (set-version
     // is a no-op) - "nothing to commit" is fine, the tag goes on HEAD.
     if (shQuiet("git status --porcelain") !== "") {

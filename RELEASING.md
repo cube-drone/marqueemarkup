@@ -61,11 +61,15 @@ reference implementations would not be.
    ```
 
 2. **Set the version everywhere** (root + all workspaces + internal `@cube-drone/*` ranges +
-   all three Cargo.tomls + the crate path-dependencies), then refresh the lockfile:
+   all three Cargo.tomls + the crate path-dependencies), then refresh BOTH lockfile kinds —
+   Cargo.locks still naming the old version will dirty CI's tree at the first cargo command:
 
    ```
    npm run set-version -- X.Y.Z
    npm install
+   (cd rust/parser && cargo metadata --format-version 1 > /dev/null)
+   (cd rust/html_renderer && cargo metadata --format-version 1 > /dev/null)
+   (cd rust/markup && cargo metadata --format-version 1 > /dev/null)
    ```
 
 3. **Commit and tag**:
