@@ -30,11 +30,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # No registry-url: that input wires up TOKEN auth (NODE_AUTH_TOKEN via
+      # a generated .npmrc, whose always-auth entry npm 11+ warns about).
+      # Trusted publishing authenticates via OIDC with no npmrc help.
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
-          registry-url: "https://registry.npmjs.org"
 
       - run: npm ci
 

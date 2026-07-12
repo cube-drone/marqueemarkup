@@ -306,6 +306,10 @@ for (const crate of CARGO_ORDER) {
 step("done");
 if (dryRun) {
   console.log(`dry run complete - the real thing: npm run release -- ${version}`);
+} else if (uploadsOnly) {
+  // CI mode: the pushed tag is what triggered this run - there is nothing
+  // to push and no branch to push from (tag checkouts are detached HEADs).
+  console.log(`published ${tag} everywhere.`);
 } else {
   console.log(`published ${tag} everywhere.`);
   if (await confirm(`push the release commit and ${tag} to origin?`)) {
