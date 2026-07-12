@@ -54,11 +54,20 @@ functions do.
 
 ### `marquee(source: &str, opts: &MarqueeOptions) -> Result<String, ParseError>`
 
-One motion, synchronous, zero network: parse → render → inline the stylesheet → inline
-exactly the font faces the page uses (as base64, by default) → wrap in a complete page
-shell. The returned string is self-contained: no files to host beside it, no scripts.
-Turbolinks render through the fetchless plugin chain (YouTube/Spotify embeds, media by
-extension); unrecognized links stay plain links.
+* parse
+* render
+* inline the stylesheet 
+* inline exactly the font faces the page actually uses (as base64, by default) 
+* wrap in a complete `<!doctype html>` page shell. 
+
+The returned string is self-contained (thanks to all of the inlining): you should be able to deliver it as a complete .html file.
+
+Turbolinks (bare URLs alone in a paragraph) render through the _fetchless_ plugin chain:
+which is to say, we don't go chasing after OpenGraph data to expand them. 
+
+YouTube/Spotify links become embeds (these won't work if you don't serve the file from _somewhere_), 
+
+image/audio/video links become the media, everything else degrades to a plain link.
 
 ### `marquee_fetch(source: &str, opts: &MarqueeOptions) -> Result<String, ParseError>`
 
