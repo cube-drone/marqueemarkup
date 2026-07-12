@@ -25,10 +25,10 @@ Which is why every application actually shares "Markdown ... minus HTML,
 plus a bunch of tacked-on stuff that only works in this application."
 
 So that's what Marquee is: Markdown, minus HTML, plus a bunch of tacked-on
-stuff that you might need if you're building more ambitious things out 
-of the Markdown.
+stuff that you might need if you're want to give your users more options
+to get silly than you get from the cracker-dry Markdown spec.
 
-Learning some lessons from Markdown, Marquee is... 
+Learning some lessons from Markdown's storied history, Marquee is... 
 very, very tightly specified. If you have some text, there is 
 _exactly and only one_ valid intermediary tree representation for that text: 
 that's it. Renderers can _render_ that tree in a variety of ways, but the
@@ -42,9 +42,9 @@ and customizable set of emoji, animation
 (including, _of course_, the legendary "Marquee"), sizing, and 
 an open format for expandable openGraph-chasing links ("turbolinks"). 
 
-In some ways, Marquee is like a lightweight, highly constrained HTML. 
+In some ways, Marquee is like a lightweight, highly constrained early 90's version of HTML. 
 
-That's what Marquee is designed for: the intersection between safety and 
+That's what Marquee is designed for: the intersection between wire safety and 
 hot piles of clown nonsense.
 
 Safe. Clown. Nonsense.
