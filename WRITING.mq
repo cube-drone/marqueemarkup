@@ -340,6 +340,10 @@ Nesting is the point: [marquee][blink]still open at 3am[/blink][/marquee]
 
 [blink by=letter]CHASE LIGHTS[/blink] ·
 [blink by=letter phase=scatter rate=2]twinkle twinkle[/blink]
+
+:::media width=48
+[bounce]![an angry burger, bouncing](example-media/angry-burger-emoji.png)[/bounce]
+:::
 ```
 
 [marquee]THE CLASSIC — scrolling since 1995, stoppable since Marquee[/marquee]
@@ -375,8 +379,15 @@ And blink splits too — sweeping in order is a theater marquee, scattering is a
 [blink by=letter]CHASE LIGHTS[/blink] ·
 [blink by=letter phase=scatter rate=2]twinkle twinkle[/blink]
 
-If your reduced-motion setting is on, everything above is calmly standing still. That's
-contractual.
+And effects wrap *anything* — transforms carry their children, so an embed inside a bounce
+is simply a bouncing picture:
+
+:::media width=48
+[bounce]![an angry burger, bouncing](example-media/angry-burger-emoji.png)[/bounce]
+:::
+
+If your reduced-motion setting is on, everything above is calmly standing still — yes, even
+the burger. That's contractual.
 
 ## Lists
 
