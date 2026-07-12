@@ -158,7 +158,7 @@ Quotes:
 
 There are a lot of ways to use Marquee, but the most obvious one is this:
 
-Get it from npm. (Have npm installed, obviously.)
+Get it from npm. (Have npm installed.)
 
 ```
 npm install @cube-drone/marquee-markup
@@ -181,6 +181,23 @@ npx marquee hello.mq > hello.html     one self-contained page
 ```
 
 More docs live [here](./ts/marquee-markup/README.md).
+
+
+## What If I Don't _Want_ To Program in JS?
+
+Don't worry, we support _both_ programming languages: Javascript AND Rust!
+
+(shuffling noises)
+
+My assistant is informing me that there are "several other programming languages". 
+
+(loud bang)
+
+_(muffled thump)_
+
+(dragging noise)
+
+My assistant has been removed. 
 
 
 ## Repository layout
