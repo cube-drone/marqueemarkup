@@ -203,6 +203,10 @@ anybody else. The TypeScript side is an npm workspace: `npm install` once at the
 - `ts/marquee-markup/` — **the batteries-included omnibus and the place to start**:
   `marquee(source)` → a complete page, `buildSite(dir, out)` → a website, the `marquee` CLI,
   everything underneath re-exported
+- `editors/vscode-marquee/` — VS Code syntax highlighting: the TextMate grammar (the canonical
+  machine-readable "what Marquee looks like", reusable by Shiki and friends), held to a
+  scope-assertion test suite that runs with the workspace tests
+- `editors/vim-marquee/` — vim/neovim syntax file (line-level exact, inline approximate)
 - differential fuzzer — `cargo run --release --bin diff_fuzz` (in `rust/parser/`, needs `node` on PATH):
   seeded generated documents through both parsers, identical ASTs demanded; found its first real bug
   within 40k documents

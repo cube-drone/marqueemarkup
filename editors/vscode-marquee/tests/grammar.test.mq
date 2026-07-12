@@ -1,0 +1,86 @@
+%% SYNTAX TEST "text.marquee"
+
+# A heading with *emphasis*
+%% <- punctuation.definition.heading.marquee
+%% ^^^^^^^^^^^^^ markup.heading.marquee
+%%                ^^^^^^^^ markup.italic.marquee
+
+######## eight deep
+%% <- punctuation.definition.heading.marquee
+
+######### nine hashes is prose, not a heading
+%% <- - markup.heading.marquee
+
+Some *emphasis*, **strong**, ~~struck~~, and `code with *stars*`.
+%%   ^^^^^^^^^^ markup.italic.marquee
+%%               ^^^^^^^^^^ markup.bold.marquee
+%%                           ^^^^^^^^^^ markup.strikethrough.marquee
+%%                                           ^^^^^^^^^^^^^^^^^^^ markup.inline.raw.marquee
+
+Escapes: \*not emphasis\* and snake_case_names are safe.
+%%       ^^ constant.character.escape.marquee
+
+[blink]the classics[/blink] and [color=#f06]hot pink[/color]
+%%<- punctuation.definition.span.begin.marquee
+%%^^^^ entity.name.tag.span.marquee
+%%                 ^^ punctuation.definition.span.end.marquee
+%%                   ^^^^^ entity.name.tag.span.marquee
+%%                               ^^^^^ entity.name.tag.span.marquee
+%%                                    ^ punctuation.separator.key-value.marquee
+%%                                     ^^^^ string.unquoted.marquee
+
+A [plain link](https://example.org) stays a link, not a span.
+%%^ punctuation.definition.link.marquee
+%%             ^^^^^^^^^^^^^^^^^^^ markup.underline.link.marquee
+
+![a picture](example-media/picture.jpg)
+%% <- punctuation.definition.embed.marquee
+%%           ^^^^^^^^^^^^^^^^^^^^^^^^^ markup.underline.link.marquee
+
+https://example.org/interesting-post
+%% <- markup.underline.link.turbolink.marquee
+
+:::section scheme=parchment background="tile:stars.gif"
+%% <- punctuation.definition.directive.begin.marquee
+%% ^^^^^^^ entity.name.tag.directive.marquee
+%%         ^^^^^^ entity.other.attribute-name.marquee
+%%                ^^^^^^^^^ string.unquoted.marquee
+%%                          ^^^^^^^^^^ entity.other.attribute-name.marquee
+%%                                     ^^^^^^^^^^^^^^^^ string.quoted.double.marquee
+
+words inside
+
+::: section
+%% <- punctuation.definition.directive.close.marquee
+%%  ^^^^^^^ entity.name.tag.directive.marquee
+
+:::counter theme=retro:::
+%% ^^^^^^^ entity.name.tag.directive.marquee
+%%                    ^^^ punctuation.definition.directive.end.marquee
+
+:::
+%% <- punctuation.definition.directive.close.marquee
+
+> a quote, with *style*
+%% <- punctuation.definition.quote.marquee
+%%              ^^^^^^^ markup.italic.marquee
+
+- a list item with :sparkles: in it
+%% <- punctuation.definition.list.marquee
+%%                 ^^^^^^^^^^ constant.other.emoji.marquee
+
+1. ordered too
+%% <- punctuation.definition.list.marquee
+
+---
+%% <- meta.separator.marquee
+
+---- four dashes is prose
+%% <- - meta.separator.marquee
+
+3:30 is a time, but :tophat: resolves
+%%                  ^^^^^^^^ constant.other.emoji.marquee
+
+```python
+code = "fenced, raw"
+```

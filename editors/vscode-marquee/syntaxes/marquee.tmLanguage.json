@@ -1,0 +1,239 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Marquee",
+  "scopeName": "text.marquee",
+  "fileTypes": ["mq"],
+  "patterns": [
+    { "include": "#shebang" },
+    { "include": "#comment" },
+    { "include": "#fence" },
+    { "include": "#directive-close" },
+    { "include": "#directive-open" },
+    { "include": "#heading" },
+    { "include": "#thematic-break" },
+    { "include": "#blockquote" },
+    { "include": "#list-item" },
+    { "include": "#turbolink-line" },
+    { "include": "#inline" }
+  ],
+  "repository": {
+    "shebang": {
+      "comment": "#!marquee N, recognized on line 1 only (the grammar can't see line numbers; any-line coloring is an acceptable approximation)",
+      "match": "^(#!marquee)\\s+(\\d+)\\s*$",
+      "captures": {
+        "1": { "name": "comment.line.shebang.marquee" },
+        "2": { "name": "constant.numeric.version.marquee" }
+      }
+    },
+    "comment": {
+      "comment": "%% at line start; raw content, never parsed. \\%% is escaped prose and falls through to #inline.",
+      "match": "^(%%).*$",
+      "name": "comment.line.double-percent.marquee",
+      "captures": { "1": { "name": "punctuation.definition.comment.marquee" } }
+    },
+    "fence": {
+      "comment": "Three-plus backticks; closes on at least that many and nothing else. Content is raw.",
+      "begin": "^(`{3,})[ \\t]*(\\S*)[ \\t]*$",
+      "end": "^(\\1`*)[ \\t]*$",
+      "name": "markup.raw.block.marquee",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.raw.begin.marquee" },
+        "2": { "name": "fenced_code.block.language.marquee" }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.raw.end.marquee" }
+      }
+    },
+    "directive-close": {
+      "comment": "A ::: close line: bare, or naming its directive AFTER whitespace (`::: section`). No space = an open.",
+      "match": "^(:::)(?:[ \\t]+([a-z][a-z0-9_-]*))?[ \\t]*$",
+      "captures": {
+        "1": { "name": "punctuation.definition.directive.close.marquee" },
+        "2": { "name": "entity.name.tag.directive.marquee" }
+      }
+    },
+    "directive-open": {
+      "comment": ":::name attrs, optionally self-closing with a trailing ::: (leaf)",
+      "match": "^(:::)([a-z][a-z0-9_-]*)(.*?)(:::)?[ \\t]*$",
+      "captures": {
+        "1": { "name": "punctuation.definition.directive.begin.marquee" },
+        "2": { "name": "entity.name.tag.directive.marquee" },
+        "3": { "patterns": [{ "include": "#attributes" }] },
+        "4": { "name": "punctuation.definition.directive.end.marquee" }
+      }
+    },
+    "attributes": {
+      "patterns": [
+        {
+          "comment": "shorthand: a value right after the span name ([color=#f06] - the name doubles as the first attr key)",
+          "match": "(=)(\"(?:[^\"\\\\]|\\\\[\"\\\\])*\")",
+          "captures": {
+            "1": { "name": "punctuation.separator.key-value.marquee" },
+            "2": { "name": "string.quoted.double.marquee" }
+          }
+        },
+        {
+          "match": "([a-z][a-z0-9_-]*)(=)(\"(?:[^\"\\\\]|\\\\[\"\\\\])*\")",
+          "captures": {
+            "1": { "name": "entity.other.attribute-name.marquee" },
+            "2": { "name": "punctuation.separator.key-value.marquee" },
+            "3": {
+              "name": "string.quoted.double.marquee",
+              "patterns": [
+                { "match": "\\\\[\"\\\\]", "name": "constant.character.escape.marquee" }
+              ]
+            }
+          }
+        },
+        {
+          "match": "([a-z][a-z0-9_-]*)(=)([^\\s\"\\]]+)",
+          "captures": {
+            "1": { "name": "entity.other.attribute-name.marquee" },
+            "2": { "name": "punctuation.separator.key-value.marquee" },
+            "3": { "name": "string.unquoted.marquee" }
+          }
+        },
+        {
+          "comment": "shorthand bare value after the span name",
+          "match": "(=)([^\\s\"\\]]+)",
+          "captures": {
+            "1": { "name": "punctuation.separator.key-value.marquee" },
+            "2": { "name": "string.unquoted.marquee" }
+          }
+        }
+      ]
+    },
+    "heading": {
+      "comment": "ATX 1-8 with a space; nine-plus or missing space is prose and falls through",
+      "begin": "^(#{1,8})(?=[ \\t])",
+      "end": "$",
+      "name": "markup.heading.marquee",
+      "beginCaptures": { "1": { "name": "punctuation.definition.heading.marquee" } },
+      "patterns": [{ "include": "#inline" }]
+    },
+    "thematic-break": {
+      "comment": "exactly three dashes; ---- is prose",
+      "match": "^(---)[ \\t]*$",
+      "name": "meta.separator.marquee"
+    },
+    "blockquote": {
+      "begin": "^((?:>[ ]?)+)",
+      "end": "$",
+      "name": "markup.quote.marquee",
+      "beginCaptures": { "1": { "name": "punctuation.definition.quote.marquee" } },
+      "patterns": [{ "include": "#inline" }]
+    },
+    "list-item": {
+      "begin": "^([ ]*)([-*+]|\\d+\\.)([ ])",
+      "end": "$",
+      "beginCaptures": { "2": { "name": "punctuation.definition.list.marquee" } },
+      "patterns": [{ "include": "#inline" }]
+    },
+    "turbolink-line": {
+      "comment": "a bare URL alone in a paragraph becomes a turbolink",
+      "match": "^([A-Za-z][A-Za-z0-9+.-]*://\\S+)[ \\t]*$",
+      "name": "markup.underline.link.turbolink.marquee"
+    },
+    "inline": {
+      "patterns": [
+        { "include": "#escape" },
+        { "include": "#hard-break" },
+        { "include": "#code-span" },
+        { "include": "#embed" },
+        { "include": "#link" },
+        { "include": "#span" },
+        { "include": "#strong" },
+        { "include": "#emphasis" },
+        { "include": "#strikethrough" },
+        { "include": "#emoji" }
+      ]
+    },
+    "escape": {
+      "comment": "backslash + ASCII punctuation renders that character literal",
+      "match": "\\\\[!-/:-@\\[-`{-~]",
+      "name": "constant.character.escape.marquee"
+    },
+    "hard-break": {
+      "match": "\\\\$",
+      "name": "constant.character.escape.hard-break.marquee"
+    },
+    "code-span": {
+      "comment": "a run of N backticks closes on the nearest run of exactly N",
+      "begin": "(`+)",
+      "end": "\\1(?!`)",
+      "name": "markup.inline.raw.marquee",
+      "beginCaptures": { "1": { "name": "punctuation.definition.raw.marquee" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.raw.marquee" } }
+    },
+    "embed": {
+      "match": "(!\\[)([^\\]]*)(\\])(\\()([^)\\s]*)(\\))",
+      "captures": {
+        "1": { "name": "punctuation.definition.embed.marquee" },
+        "2": { "name": "string.other.alt.marquee" },
+        "3": { "name": "punctuation.definition.embed.marquee" },
+        "4": { "name": "punctuation.definition.embed.marquee" },
+        "5": { "name": "markup.underline.link.marquee" },
+        "6": { "name": "punctuation.definition.embed.marquee" }
+      }
+    },
+    "link": {
+      "comment": "[text](target); span openers are excluded because their ] is never followed by (",
+      "begin": "(\\[)(?![a-z0-9_-]*(?:[= \\t][^\\]]*)?\\](?!\\())",
+      "end": "(\\])(\\()([^)\\s]*)(\\))|(\\])",
+      "beginCaptures": { "1": { "name": "punctuation.definition.link.marquee" } },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.link.marquee" },
+        "2": { "name": "punctuation.definition.link.marquee" },
+        "3": { "name": "markup.underline.link.marquee" },
+        "4": { "name": "punctuation.definition.link.marquee" },
+        "5": { "name": "punctuation.definition.link.marquee" }
+      },
+      "patterns": [{ "include": "#inline" }]
+    },
+    "span": {
+      "comment": "BBCode-shaped [name attrs]...[/name]. The ] must not be followed by ( - that's a link. Content is NOT given a scope: an unclosed opener then stains nothing.",
+      "begin": "(\\[)([a-z][a-z0-9_-]*)((?:[= \\t][^\\]]*)?)(\\])(?!\\()",
+      "end": "(\\[/)(\\2)(\\])",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.span.begin.marquee" },
+        "2": { "name": "entity.name.tag.span.marquee" },
+        "3": { "patterns": [{ "include": "#attributes" }] },
+        "4": { "name": "punctuation.definition.span.begin.marquee" }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.span.end.marquee" },
+        "2": { "name": "entity.name.tag.span.marquee" },
+        "3": { "name": "punctuation.definition.span.end.marquee" }
+      },
+      "patterns": [{ "include": "#inline" }]
+    },
+    "strong": {
+      "comment": "runs of exactly 2; 3+ stars are literal",
+      "begin": "(?<![*\\\\])\\*\\*(?![\\s*])",
+      "end": "(?<![\\s*\\\\])\\*\\*(?!\\*)",
+      "name": "markup.bold.marquee",
+      "patterns": [{ "include": "#inline" }]
+    },
+    "emphasis": {
+      "comment": "runs of exactly 1",
+      "begin": "(?<![*\\\\])\\*(?![\\s*])",
+      "end": "(?<![\\s*\\\\])\\*(?!\\*)",
+      "name": "markup.italic.marquee",
+      "patterns": [{ "include": "#inline" }]
+    },
+    "strikethrough": {
+      "begin": "(?<!~)~~(?![\\s~])",
+      "end": "(?<![\\s~])~~(?!~)",
+      "name": "markup.strikethrough.marquee",
+      "patterns": [{ "include": "#inline" }]
+    },
+    "emoji": {
+      "match": "(:)([a-z0-9_+-]{1,64})(:)",
+      "name": "constant.other.emoji.marquee",
+      "captures": {
+        "1": { "name": "punctuation.definition.emoji.marquee" },
+        "3": { "name": "punctuation.definition.emoji.marquee" }
+      }
+    }
+  }
+}

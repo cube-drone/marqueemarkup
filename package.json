@@ -12,7 +12,8 @@
     "ts/marquee-css",
     "ts/marquee-fonts",
     "ts/marquee-emoji",
-    "ts/marquee-markup"
+    "ts/marquee-markup",
+    "editors/vscode-marquee"
   ],
   "scripts": {
     "test": "npm test --workspaces",
