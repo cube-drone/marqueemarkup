@@ -200,17 +200,7 @@ _(muffled thump)_
 My assistant has been removed. 
 
 
-## Repository layout
-
-This is a monorepo: the spec, the conformance vectors, and every reference implementation
-version together, because they are one conformance unit. The implementations publish
-piecemeal as public infrastructure — npm: `@cube-drone/marquee-parser`, `-html-renderer`,
-`-turbolink`, `-css`, `-fonts`, `-emoji`, and the batteries-included `-markup`; crates.io:
-`cube-drone-marquee-parser`, `-html-renderer`, and `-markup` (crates.io has no scopes, so
-the registry names wear the cube-drone prefix while the code stays `use marquee_parser`) — and
-downstream embedders consume them through the public registries like
-anybody else. The TypeScript side is an npm workspace: `npm install` once at the root,
-`npm test` runs every package.
+## Repository Layout
 
 ### The Stuff You Might Care About As an End User
 - `SPEC.md` - the language specification (grammar, AST contract, conformance rules)
@@ -222,6 +212,7 @@ anybody else. The TypeScript side is an npm workspace: `npm install` once at the
 - `editors/vim-marquee/` - **It's like VS Code, but instead of being that it's vim/neovim**
 
 ### Deep Lore For Wizards and The Clinically Insane
+
 - `examples/` - hand-written `.mq` documents; the ergonomics testbed and vector seed corpus
   (`examples/borsalino/` is a complete little website with shared nav/footer, built via
   `npm run marquee -- examples/borsalino /tmp/borsalino`)
@@ -253,3 +244,27 @@ anybody else. The TypeScript side is an npm workspace: `npm install` once at the
 Renderers land beside the parsers as they come (`rust/html_renderer`, `ts/html_renderer`,
 `ts/preact_interactive_renderer`, ...): one parser per language, many renderers, per the
 "parsers may never differ, renderers may" contract in the spec.
+
+## Published Packages
+
+This is a monorepo: the spec, the conformance vectors, and every reference implementation
+version together, because they are one conformance unit. (Basically: we can't change anything without changing EVERYTHING.) 
+The implementations publish piecemeal as public infrastructure — 
+
+- npm: 
+  - `@cube-drone/marquee-markup` (the user-facing one)
+  - `@cube-drone/marquee-parser` (.mq -> AST)
+  - `@cube-drone/marquee-html-renderer` (AST -> HTML),
+  - `@cube-drone/marquee-turbolink` (link expansion), 
+  - `@cube-drone/marquee-css` (the shiny bits), 
+  - `@cube-drone/marquee-fonts` (it's just a bunch of SIL fonts), 
+  - `@cube-drone/maruqee-emoji`, (gemoji)
+- crates.io:
+  - `cube-drone-markup` (the user-facing one) 
+  - `cube-drone-marquee-parser` (.mq -> AST), 
+  - `cube-drone-html-renderer` (AST -> HTML),
+  - (most of the stuff that was packaged as separate JS repos up there are just crammed in the HTML renderer here) 
+
+(crates.io has no scopes, so the registry names wear the cube-drone prefix while the code stays `use marquee_parser`) — and
+downstream embedders consume them through the public registries like anybody else. The TypeScript side is an npm workspace: `npm install` once at the root,
+`npm test` runs every package.)
