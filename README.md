@@ -1,4 +1,4 @@
-<img src="marquee-logo.png" alt="Marquee Markup" width="128" align="right">
+![marquee-logo](./marquee-logo.png)
 
 # Marquee (Markup)
 
