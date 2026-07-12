@@ -199,6 +199,8 @@ _(muffled thump)_
 
 My assistant has been removed. 
 
+These docs are [here](./rust/markup/README.md)
+
 
 ## Repository Layout
 
