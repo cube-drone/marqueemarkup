@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/cube-drone/marqueemarkup/main/marquee-logo.png" alt="Marquee Markup" width="96" align="right">
+
 # cube-drone-marquee-markup
 
 [Marquee](https://github.com/cube-drone/marqueemarkup), batteries included — the Rust

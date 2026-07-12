@@ -1,3 +1,5 @@
+<img src="marquee-logo.png" alt="Marquee Markup" width="128" align="right">
+
 # Marquee (Markup)
 
 [![ci](https://github.com/cube-drone/marqueemarkup/actions/workflows/ci.yml/badge.svg)](https://github.com/cube-drone/marqueemarkup/actions/workflows/ci.yml)
