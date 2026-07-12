@@ -4,8 +4,8 @@
 
 [![ci](https://github.com/cube-drone/marqueemarkup/actions/workflows/ci.yml/badge.svg)](https://github.com/cube-drone/marqueemarkup/actions/workflows/ci.yml)
 
-**[✨ Live demo](https://cube-drone.github.io/marqueemarkup/)** — [WRITING.mq](./WRITING.mq)
-rendered by the omnibus from the tip of `main`, on every push.
+**[✨ Live demo](https://cube-drone.github.io/marqueemarkup/)** rendered from — [WRITING.mq](./WRITING.mq),
+on the tip of `main`, on every push, using [this script](https://github.com/cube-drone/marqueemarkup/blob/main/scripts/build-pages.ts).
 
 Marquee is a markup language! 
 
@@ -212,46 +212,43 @@ downstream embedders consume them through the public registries like
 anybody else. The TypeScript side is an npm workspace: `npm install` once at the root,
 `npm test` runs every package.
 
-- `WRITING.md` — **start here to write Marquee**: the authoring guide, every tag with examples
-  (`WRITING.mq` is its live twin — preview it to see everything running)
-- `SPEC.md` — the language specification (grammar, AST contract, conformance rules)
-- `examples/` — hand-written `.mq` documents; the ergonomics testbed and vector seed corpus
+### The Stuff You Might Care About As an End User
+- `SPEC.md` - the language specification (grammar, AST contract, conformance rules)
+- `ts/marquee-markup/` - **the batteries-included whole enchilada and the place to start** -
+   if you want to use marquee like a library or a CLI app, start here
+- `rust/markup/` - **the same thing as above, but Rust instead**: again, marquee as a user-friendly library
+   and CLI app, this time in Rust! 
+- `editors/vscode-marquee/` - **VS Code syntax highlighting**: 
+- `editors/vim-marquee/` - **It's like VS Code, but instead of being that it's vim/neovim**
+
+### Deep Lore For Wizards and The Clinically Insane
+- `examples/` - hand-written `.mq` documents; the ergonomics testbed and vector seed corpus
   (`examples/borsalino/` is a complete little website with shared nav/footer, built via
   `npm run marquee -- examples/borsalino /tmp/borsalino`)
-- `vectors/` — published conformance vectors (`*.json`, input → exact AST); see `vectors/README.md`
-- `rust/parser/` — reference parser, Rust (`cargo test` runs the vectors; `cargo run --bin bless` grows them)
-- `rust/html_renderer/` — reference static HTML renderer, Rust: same class contract and Profile
+- `vectors/` - published conformance vectors (`*.json`, input → exact AST); see `vectors/README.md`
+- `rust/parser/` - reference parser, Rust (`cargo test` runs the vectors; `cargo run --bin bless` grows them)
+- `rust/html_renderer/` - reference static HTML renderer, Rust: same class contract and Profile
   socket as the TypeScript renderer, its own behavioral suite and self-goldens
   (`cargo run --bin bless` re-blesses)
-- `rust/markup/` — **the batteries-included omnibus, Rust spelling**: `marquee()` → a complete
-  page, `build_site()` → a website, the `marquee` CLI (same flags as npm's), turbolink plugins,
-  with the stylesheet/fonts/emoji table *embedded* — lockstep tests pin the embedded copies to
-  the npm packages byte-for-byte
-- `ts/parser/` — reference parser, TypeScript (`npm test` runs the same vectors; `npm run check` typechecks)
-- `ts/html_renderer/` — reference static HTML renderer (fragment out, embedder policy via `Profile`;
+- `ts/parser/` - reference parser, TypeScript (`npm test` runs the same vectors; `npm run check` typechecks)
+- `ts/html_renderer/` - reference static HTML renderer (fragment out, embedder policy via `Profile`;
   behavioral suite encodes the spec's renderer obligations, self-goldens catch regressions)
-- `ts/marquee-turbolink/` — pluggable turbolink rendering: link expanders as plugins (YouTube, Spotify, media,
+- `ts/marquee-turbolink/` - pluggable turbolink rendering: link expanders as plugins (YouTube, Spotify, media,
   OpenGraph-fetch-ahead), composed by the embedder into `Profile.turbolink`; each plugin declares the
   CSS for the markup it emits, and `turbolinkStyles()` collects the composed chain's skins into one artifact
-- `ts/marquee-turbolink-example-plugin/` — the worked example for plugin authors, paired with the
+- `ts/marquee-turbolink-example-plugin/` - the worked example for plugin authors, paired with the
   "Writing a plugin" guide in `ts/marquee-turbolink/README.md`
-- `ts/marquee-css/` — the reference stylesheet as a package: the `mq-*` class contract renderers
+- `ts/marquee-css/` - the reference stylesheet as a package: the `mq-*` class contract renderers
   target, effects under `prefers-reduced-motion`, layouts, schemes (file + string export)
-- `ts/marquee-fonts/` — the 31-face grab bag as an *optional* package: `externalFontFaces()` for
+- `ts/marquee-fonts/` - the 31-face grab bag as an *optional* package: `externalFontFaces()` for
   hosted files, `inlineFontFaces()` for self-contained base64 pages; without it every font name
   degrades to its fallback stack
-- `ts/marquee-emoji/` — gemoji's standard shortcode table repackaged (`:sparkles:` → ✨);
+- `ts/marquee-emoji/` - gemoji's standard shortcode table repackaged (`:sparkles:` → ✨);
   dependency-free, loaded implicitly by the omnibus
-- `ts/marquee-markup/` — **the batteries-included omnibus and the place to start**:
   `marquee(source)` → a complete page, `buildSite(dir, out)` → a website, the `marquee` CLI,
   everything underneath re-exported
-- `editors/vscode-marquee/` — VS Code syntax highlighting: the TextMate grammar (the canonical
-  machine-readable "what Marquee looks like", reusable by Shiki and friends), held to a
-  scope-assertion test suite that runs with the workspace tests
-- `editors/vim-marquee/` — vim/neovim syntax file (line-level exact, inline approximate)
-- differential fuzzer — `cargo run --release --bin diff_fuzz` (in `rust/parser/`, needs `node` on PATH):
-  seeded generated documents through both parsers, identical ASTs demanded; found its first real bug
-  within 40k documents
+- differential fuzzer - `cargo run --release --bin diff_fuzz` (in `rust/parser/`, needs `node` on PATH):
+  seeded generated documents through both parsers, identical ASTs demanded; fuzz: overwhelming.
 
 Renderers land beside the parsers as they come (`rust/html_renderer`, `ts/html_renderer`,
 `ts/preact_interactive_renderer`, ...): one parser per language, many renderers, per the
