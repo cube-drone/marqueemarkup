@@ -203,6 +203,7 @@ readable always, never blank.
 | `[bounce]...[/bounce]` | bounces | `by=letter/word`, `phase=scatter/ramp` |
 | `[jitter]...[/jitter]` | nervous energy | `by=letter/word`, `phase=scatter/ramp` |
 | `[wave]...[/wave]` | gentle undulation | `by=letter/word`, `phase=scatter/ramp` |
+| `[rubber]...[/rubber]` | squash-and-stretch, oscillating between small and big | `by=letter/word`, `phase=scatter/ramp` |
 | `[typewriter]...[/typewriter]` | types itself out, letter by letter — pure CSS, no scripting needed | `speed=30` (letters per second), `by=word` (word-at-a-time), `phase=scatter` (materialize in scrambled order) |
 | `[fadein]...[/fadein]` | a ghostly fade-in (whole run at once by default) | `by=letter/word` (staggered drift-in), `speed=16`, `phase=scatter` (apparition weather) |
 

@@ -490,6 +490,7 @@ function span(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string {
     case "bounce":
     case "jitter":
     case "wave":
+    case "rubber":
       if (attrs["by"] === "letter" || attrs["by"] === "word") {
         return bySegments(name, attrs["by"], attrs["phase"], nodes, ctx);
       }

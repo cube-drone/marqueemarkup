@@ -292,7 +292,8 @@ big {
 
 .mq-bounce,
 .mq-jitter,
-.mq-wave {
+.mq-wave,
+.mq-rubber {
   display: inline-block;
 }
 
@@ -311,6 +312,7 @@ big {
   .mq-bounce.mq-split,
   .mq-jitter.mq-split,
   .mq-wave.mq-split,
+  .mq-rubber.mq-split,
   .mq-blink.mq-split,
   .mq-fadein.mq-split {
     animation: none;
@@ -333,6 +335,11 @@ big {
 
   .mq-wave.mq-split .mq-l {
     animation: mq-wave 1.4s ease-in-out infinite;
+    animation-delay: calc(var(--mq-o, 0) * -1.4s);
+  }
+
+  .mq-rubber.mq-split .mq-l {
+    animation: mq-rubber 0.7s ease-in-out infinite alternate;
     animation-delay: calc(var(--mq-o, 0) * -1.4s);
   }
 
@@ -395,6 +402,10 @@ big {
   .mq-wave {
     animation: mq-wave 1.4s ease-in-out infinite;
   }
+
+  .mq-rubber {
+    animation: mq-rubber 0.7s ease-in-out infinite alternate;
+  }
 }
 
 @keyframes mq-marquee {
@@ -436,6 +447,15 @@ big {
   }
   75% {
     transform: rotate(-1.5deg) translateY(0.08em);
+  }
+}
+
+@keyframes mq-rubber {
+  from {
+    transform: scale(0.82);
+  }
+  to {
+    transform: scale(1.18);
   }
 }
 

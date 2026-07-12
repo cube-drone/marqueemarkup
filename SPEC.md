@@ -442,8 +442,8 @@ Effects are **pure presentation semantics with no state and no host services** -
 parameters, composition, degradation. They apply inline (effect spans, above) and to blocks
 (`:::marquee` as a directive wraps its blocks). Draft v0 vocabulary, grown from use like all
 vocabulary: animated - `marquee` (direction, speed), `blink` (rate, by), `rainbow` (by),
-`bounce` (by), `jitter` (by), `wave` (by), `typewriter` (speed, by), `fadein` (speed, by);
-typographic - `sup`, `sub`,
+`bounce` (by), `jitter` (by), `wave` (by), `rubber` (by - squash-and-stretch scale
+oscillation), `typewriter` (speed, by), `fadein` (speed, by); typographic - `sup`, `sub`,
 `small`, `big`, `size` (the font-element seven-step dial, `1`-`7` with `3` normal - a closed
 enum, deliberately not a unit-bearing number), and the named rungs `teeny` (1), `tiny`
 (2), `huge` (6), `enormous` (7) - unnecessary given the dial, and yet; `color` (hex or

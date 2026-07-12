@@ -320,7 +320,7 @@ renders as itself:
 [marquee]THE CLASSIC — scrolling since 1995, stoppable since Marquee[/marquee]
 
 [blink]blink[/blink] · [rainbow]rainbow[/rainbow] · [bounce]bounce[/bounce] ·
-[jitter]jitter[/jitter] · [wave]wave[/wave] ·
+[jitter]jitter[/jitter] · [wave]wave[/wave] · [rubber]rubber[/rubber] ·
 [typewriter speed=30]typewriter — it types itself out, letter by letter, in pure CSS[/typewriter]
 
 Nesting is the point: [marquee][blink]still open at 3am[/blink][/marquee]
@@ -328,7 +328,8 @@ Nesting is the point: [marquee][blink]still open at 3am[/blink][/marquee]
 [rainbow by=letter]EVERY LETTER ITS OWN HUE[/rainbow] ·
 [wave by=letter]a true undulating wave[/wave] ·
 [bounce by=word]each word takes its turn[/bounce] ·
-[jitter by=letter]scattered nerves[/jitter]
+[jitter by=letter]scattered nerves[/jitter] ·
+[rubber by=letter]SQUASH AND STRETCH[/rubber]
 
 [rainbow by=letter phase=scatter]CONFETTI HUES[/rainbow] ·
 [bounce by=letter phase=scatter]popcorn letters[/bounce] ·
@@ -349,7 +350,7 @@ Nesting is the point: [marquee][blink]still open at 3am[/blink][/marquee]
 [marquee]THE CLASSIC — scrolling since 1995, stoppable since Marquee[/marquee]
 
 [blink]blink[/blink] · [rainbow]rainbow[/rainbow] · [bounce]bounce[/bounce] ·
-[jitter]jitter[/jitter] · [wave]wave[/wave] ·
+[jitter]jitter[/jitter] · [wave]wave[/wave] · [rubber]rubber[/rubber] ·
 [typewriter speed=30]typewriter — it types itself out, letter by letter, in pure CSS[/typewriter]
 
 Nesting is the point: [marquee][blink]still open at 3am[/blink][/marquee]
@@ -359,7 +360,8 @@ And `by=letter` / `by=word` give every unit its own offset cycle:
 [rainbow by=letter]EVERY LETTER ITS OWN HUE[/rainbow] ·
 [wave by=letter]a true undulating wave[/wave] ·
 [bounce by=word]each word takes its turn[/bounce] ·
-[jitter by=letter]scattered nerves[/jitter]
+[jitter by=letter]scattered nerves[/jitter] ·
+[rubber by=letter]SQUASH AND STRETCH[/rubber]
 
 Offsets sweep smoothly by default; `phase=scatter` scrambles them (and `phase=ramp` can
 smooth even jitter):

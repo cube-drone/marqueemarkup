@@ -571,7 +571,7 @@ fn span(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
                 _ => format!("<span class=\"mq-blink\"{rate}>{inner}</span>"),
             }
         }
-        "rainbow" | "bounce" | "jitter" | "wave" => {
+        "rainbow" | "bounce" | "jitter" | "wave" | "rubber" => {
             match attrs.get("by").map(|s| s.as_str()) {
                 Some(by @ ("letter" | "word")) => {
                     by_segments(name, by, attrs.get("phase").map(|s| s.as_str()), nodes, ctx, "")
