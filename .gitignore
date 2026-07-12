@@ -31,3 +31,6 @@ publish.env
 
 # packaged extensions (rebuild with npm run package)
 *.vsix
+
+# GitHub Pages build output (scripts/build-pages.ts)
+_site/

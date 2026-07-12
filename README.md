@@ -4,6 +4,9 @@
 
 [![ci](https://github.com/cube-drone/marqueemarkup/actions/workflows/ci.yml/badge.svg)](https://github.com/cube-drone/marqueemarkup/actions/workflows/ci.yml)
 
+**[✨ Live demo](https://cube-drone.github.io/marqueemarkup/)** — [WRITING.mq](./WRITING.mq)
+rendered by the omnibus from the tip of `main`, on every push.
+
 Marquee is a markup language! 
 
 It's designed to be a mash-up of Markdown, BBCode, RST, and the old web. 

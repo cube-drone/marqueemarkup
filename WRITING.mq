@@ -1,19 +1,28 @@
 #!marquee 0
 
-:::meta title="Writing Marquee, live" date=2026-07-10 tags="guide, demo":::
+:::meta title="Marquee Markup" date=2026-07-10 tags="marquee, markup, guide, demo":::
 
 %% This comment never renders. If you can read it, you're in view-source —
 %% which is the point: comments are invisible to readers, never secret from them.
 
-# Writing [rainbow]Marquee[/rainbow], as itself
+![marquee-logo](./marquee-logo.png)
 
-This page is [WRITING.md](WRITING.md) turned inside out: **every demo comes twice — first the
-markup you'd type (in a code fence), then the same markup, live.** The source of this very
-document is the full worked example. Preview it from `ts/html_renderer`:
+# Marquee (Markup)
 
-```
-npm run preview -- ../../WRITING.mq > tour.html
-```
+Marquee is a markup language! 
+
+It's designed to be a mash-up of Markdown, BBCode, RST, and the old web. 
+
+For more information about dumb questions like "why it exists", "what it does", 
+or "how to integrate with it", you should check the [GitHub](https://github.com/cube-drone/marqueemarkup).
+
+This? This is the [rubber]DEMO[/rubber]. 
+
+Let's take a look at how to write Marquee! 
+
+# Writing [rainbow]Marquee[/rainbow]
+
+This page is, of course, written in Marquee, at [WRITING.mq](https://github.com/cube-drone/marqueemarkup/blob/main/WRITING.mq).
 
 ## Paragraphs and line breaks
 
@@ -109,7 +118,8 @@ https://commons.wikimedia.org/wiki/Special:FilePath/Meow.ogg
 
 https://www.youtube.com/watch?v=kiTpHaShznE
 
-:::turbolink target=other-page level=title:::
+%% You can also trigger link expansion directly, like this: 
+:::turbolink target=https://www.youtube.com/watch?v=kiTpHaShznE level=title:::
 ```
 
 A [plain link](https://example.org), a [relative link](other-page), and a
@@ -137,15 +147,6 @@ https://commons.wikimedia.org/wiki/Special:FilePath/Cat03.jpg
 https://commons.wikimedia.org/wiki/Special:FilePath/Meow.ogg
 
 https://www.youtube.com/watch?v=kiTpHaShznE
-
-And the explicit form takes any target, including relative ones:
-
-:::turbolink target=other-page level=title:::
-
-(The summary card is the preview host feeding demo data for the example.org link; the cat,
-the meow, and the video are the stock expanders recognizing the link kind — hotlinked from
-Wikimedia Commons, which welcomes it. A host with nothing to say about a link leaves the
-plain link. Always.)
 
 ## Sizing media
 
@@ -263,10 +264,50 @@ The full menu makes a fine specimen chart — and a fine use of a nested list. E
 renders as itself:
 
 ```marquee
+- standard stacks (no files needed)
+  - [font=sans]sans[/font]
+  - [font=serif]serif[/font]
+  - [font=mono]mono[/font]
+  - [font=comic]comic[/font]
+- clean sans
+  - [font=radio-canada]radio-canada[/font]
+  - [font=atkinson-hyperlegible]atkinson-hyperlegible[/font]
+  - [font=lexend]lexend[/font]
+  - [font=quicksand]quicksand[/font]
+- serif & slab
+  - [font=playfair-display]playfair-display[/font]
+  - [font=cormorant]cormorant[/font]
+  - [font=zilla-slab]zilla-slab[/font]
+- old book & gothic
+  - [font=im-fell-english]im-fell-english[/font]
+  - [font=uncial-antiqua]uncial-antiqua[/font]
+  - [font=unifraktur]unifraktur[/font]
+- mono & terminal
+  - [font=jetbrains-mono]jetbrains-mono[/font]
+  - [font=vt323]vt323[/font]
+  - [font=major-mono]major-mono[/font]
+  - [font=special-elite]special-elite[/font]
 - pixel
   - [font=press-start]press-start[/font]
   - [font=silkscreen]silkscreen[/font]
   - [font=bitcount]bitcount[/font]
+- display & neon
+  - [font=orbitron]orbitron[/font]
+  - [font=audiowide]audiowide[/font]
+  - [font=bungee]bungee[/font]
+  - [font=monoton]monoton[/font]
+  - [font=creepster]creepster[/font]
+- loud & weird
+  - [font=kablammo]kablammo[/font]
+  - [font=oi]oi[/font]
+  - [font=henny-penny]henny-penny[/font]
+  - [font=rye]rye[/font]
+- script & hand
+  - [font=lobster]lobster[/font]
+  - [font=pacifico]pacifico[/font]
+  - [font=caveat]caveat[/font]
+  - [font=fredericka]fredericka[/font]
+  - [font=comic-neue]comic-neue[/font]
 ```
 
 - standard stacks (no files needed)

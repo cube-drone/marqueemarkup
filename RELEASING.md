@@ -112,3 +112,10 @@ Notes:
 - Vectors and the spec are CC0 and travel with the repo, not the packages; the version tag is
   the pointer that says which corpus a release passed.
 
+
+### The Fucking Microsoft Dealio
+
+Currently we're manually updating the VSCode Plugin at 
+https://marketplace.visualstudio.com/manage/publishers/cube-drone
+
+I hate Azure. 
