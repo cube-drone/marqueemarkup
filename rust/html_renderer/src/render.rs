@@ -514,7 +514,7 @@ fn span(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
             Some(v @ ("1" | "2" | "3" | "4" | "5" | "6" | "7")) => size_rung(v, &inner),
             _ => inner, // off the dial: the effect degrades, the words survive
         },
-        "miniscule" => size_rung("1", &inner),
+        "teeny" => size_rung("1", &inner),
         "tiny" => size_rung("2", &inner),
         "huge" => size_rung("6", &inner),
         "enormous" => size_rung("7", &inner),

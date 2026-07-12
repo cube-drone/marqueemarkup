@@ -180,7 +180,7 @@ export function usedFontTokens(html: string): string[] {
 
 /** One rung of the font-element seven-step dial: presentational floor
  * (works with no stylesheet, under any CSP), stylesheet class as ceiling.
- * The named rungs - miniscule, tiny, huge, enormous - are unnecessary
+ * The named rungs - teeny, tiny, huge, enormous - are unnecessary
  * given the dial, and yet. */
 function sizeRung(value: string, inner: string): string {
   return `<font class="mq-size-${value}" size="${value}">${inner}</font>`;
@@ -440,7 +440,7 @@ function span(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string {
       }
       return inner; // not on the list: the words survive in their own clothes
     }
-    case "miniscule":
+    case "teeny":
       return sizeRung("1", inner);
     case "tiny":
       return sizeRung("2", inner);

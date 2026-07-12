@@ -444,7 +444,7 @@ parameters, composition, degradation. They apply inline (effect spans, above) an
 vocabulary: animated - `marquee` (direction, speed), `blink` (rate), `rainbow` (by),
 `bounce` (by), `jitter` (by), `wave` (by), `typewriter` (speed); typographic - `sup`, `sub`,
 `small`, `big`, `size` (the font-element seven-step dial, `1`-`7` with `3` normal - a closed
-enum, deliberately not a unit-bearing number), and the named rungs `miniscule` (1), `tiny`
+enum, deliberately not a unit-bearing number), and the named rungs `teeny` (1), `tiny`
 (2), `huge` (6), `enormous` (7) - unnecessary given the dial, and yet; `color` (hex or
 palette token - the color model is settled in Styling); `font` (a name from the closed family
 enum - see Styling).

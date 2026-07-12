@@ -4,35 +4,55 @@
 
 Marquee is a markup language! 
 
-It's designed to a mash-up of Markdown, BBCode, RST, and the old web. 
+It's designed to be a mash-up of Markdown, BBCode, RST, and the old web. 
 
 ## Why Wouldn't I Just Use Markdown?
 
 Sheer vibes. Stubborn nostalgia. And, secretly? _Draconian control_.
 
-Marquee is much more regular and deterministic than Markdown.
+The use-cases for Marquee are shaped like "Geocities" or "Messaging" -
+if you're hosting other users' content, you can't technically offer 
+them all of Markdown, because Markdown allows pass-through HTML 
+and pass-through HTML is a security vulnerability.
 
-Do you want a format that's safe to send from user to user in an untrusted
-system, while still being weird and loud and colorful? 
+If you take away the pass-through HTML, Markdown is really... small.
+Which is why every application actually shares "Markdown ... minus HTML,
+plus a bunch of tacked-on stuff that only works in this application."
 
-Marquee does not allow inline HTML to pass through: you get what you get.
-The AST is sealed up, tight as a drum.
+So that's what Marquee is: Markdown, minus HTML, plus a bunch of tacked-on
+stuff that you might need if you're building more ambitious things out 
+of the Markdown.
+
+Learning some lessons from Markdown, Marquee is... 
+very, very tightly specified. If you have some text, there is 
+_exactly and only one_ valid intermediary tree representation for that text: 
+that's it. Renderers can _render_ that tree in a variety of ways, but the
+tree itself is set in stone when you give it a document, and thanks to 
+the tight versioning from version 0, 
+that will be true from now until the end of time. 
+
+As for the extra crap we tacked on? Well, there's basic layout primitives,
+footnotes, colors, a constrained but versatile set of fonts, an expandable
+and customizable set of emoji, animation 
+(including, _of course_, the legendary "Marquee"), sizing, and 
+an open format for expandable openGraph-chasing links ("turbolinks"). 
+
+In some ways, Marquee is like a lightweight, highly constrained HTML. 
 
 That's what Marquee is designed for: the intersection between safety and 
 hot piles of clown nonsense.
 
 Safe. Clown. Nonsense.
 
-Markdown is still more widely used (for NOW).
-
-But Marquee is for building Geocities.
-
 ## Why Wouldn't I Just Use HTML?
 
 The security problem with Markdown is partially that it _can include HTML_.
 
-HTML is _guaranteed to include HTML_, and proving that HTML is safe is hard.
+HTML is _guaranteed to include HTML_, and proving that HTML is safe is
+extremely hard.
 
+Also, there's essentially no chance that you can convince a casual user
+to type HTML into a messaging window. That is crazy people talk. 
 
 ## Writing Marquee
 
@@ -40,7 +60,7 @@ A more in-depth "writing" document is available [here](./WRITING.md), but
 this will get you started:
 
 
-```
+`````
 # Header 1
 ## Header 2
 ### Header 3
@@ -73,7 +93,7 @@ https://www.youtube.com/watch?v=kiTpHaShznE
 
 Text can be sized: 
 
-* [miniscule]miniscule[/miniscule]
+* [teeny]teeny[/teeny]
 * [tiny]tiny[/tiny]
 * [small]small[/small]
 * [big]big[/big]
@@ -126,7 +146,7 @@ Quotes:
 > line by line — you need to include
 > the `>` symbol on every line.
 
-```
+`````
 
 
 ## Getting Started
@@ -162,9 +182,9 @@ More docs live [here](./ts/marquee-markup/README.md).
 
 This is a monorepo: the spec, the conformance vectors, and every reference implementation
 version together, because they are one conformance unit. The implementations publish
-piecemeal as public infrastructure — npm: `@cube-drone/marquee-parser`,
-`@cube-drone/marquee-html-renderer`, `@cube-drone/marquee-turbolink`; crates.io:
-`cube-drone-marquee-parser` and `cube-drone-marquee-html-renderer` (crates.io has no scopes, so
+piecemeal as public infrastructure — npm: `@cube-drone/marquee-parser`, `-html-renderer`,
+`-turbolink`, `-css`, `-fonts`, `-emoji`, and the batteries-included `-markup`; crates.io:
+`cube-drone-marquee-parser`, `-html-renderer`, and `-markup` (crates.io has no scopes, so
 the registry names wear the cube-drone prefix while the code stays `use marquee_parser`) — and
 downstream embedders consume them through the public registries like
 anybody else. The TypeScript side is an npm workspace: `npm install` once at the root,
