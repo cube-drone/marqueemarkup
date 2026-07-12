@@ -254,6 +254,18 @@ fn headings_seven_and_eight_are_aria_blocks() {
 }
 
 #[test]
+fn fadein_and_split_blink() {
+    let whole = render_marquee("[fadein]a ghost[/fadein]\n", &BareWebProfile).unwrap();
+    assert!(whole.contains("<span class=\"mq-fadein\">a ghost</span>"));
+    let split = render_marquee("[fadein by=letter speed=20]boo[/fadein]\n", &BareWebProfile).unwrap();
+    assert!(split.contains("mq-fadein mq-split\" style=\"--mq-fi-step:0.05s\""));
+    assert!(split.contains("--mq-o:2"), "sequential reveal ordinals");
+    let chase = render_marquee("[blink by=letter rate=2]OPEN[/blink]\n", &BareWebProfile).unwrap();
+    assert!(chase.contains("mq-blink mq-split\" style=\"--mq-rate:2\""));
+    assert_eq!(chase.matches("mq-l\"").count() + chase.matches("mq-l ").count(), 4);
+}
+
+#[test]
 fn aside_and_footnote_are_sidenote_synonyms() {
     let html = render_marquee("a[aside]one[/aside] b[footnote]two[/footnote]\n", &BareWebProfile).unwrap();
     assert_eq!(html.matches("mq-noteref").count(), 2);

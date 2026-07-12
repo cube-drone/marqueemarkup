@@ -235,6 +235,17 @@ test("typewriter: per-letter reveal ordinals, speed knob, word mode, cap fallbac
   assert.ok(!reversed && !ascending, "scrambled, not a mirror or a no-op");
 });
 
+test("fadein: whole-run by default, per-unit with by=, blink splits too", () => {
+  const whole = renderMarquee("[fadein]a ghost[/fadein]\n");
+  assert.ok(whole.includes('<span class="mq-fadein">a ghost</span>'), "bare fadein: one fade");
+  const split = renderMarquee("[fadein by=letter speed=20]boo[/fadein]\n");
+  assert.ok(split.includes('mq-fadein mq-split" style="--mq-fi-step:0.05s"'));
+  assert.ok(split.includes("--mq-o:2"), "sequential reveal ordinals");
+  const chase = renderMarquee("[blink by=letter rate=2]OPEN[/blink]\n");
+  assert.ok(chase.includes('mq-blink mq-split" style="--mq-rate:2"'), "rate rides the container");
+  assert.equal((chase.match(/mq-l/g) ?? []).length, 4, "chase lights, one per letter");
+});
+
 test("tables: paragraph-rows, [c] cells, header promotion, nothing eaten", () => {
   const html = renderMarquee(
     ":::table header=row\n[c]dish[/c] [c]price[/c]\n\n[c]*Spaghetti*[/c] [c]$12[/c]\n:::\n",

@@ -310,7 +310,9 @@ big {
   .mq-rainbow.mq-split,
   .mq-bounce.mq-split,
   .mq-jitter.mq-split,
-  .mq-wave.mq-split {
+  .mq-wave.mq-split,
+  .mq-blink.mq-split,
+  .mq-fadein.mq-split {
     animation: none;
   }
 
@@ -332,6 +334,38 @@ big {
   .mq-wave.mq-split .mq-l {
     animation: mq-wave 1.4s ease-in-out infinite;
     animation-delay: calc(var(--mq-o, 0) * -1.4s);
+  }
+
+  /* The reveals (typewriter, fadein): each unit enters at ordinal x step
+     (--mq-o is the sequential integer here, not the loopers' 0..1
+     fraction). The hiding lives ONLY in these animations - fill-mode holds
+     the from-frame through the delay - so wherever animations don't run
+     (reduced motion, print, old browsers) the text is simply visible.
+     Never a hostage situation. */
+  /* steps(1, start): the value jumps to the end-state at the START of the
+     active interval, so the pop lands exactly at the delay and the duration
+     only needs to be long enough for the compositor to sample it. (A 1ms
+     duration is a trap: its active window falls between frames, and
+     never-sampled micro-animations froze mid-word in Chromium.) */
+  .mq-typewriter.mq-split .mq-l {
+    animation: mq-tw-in 0.4s steps(1, start) both;
+    animation-delay: calc(var(--mq-o, 0) * var(--mq-tw-step, 0.07s));
+  }
+
+  .mq-fadein {
+    animation: mq-fade-in 1.2s ease-out both;
+  }
+
+  .mq-fadein.mq-split .mq-l {
+    animation: mq-fade-in 0.9s ease-out both;
+    animation-delay: calc(var(--mq-o, 0) * var(--mq-fi-step, 0.06s));
+  }
+
+  /* Split blink inherits the container's rate; ramp order reads as
+     theater-marquee chase lights, scatter as twinkle. */
+  .mq-blink.mq-split .mq-l {
+    animation: mq-blink calc(1.2s / max(var(--mq-rate, 1), 1)) step-end infinite;
+    animation-delay: calc(var(--mq-o, 0) * (-1.2s / max(var(--mq-rate, 1), 1)));
   }
 
   .mq-marquee-inner {
@@ -405,8 +439,29 @@ big {
   }
 }
 
-/* .mq-typewriter ships no motion: letter-by-letter reveal needs JS (the
- * interactive renderer); here it is its full static text, per contract. */
+@keyframes mq-tw-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mq-fade-in {
+  from {
+    opacity: 0;
+    filter: blur(0.12em);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* (The typewriter's JS halves - start-on-visibility, tap-to-skip - still
+ * belong to the interactive renderer; this is the best-effort CSS reveal,
+ * same tier as every other effect.) */
 
 /* ---- layouts: picked, not authored ---- */
 

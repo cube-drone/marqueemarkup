@@ -562,7 +562,14 @@ fn span(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
                 Some(v) => format!(" style=\"--mq-rate:{v}\""),
                 None => String::new(),
             };
-            format!("<span class=\"mq-blink\"{rate}>{inner}</span>")
+            match attrs.get("by").map(|s| s.as_str()) {
+                // Split blink: ramp is theater-marquee chase lights, scatter
+                // is twinkle. The rate var rides the container.
+                Some(by @ ("letter" | "word")) => {
+                    by_segments(name, by, attrs.get("phase").map(|s| s.as_str()), nodes, ctx, &rate)
+                }
+                _ => format!("<span class=\"mq-blink\"{rate}>{inner}</span>"),
+            }
         }
         "rainbow" | "bounce" | "jitter" | "wave" => {
             match attrs.get("by").map(|s| s.as_str()) {
@@ -580,15 +587,23 @@ fn span(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
                 Some("word") => "word",
                 _ => "letter",
             };
-            let speed: f64 = attrs
-                .get("speed")
-                .filter(|v| is_count(v))
-                .and_then(|v| v.parse::<f64>().ok())
-                .filter(|v| *v > 0.0)
-                .unwrap_or(14.0);
-            let step = (1000.0 / speed).round() / 1000.0;
+            let step = reveal_step(attrs.get("speed").map(|s| s.as_str()), 14.0);
             let style = format!(" style=\"--mq-tw-step:{step}s\"");
             by_segments(name, by, attrs.get("phase").map(|s| s.as_str()), nodes, ctx, &style)
+        }
+        "fadein" => {
+            // The ghostly reveal. Bare [fadein] fades the whole run in once;
+            // by=letter / by=word drift units in on staggered starts (same
+            // one-shot family as typewriter); phase=scatter is apparition
+            // weather.
+            match attrs.get("by").map(|s| s.as_str()) {
+                Some(by @ ("letter" | "word")) => {
+                    let step = reveal_step(attrs.get("speed").map(|s| s.as_str()), 16.0);
+                    let style = format!(" style=\"--mq-fi-step:{step}s\"");
+                    by_segments(name, by, attrs.get("phase").map(|s| s.as_str()), nodes, ctx, &style)
+                }
+                _ => format!("<span class=\"mq-fadein\">{inner}</span>"),
+            }
         }
         _ => inner, // unknown span: pure shrug, children as plain content
     }
@@ -603,7 +618,23 @@ fn span(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
 /// typewriter's units are 1ms one-shots and its natural material is long
 /// text, so it caps high.
 const MAX_SPLIT_UNITS: usize = 400;
-const MAX_TYPEWRITER_UNITS: usize = 2000;
+const MAX_REVEAL_UNITS: usize = 2000;
+
+/// The one-shot reveals: sequential ordinals, the high unit cap.
+fn is_reveal(effect: &str) -> bool {
+    effect == "typewriter" || effect == "fadein"
+}
+
+/// speed= (units per second, a COUNT) into a per-unit delay step in
+/// seconds; invalid or absent falls to the effect's default rate.
+fn reveal_step(speed_attr: Option<&str>, dflt: f64) -> f64 {
+    let speed = speed_attr
+        .filter(|v| is_count(v))
+        .and_then(|v| v.parse::<f64>().ok())
+        .filter(|v| *v > 0.0)
+        .unwrap_or(dflt);
+    (1000.0 / speed).round() / 1000.0
+}
 
 fn gcd(a: usize, b: usize) -> usize {
     if b == 0 {
@@ -656,7 +687,7 @@ fn by_segments(
         }
     };
     let total = count_units(nodes, by);
-    let cap = if effect == "typewriter" { MAX_TYPEWRITER_UNITS } else { MAX_SPLIT_UNITS };
+    let cap = if is_reveal(effect) { MAX_REVEAL_UNITS } else { MAX_SPLIT_UNITS };
     if total == 0 || total > cap {
         let inner = children(nodes, ctx);
         return format!("<span class=\"mq-{effect}\">{inner}</span>");
@@ -689,12 +720,12 @@ fn is_unit(segment: &str, by: &str) -> bool {
 /// twice) in both phase orders: ramp sweeps, scatter scrambles by a fixed
 /// integer hash - randomness-shaped, never random.
 fn unit_offset(state: &SplitState) -> String {
-    // Typewriter offsets are sequential INTEGERS (the ordinal; delay =
-    // ordinal x step), unlike the cyclic 0..1 fractions the looping effects
-    // replay. phase=scatter walks a golden-ratio-stride permutation - a
-    // fixed prime stride is a trap (7919 mod 40 = -1: forty-unit runs
-    // typed in backwards).
-    if state.effect == "typewriter" {
+    // Reveal offsets (typewriter, fadein) are sequential INTEGERS (the
+    // ordinal; delay = ordinal x step), unlike the cyclic 0..1 fractions
+    // the looping effects replay. phase=scatter walks a golden-ratio-stride
+    // permutation - a fixed prime stride is a trap (7919 mod 40 = -1:
+    // forty-unit runs typed in backwards).
+    if is_reveal(state.effect) {
         let o = if state.phase == "scatter" {
             (state.i * scatter_stride(state.total)) % state.total
         } else {

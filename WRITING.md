@@ -198,12 +198,13 @@ readable always, never blank.
 | span | effect | knobs |
 |---|---|---|
 | `[marquee]...[/marquee]` | scrolling text, the classic | `direction=right`, `speed=2` |
-| `[blink]...[/blink]` | blinks | `rate=2` |
+| `[blink]...[/blink]` | blinks | `rate=2`, `by=letter/word` (ramp = theater chase lights, `phase=scatter` = twinkle) |
 | `[rainbow]...[/rainbow]` | color-cycles | `by=letter/word`, `phase=scatter/ramp` |
 | `[bounce]...[/bounce]` | bounces | `by=letter/word`, `phase=scatter/ramp` |
 | `[jitter]...[/jitter]` | nervous energy | `by=letter/word`, `phase=scatter/ramp` |
 | `[wave]...[/wave]` | gentle undulation | `by=letter/word`, `phase=scatter/ramp` |
 | `[typewriter]...[/typewriter]` | types itself out, letter by letter — pure CSS, no scripting needed | `speed=30` (letters per second), `by=word` (word-at-a-time), `phase=scatter` (materialize in scrambled order) |
+| `[fadein]...[/fadein]` | a ghostly fade-in (whole run at once by default) | `by=letter/word` (staggered drift-in), `speed=16`, `phase=scatter` (apparition weather) |
 
 `by=letter` gives each letter its own offset cycle — `[rainbow by=letter]` is the classic
 every-letter-its-own-hue gradient, `[wave by=letter]` a true undulating ripple. `by=word`

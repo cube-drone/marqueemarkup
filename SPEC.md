@@ -441,20 +441,24 @@ Effects are **pure presentation semantics with no state and no host services** -
 `*emphasis*`, not to `:::guestbook` - so the language defines them completely: meaning,
 parameters, composition, degradation. They apply inline (effect spans, above) and to blocks
 (`:::marquee` as a directive wraps its blocks). Draft v0 vocabulary, grown from use like all
-vocabulary: animated - `marquee` (direction, speed), `blink` (rate), `rainbow` (by),
-`bounce` (by), `jitter` (by), `wave` (by), `typewriter` (speed); typographic - `sup`, `sub`,
+vocabulary: animated - `marquee` (direction, speed), `blink` (rate, by), `rainbow` (by),
+`bounce` (by), `jitter` (by), `wave` (by), `typewriter` (speed, by), `fadein` (speed, by);
+typographic - `sup`, `sub`,
 `small`, `big`, `size` (the font-element seven-step dial, `1`-`7` with `3` normal - a closed
 enum, deliberately not a unit-bearing number), and the named rungs `teeny` (1), `tiny`
 (2), `huge` (6), `enormous` (7) - unnecessary given the dial, and yet; `color` (hex or
 palette token - the color model is settled in Styling); `font` (a name from the closed family
 enum - see Styling).
 **`by=letter` / `by=word`** animates the run unit by unit with phase-offset cycles -
-sequential offsets for `rainbow`/`wave`/`bounce` (the gradient / ripple look),
-deterministically scattered for `jitter`; the default animates the run as one piece. The
-**`phase`** knob overrides each effect's natural order: `phase=scatter` scrambles any of them
-(deterministically), `phase=ramp` sweeps any of them smoothly. Exact
-offset values are renderer latitude; that they are *deterministic* is not (a document renders
-the same twice). Effects nest freely - marquee and blink at
+sequential offsets for `rainbow`/`wave`/`bounce`/`blink` (the gradient / ripple / chase-light
+look), deterministically scattered for `jitter`; the default animates the run as one piece.
+The **reveal effects** (`typewriter`, `fadein`) are the one-shot half of the same machinery:
+units enter once, in document order (or scrambled under `phase=scatter`), at a rate set by
+`speed=` (units per second); `typewriter` is per-unit by nature, `fadein` fades the whole run
+unless `by=` splits it. The **`phase`** knob overrides each effect's natural order:
+`phase=scatter` scrambles any of them (deterministically), `phase=ramp` sweeps any of them
+smoothly. Exact offset values are renderer latitude; that they are *deterministic* is not (a
+document renders the same twice). Effects nest freely - marquee and blink at
 the same time is not an edge case, it is the point.
 
 **Sidenotes are first-class** (`text[sidenote]the witty aside[/sidenote] continues`): the
