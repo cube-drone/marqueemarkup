@@ -5,7 +5,9 @@
 %% This comment never renders. If you can read it, you're in view-source —
 %% which is the point: comments are invisible to readers, never secret from them.
 
+:::center
 ![marquee-logo](./marquee-logo.png)
+:::
 
 # Marquee (Markup)
 
@@ -601,6 +603,37 @@ There is a live comment in this very spot — and rendering it as nothing *is* t
 
 The live `:::meta` is at the top of this file, describing the document to any tool that asks,
 rendering nothing.
+
+## Alignment
+
+The `<center>` tag is back, and it brought company — `:::right`, and `:::left` for
+un-aligning inside the other two:
+
+```marquee
+:::center
+**CENTERED**, like the old gods intended
+
+:::left
+(and this line ducks back to the left rail)
+:::
+:::
+
+:::right
+signed, ~~the management~~
+:::
+```
+
+:::center
+**CENTERED**, like the old gods intended
+
+:::left
+(and this line ducks back to the left rail)
+:::
+:::
+
+:::right
+signed, ~~the management~~
+:::
 
 ## Layout, sections, schemes
 

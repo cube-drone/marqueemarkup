@@ -369,7 +369,10 @@ Style is where the spec says "no" most, so here is the positive model, in one pl
 - **Not this** (so the boundary is legible, not mysterious): selectors, specificity,
   `!important`, positioning (absolute/flex/grid), per-element dimensions beyond closed tokens,
   media queries, freeform fonts, raw CSS. It is themes-and-local-overrides - Geocities meets the
-  Windows control panel - bounded on purpose.
+  Windows control panel - bounded on purpose. (Alignment is not positioning: the **`:::center`
+  / `:::right` / `:::left` container directives** exist, as the old web intended - `<center>`
+  reborn as vocabulary, `right` for symmetry, `left` as the un-aligner inside the other two.
+  Physical directions, deliberately: a page reads the same everywhere.)
 
 ### Includes: shared nav, footers, mix-ins
 

@@ -246,6 +246,13 @@ test("fadein: whole-run by default, per-unit with by=, blink splits too", () => 
   assert.equal((chase.match(/mq-l/g) ?? []).length, 4, "chase lights, one per letter");
 });
 
+test("alignment trio: center reborn, right for symmetry, left un-aligns", () => {
+  const html = renderMarquee(":::center\nhi\n\n:::left\nrail[/left]\n:::\n:::\n\n:::right\nbye\n:::\n");
+  assert.ok(html.includes('<div class="mq-center"><p>hi</p>'));
+  assert.ok(html.includes('<div class="mq-left">'), "left nests inside center as the un-aligner");
+  assert.ok(html.includes('<div class="mq-right"><p>bye</p></div>'));
+});
+
 test("tables: paragraph-rows, [c] cells, header promotion, nothing eaten", () => {
   const html = renderMarquee(
     ":::table header=row\n[c]dish[/c] [c]price[/c]\n\n[c]*Spaghetti*[/c] [c]$12[/c]\n:::\n",

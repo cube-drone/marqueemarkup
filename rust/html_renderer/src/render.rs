@@ -423,6 +423,10 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
             format!("<div class=\"mq-media\"{style}>{inner}</div>")
         }
         "table" => render_table(attrs, nodes, ctx),
+        // The <center> tag, back from the dead in directive clothing - plus
+        // right for symmetry and left as the un-aligner. Physical
+        // directions, deliberately: predictable beats logical.
+        "center" | "right" | "left" => format!("<div class=\"mq-{name}\">{inner}</div>"),
         // Unknown vocabulary: a container renders its children with an
         // affordance that something wrapped them; a leaf renders the inert
         // placeholder. Never eat authored content.

@@ -77,6 +77,35 @@
   font-size: 0.75em;
 }
 
+/* ---- :::center / :::right / :::left - the <center> tag back from the
+   dead, with siblings. Inline content aligns via text-align; block
+   children that size themselves (tables) follow via margins. Physical
+   directions on purpose. ---- */
+
+.mq-center {
+  text-align: center;
+}
+
+.mq-right {
+  text-align: right;
+}
+
+.mq-left {
+  text-align: left;
+}
+
+.mq-center .mq-table {
+  margin-inline: auto;
+}
+
+.mq-right .mq-table {
+  margin-left: auto;
+}
+
+.mq-left .mq-table {
+  margin-right: auto;
+}
+
 /* ---- tables: paragraph-rows and [c] cells (SPEC.md, "Tables") ---- */
 
 .mq-table {

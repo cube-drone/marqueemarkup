@@ -349,6 +349,14 @@ function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string 
     }
     case "table":
       return renderTable(attrs, nodes, ctx);
+    case "center":
+    case "right":
+    case "left":
+      // The <center> tag, back from the dead in directive clothing - plus
+      // its siblings: right for symmetry, left as the un-aligner (useful
+      // only inside the other two, which is exactly when you want it).
+      // Physical directions, deliberately: predictable beats logical.
+      return `<div class="mq-${name}">${inner}</div>`;
   }
   // Unknown vocabulary: a container renders its children with an affordance
   // that something wrapped them; a leaf renders the inert placeholder.

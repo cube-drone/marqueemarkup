@@ -400,6 +400,18 @@ pinned `blob:`), subject to the same host media policy as an embed; if the host 
 it, you get no wallpaper and your words carry on. Yes, this means you can tile something
 truly horrifying back there. We know. That's the point.
 
+**Alignment** is its own tiny container: wrap anything in `:::center` (yes — the `<center>`
+tag, reborn) and it centers: text, headings, images, whole tables. `:::right` aligns right,
+and `:::left` exists to un-align a block *inside* the other two:
+
+```
+:::center
+![the logo](logo.png)
+
+Everything in here is centered.
+:::
+```
+
 There are no font-size sliders, no pixel positioning, no CSS. Layout is picked, not authored —
 that's what keeps every Marquee page readable on every client.
 
