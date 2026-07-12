@@ -35,6 +35,7 @@ jobs:
             ~/.cargo/git
             rust/parser/target
             rust/html_renderer/target
+            rust/markup/target
           key: cargo-${{ runner.os }}-${{ hashFiles('rust/**/Cargo.toml') }}
           restore-keys: cargo-${{ runner.os }}-
 
@@ -49,5 +50,6 @@ jobs:
       - run: |
           (cd rust/parser && cargo clean -p cube-drone-marquee-parser)
           (cd rust/html_renderer && cargo clean -p cube-drone-marquee-parser -p cube-drone-marquee-html-renderer)
+          (cd rust/markup && cargo clean -p cube-drone-marquee-parser -p cube-drone-marquee-html-renderer -p cube-drone-marquee-markup)
 
       - run: npm run release-check

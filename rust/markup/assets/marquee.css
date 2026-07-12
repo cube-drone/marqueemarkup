@@ -1,0 +1,512 @@
+/* marquee.css — the reference stylesheet for rendered Marquee.
+ *
+ * This file is the class contract every reference renderer targets: the
+ * mq-* names and --mq-* slots here are the shared surface; the HTML tree
+ * shapes around them may differ per renderer. Everything degrades: without
+ * this stylesheet a rendered document is still readable semantic HTML (and
+ * <font color> still colors, courtesy of the browser itself).
+ *
+ * Light/dark: this file never declares color-scheme - a fragment embeds
+ * politely and follows its host page's theme. Its own structural colors are
+ * translucent neutrals, so they ride either canvas; page shells that own
+ * the whole page (the omnibus, buildSite, the preview tool) declare
+ * `color-scheme: light dark` themselves. Scheme palettes (noir, parchment,
+ * hotdog-stand, terminal) are authorial and fixed: a noir page is noir at
+ * noon.
+ */
+
+/* ---- document ---- */
+
+.mq-doc {
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+.mq-doc :is(img, video, audio) {
+  max-width: 100%;
+}
+
+/* Custom emoji: an image wearing the size of a character. max-width: 100%
+   above would let a huge source image stay huge; the height cap wins. */
+.mq-doc img.mq-emoji {
+  height: 1.2em;
+  width: auto;
+  vertical-align: -0.25em;
+}
+
+/* Blockquotes: browser default is a mute 40px indent per side; give them a
+   spine instead. Nesting reads as stacked spines, not a staircase. */
+.mq-doc blockquote {
+  margin-block: 1em;
+  margin-inline: 0;
+  padding: 0.35rem 1rem;
+  border-left: 3px solid rgba(127, 127, 127, 0.5);
+  background: rgba(127, 127, 127, 0.08);
+  border-radius: 0 0.25rem 0.25rem 0;
+}
+
+.mq-doc blockquote > :first-child {
+  margin-top: 0;
+}
+
+.mq-doc blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.mq-doc pre.mq-code {
+  overflow-x: auto;
+  padding: 0.75rem;
+  background: rgba(127, 127, 127, 0.12);
+  border-radius: 0.25rem;
+}
+
+/* ---- deep headings: the grammar allows 1-8; HTML's ladder stops at h6,
+   so 7 and 8 are ARIA-labeled blocks continuing the size taper ---- */
+
+.mq-doc .mq-h7,
+.mq-doc .mq-h8 {
+  font-weight: bold;
+  margin-block: 1em;
+}
+
+.mq-doc .mq-h7 {
+  font-size: 0.85em;
+}
+
+.mq-doc .mq-h8 {
+  font-size: 0.75em;
+}
+
+/* ---- tables: paragraph-rows and [c] cells (SPEC.md, "Tables") ---- */
+
+.mq-table {
+  border-collapse: collapse;
+  margin-block: 1em;
+}
+
+.mq-table :is(td, th) {
+  border: 1px solid rgba(127, 127, 127, 0.45);
+  padding: 0.35rem 0.75rem;
+  text-align: left;
+}
+
+.mq-table th {
+  background: rgba(127, 127, 127, 0.12);
+}
+
+/* ---- the color slot: validated author values, property mapping ours ---- */
+
+.mq-color {
+  color: var(--mq-color);
+}
+
+.mq-page,
+.mq-section {
+  background-color: var(--mq-bg, transparent);
+  /* background=tile:<target> - the early web's tiled wallpaper, back by
+     popular demand; the default `repeat` does the tiling */
+  background-image: var(--mq-bg-tile, none);
+  color: var(--mq-color, inherit);
+}
+
+/* ---- media sizing: :::media knobs land in slots; containment applies
+ * them to every embed in the subtree ---- */
+
+.mq-media .mq-embed {
+  width: var(--mq-media-w, auto);
+  height: var(--mq-media-h, auto);
+}
+
+.mq-media img.mq-embed,
+.mq-media video.mq-embed {
+  object-fit: cover;
+}
+
+/* ---- the font list: a closed name enum in two tiers. Standard stacks need
+ * no files; the grab bag is SIL-OFL faces the embedder self-hosts (see
+ * fonts/ and css/fonts.css) - until those files load, every name degrades
+ * to its fallback stack below. Never a third-party font CDN. ---- */
+
+.mq-font-sans { font-family: system-ui, sans-serif; }
+.mq-font-serif { font-family: Georgia, serif; }
+.mq-font-mono { font-family: ui-monospace, monospace; }
+.mq-font-comic { font-family: "Comic Sans MS", "Comic Neue", cursive; }
+
+.mq-font-radio-canada { font-family: "Radio Canada", system-ui, sans-serif; }
+.mq-font-atkinson-hyperlegible { font-family: "Atkinson Hyperlegible", system-ui, sans-serif; }
+.mq-font-lexend { font-family: Lexend, system-ui, sans-serif; }
+.mq-font-zilla-slab { font-family: "Zilla Slab", Georgia, serif; }
+.mq-font-playfair-display { font-family: "Playfair Display", Georgia, serif; }
+.mq-font-cormorant { font-family: Cormorant, Georgia, serif; }
+.mq-font-im-fell-english { font-family: "IM Fell English", Georgia, serif; }
+.mq-font-uncial-antiqua { font-family: "Uncial Antiqua", Georgia, serif; }
+.mq-font-unifraktur { font-family: UnifrakturMaguntia, Georgia, serif; }
+.mq-font-jetbrains-mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+.mq-font-vt323 { font-family: VT323, ui-monospace, monospace; }
+.mq-font-press-start { font-family: "Press Start 2P", ui-monospace, monospace; }
+.mq-font-silkscreen { font-family: Silkscreen, ui-monospace, monospace; }
+.mq-font-major-mono { font-family: "Major Mono Display", ui-monospace, monospace; }
+.mq-font-orbitron { font-family: Orbitron, system-ui, sans-serif; }
+.mq-font-bungee { font-family: Bungee, system-ui, sans-serif; }
+.mq-font-monoton { font-family: Monoton, system-ui, sans-serif; }
+.mq-font-creepster { font-family: Creepster, system-ui, sans-serif; }
+.mq-font-special-elite { font-family: "Special Elite", ui-monospace, monospace; }
+.mq-font-fredericka { font-family: "Fredericka the Great", cursive; }
+.mq-font-lobster { font-family: Lobster, cursive; }
+.mq-font-pacifico { font-family: Pacifico, cursive; }
+.mq-font-caveat { font-family: Caveat, cursive; }
+.mq-font-comic-neue { font-family: "Comic Neue", "Comic Sans MS", cursive; }
+.mq-font-audiowide { font-family: Audiowide, system-ui, sans-serif; }
+.mq-font-kablammo { font-family: Kablammo, cursive; }
+.mq-font-henny-penny { font-family: "Henny Penny", cursive; }
+.mq-font-oi { font-family: Oi, Georgia, serif; }
+.mq-font-rye { font-family: Rye, Georgia, serif; }
+.mq-font-bitcount { font-family: Bitcount, ui-monospace, monospace; }
+.mq-font-quicksand { font-family: Quicksand, system-ui, sans-serif; }
+
+/* ---- the size dial: seven closed steps, 3 is normal (font-element scale;
+ * the size attribute on the same element is the no-stylesheet floor) ---- */
+
+.mq-size-1 { font-size: x-small; }
+.mq-size-2 { font-size: small; }
+.mq-size-3 { font-size: medium; }
+.mq-size-4 { font-size: large; }
+.mq-size-5 { font-size: x-large; }
+.mq-size-6 { font-size: xx-large; }
+.mq-size-7 { font-size: xxx-large; }
+
+big {
+  font-size: larger;
+}
+
+/* ---- placeholders and affordances (the contractual shrug, visibly) ---- */
+
+.mq-placeholder,
+.mq-unknown,
+.mq-invalid {
+  border: 1px dashed rgba(136, 136, 136, 0.66);
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.mq-placeholder::before,
+.mq-invalid::before {
+  font-family: ui-monospace, monospace;
+  font-size: 0.85em;
+  opacity: 0.66;
+}
+
+.mq-placeholder::before {
+  content: "⬚ " attr(data-directive);
+}
+
+.mq-unknown::before {
+  content: "⬚ " attr(data-directive) " (unsupported here)";
+  display: block;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8em;
+  opacity: 0.6;
+}
+
+.mq-invalid::before {
+  content: "✂ invalid markup: " attr(data-reason);
+}
+
+.mq-blocked {
+  text-decoration: underline dotted;
+}
+
+/* ---- turbolinks: the renderer emits only the plain-link floor and the
+ * rich wrapper, so only those are styled here. Plugin bodies (the summary
+ * card, players, frames) are the plugins' markup and bring their own
+ * stylesheet - ts/turbolink/turbolink.css for the default set. ---- */
+
+.mq-turbolink a {
+  text-decoration: none;
+}
+
+.mq-turbolink-rich {
+  margin: 0.75rem 0;
+  border: 1px solid rgba(136, 136, 136, 0.33);
+  border-left-width: 4px;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.mq-turbolink-source {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8em;
+  opacity: 0.6;
+  overflow-wrap: anywhere;
+}
+
+/* ---- asides: a numbered mark in the flow, the note just below the
+ * triggering paragraph. Regular flow - no floats (ugly reflow, orphaned
+ * triggers), no popups (JS) ---- */
+
+.mq-noteref {
+  font-size: 0.75em;
+  opacity: 0.8;
+}
+
+.mq-notes {
+  margin: 0.25rem 0 1rem;
+}
+
+.mq-note {
+  margin: 0.15rem 0;
+  font-size: 0.85em;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.mq-note-num {
+  font-style: normal;
+  font-size: 0.75em;
+  vertical-align: super;
+  margin-right: 0.3em;
+  opacity: 0.8;
+}
+
+/* ---- effects: best-effort CSS motion. The old web's mistake was never
+ * marquee; it was marquee without an exit — the exit is the media query. */
+
+.mq-marquee {
+  /* width pinned to the container: an inline-block would shrink-to-fit the
+   * text, leaving a scroll window only as wide as the words (the inner
+   * strip's percentage padding is circular during intrinsic sizing and
+   * resolves to 0). Full-bleed is what marquee means. */
+  display: inline-block;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.mq-marquee-inner {
+  display: inline-block;
+  padding-left: 100%;
+}
+
+.mq-bounce,
+.mq-jitter,
+.mq-wave {
+  display: inline-block;
+}
+
+.mq-rainbow {
+  color: #ff004c;
+}
+
+/* by=letter / by=word: units carry the animation, phase-shifted per unit */
+
+.mq-split .mq-l {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mq-rainbow.mq-split,
+  .mq-bounce.mq-split,
+  .mq-jitter.mq-split,
+  .mq-wave.mq-split {
+    animation: none;
+  }
+
+  .mq-rainbow.mq-split .mq-l {
+    animation: mq-rainbow 3s linear infinite;
+    animation-delay: calc(var(--mq-o, 0) * -3s);
+  }
+
+  .mq-bounce.mq-split .mq-l {
+    animation: mq-bounce 0.6s ease-in-out infinite alternate;
+    animation-delay: calc(var(--mq-o, 0) * -1.2s);
+  }
+
+  .mq-jitter.mq-split .mq-l {
+    animation: mq-jitter 0.18s steps(2) infinite;
+    animation-delay: calc(var(--mq-o, 0) * -0.18s);
+  }
+
+  .mq-wave.mq-split .mq-l {
+    animation: mq-wave 1.4s ease-in-out infinite;
+    animation-delay: calc(var(--mq-o, 0) * -1.4s);
+  }
+
+  .mq-marquee-inner {
+    animation: mq-marquee calc(16s / max(var(--mq-speed, 1), 1)) linear infinite;
+  }
+
+  .mq-marquee[data-direction="right"] .mq-marquee-inner {
+    animation-direction: reverse;
+  }
+
+  .mq-blink {
+    animation: mq-blink calc(1.2s / max(var(--mq-rate, 1), 1)) step-end infinite;
+  }
+
+  .mq-rainbow {
+    animation: mq-rainbow 3s linear infinite;
+  }
+
+  .mq-bounce {
+    animation: mq-bounce 0.6s ease-in-out infinite alternate;
+  }
+
+  .mq-jitter {
+    animation: mq-jitter 0.18s steps(2) infinite;
+  }
+
+  .mq-wave {
+    animation: mq-wave 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes mq-marquee {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes mq-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes mq-rainbow {
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
+
+@keyframes mq-bounce {
+  to {
+    transform: translateY(-0.25em);
+  }
+}
+
+@keyframes mq-jitter {
+  25% {
+    transform: translate(0.05em, -0.05em);
+  }
+  75% {
+    transform: translate(-0.05em, 0.05em);
+  }
+}
+
+@keyframes mq-wave {
+  25% {
+    transform: rotate(1.5deg) translateY(-0.08em);
+  }
+  75% {
+    transform: rotate(-1.5deg) translateY(0.08em);
+  }
+}
+
+/* .mq-typewriter ships no motion: letter-by-letter reveal needs JS (the
+ * interactive renderer); here it is its full static text, per contract. */
+
+/* ---- layouts: picked, not authored ---- */
+
+.mq-page {
+  /* breathing room INSIDE the painted background; the page background
+   * itself runs full-bleed (the embedder's shell handles body margin) */
+  padding: 1rem clamp(1rem, 4vw, 2rem);
+}
+
+.mq-layout-nav-footer,
+.mq-layout-two-column-nav-footer,
+.mq-layout-three-column-nav-footer {
+  display: grid;
+  gap: 1rem;
+}
+
+.mq-layout-nav-footer {
+  grid-template-areas: "nav" "main" "footer";
+}
+
+.mq-layout-two-column-nav-footer {
+  grid-template-areas:
+    "nav nav"
+    "main right"
+    "footer footer";
+  grid-template-columns: 1fr minmax(10rem, 16rem);
+}
+
+.mq-layout-three-column-nav-footer {
+  grid-template-areas:
+    "nav nav nav"
+    "left main right"
+    "footer footer footer";
+  grid-template-columns: minmax(8rem, 12rem) 1fr minmax(8rem, 12rem);
+}
+
+.mq-section[data-slot="nav"] { grid-area: nav; }
+.mq-section[data-slot="main"] { grid-area: main; }
+.mq-section[data-slot="left"] { grid-area: left; }
+.mq-section[data-slot="right"] { grid-area: right; }
+.mq-section[data-slot="footer"] { grid-area: footer; }
+
+@media (max-width: 48rem) {
+  .mq-layout-two-column-nav-footer,
+  .mq-layout-three-column-nav-footer {
+    grid-template-areas: "nav" "main" "left" "right" "footer";
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- schemes: named knob bundles (grown from the corpus) ---- */
+
+/* a schemed section paints its own background: give the text room inside
+ * (scoped to <section> so a schemed page keeps its own padding rule) */
+section[class*="mq-scheme-"] {
+  padding: 0.75rem 1rem;
+}
+
+.mq-scheme-noir {
+  --mq-bg: #101014;
+  --mq-color: #e8e8ee;
+  background: var(--mq-bg);
+  color: var(--mq-color);
+}
+
+.mq-scheme-noir a {
+  color: #9ecbff;
+}
+
+.mq-scheme-terminal {
+  --mq-bg: #0a0f0a;
+  --mq-color: #33ff66;
+  background: var(--mq-bg);
+  color: var(--mq-color);
+  font-family: ui-monospace, "Cascadia Mono", "JetBrains Mono", monospace;
+}
+
+.mq-scheme-terminal a {
+  color: #66ffcc;
+}
+
+.mq-scheme-parchment {
+  --mq-bg: #f4e8d0;
+  --mq-color: #3a2f1b;
+  background: var(--mq-bg);
+  color: var(--mq-color);
+  font-family: Georgia, "Iowan Old Style", serif;
+}
+
+.mq-scheme-parchment a {
+  color: #7a4a12;
+}
+
+.mq-scheme-hotdog-stand {
+  --mq-bg: #c41e1e;
+  --mq-color: #ffe900;
+  background: var(--mq-bg);
+  color: var(--mq-color);
+}
+
+.mq-scheme-hotdog-stand a {
+  color: #ffffff;
+}

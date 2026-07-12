@@ -61,11 +61,31 @@ ${lines.join("\n")}
 
 writeFileSync(fileURLToPath(new URL("../src/standard.ts", import.meta.url)), out);
 
+// The Rust omnibus embeds the same table (lockstep test pins equality) -
+// one download, both spellings.
+const rustLines = [...table.entries()]
+  .sort(([a], [b]) => (a < b ? -1 : 1))
+  .map(([slug, emoji]) => `    (${JSON.stringify(slug)}, ${JSON.stringify(emoji)}),`);
+writeFileSync(
+  fileURLToPath(new URL("../../../rust/markup/src/emoji_standard.rs", import.meta.url)),
+  `// GENERATED from gemoji's database by ts/marquee-emoji/scripts/
+// fetch-standard.ts (npm run fetch-standard there regenerates both
+// spellings). Data: github/gemoji (MIT; see GEMOJI-LICENSE). Do not edit
+// by hand. ${table.size} shortcodes, sorted by slug (binary-searchable).
+
+pub static STANDARD: &[(&str, &str)] = &[
+${rustLines.join("\n")}
+];
+`,
+);
+
 const license = await fetch(LICENSE_URL);
 if (license.ok) {
+  const text = await license.text();
+  writeFileSync(fileURLToPath(new URL("../GEMOJI-LICENSE", import.meta.url)), text);
   writeFileSync(
-    fileURLToPath(new URL("../GEMOJI-LICENSE", import.meta.url)),
-    await license.text(),
+    fileURLToPath(new URL("../../../rust/markup/GEMOJI-LICENSE", import.meta.url)),
+    text,
   );
 }
 

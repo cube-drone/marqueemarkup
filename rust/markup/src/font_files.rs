@@ -1,0 +1,37 @@
+// GENERATED from assets/fonts/ - do not edit by hand (regenerate with the
+// repo script that copies ts/marquee-fonts/fonts in; a lockstep test pins
+// byte equality). 31 faces, sorted by token.
+
+pub static FONT_FILES: &[(&str, &[u8])] = &[
+    ("atkinson-hyperlegible", include_bytes!("../assets/fonts/atkinson-hyperlegible.woff2")),
+    ("audiowide", include_bytes!("../assets/fonts/audiowide.woff2")),
+    ("bitcount", include_bytes!("../assets/fonts/bitcount.woff2")),
+    ("bungee", include_bytes!("../assets/fonts/bungee.woff2")),
+    ("caveat", include_bytes!("../assets/fonts/caveat.woff2")),
+    ("comic-neue", include_bytes!("../assets/fonts/comic-neue.woff2")),
+    ("cormorant", include_bytes!("../assets/fonts/cormorant.woff2")),
+    ("creepster", include_bytes!("../assets/fonts/creepster.woff2")),
+    ("fredericka", include_bytes!("../assets/fonts/fredericka.woff2")),
+    ("henny-penny", include_bytes!("../assets/fonts/henny-penny.woff2")),
+    ("im-fell-english", include_bytes!("../assets/fonts/im-fell-english.woff2")),
+    ("jetbrains-mono", include_bytes!("../assets/fonts/jetbrains-mono.woff2")),
+    ("kablammo", include_bytes!("../assets/fonts/kablammo.woff2")),
+    ("lexend", include_bytes!("../assets/fonts/lexend.woff2")),
+    ("lobster", include_bytes!("../assets/fonts/lobster.woff2")),
+    ("major-mono", include_bytes!("../assets/fonts/major-mono.woff2")),
+    ("monoton", include_bytes!("../assets/fonts/monoton.woff2")),
+    ("oi", include_bytes!("../assets/fonts/oi.woff2")),
+    ("orbitron", include_bytes!("../assets/fonts/orbitron.woff2")),
+    ("pacifico", include_bytes!("../assets/fonts/pacifico.woff2")),
+    ("playfair-display", include_bytes!("../assets/fonts/playfair-display.woff2")),
+    ("press-start", include_bytes!("../assets/fonts/press-start.woff2")),
+    ("quicksand", include_bytes!("../assets/fonts/quicksand.woff2")),
+    ("radio-canada", include_bytes!("../assets/fonts/radio-canada.woff2")),
+    ("rye", include_bytes!("../assets/fonts/rye.woff2")),
+    ("silkscreen", include_bytes!("../assets/fonts/silkscreen.woff2")),
+    ("special-elite", include_bytes!("../assets/fonts/special-elite.woff2")),
+    ("uncial-antiqua", include_bytes!("../assets/fonts/uncial-antiqua.woff2")),
+    ("unifraktur", include_bytes!("../assets/fonts/unifraktur.woff2")),
+    ("vt323", include_bytes!("../assets/fonts/vt323.woff2")),
+    ("zilla-slab", include_bytes!("../assets/fonts/zilla-slab.woff2")),
+];

@@ -50,6 +50,7 @@ reference implementations would not be.
    ```
    (cd rust/parser && cargo publish)      # cube-drone-marquee-parser
    (cd rust/html_renderer && cargo publish)   # cube-drone-marquee-html-renderer
+   (cd rust/markup && cargo publish)      # cube-drone-marquee-markup (the omnibus + CLI)
    ```
 
 Notes:

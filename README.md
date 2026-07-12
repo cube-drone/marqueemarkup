@@ -181,6 +181,10 @@ anybody else. The TypeScript side is an npm workspace: `npm install` once at the
 - `rust/html_renderer/` — reference static HTML renderer, Rust: same class contract and Profile
   socket as the TypeScript renderer, its own behavioral suite and self-goldens
   (`cargo run --bin bless` re-blesses)
+- `rust/markup/` — **the batteries-included omnibus, Rust spelling**: `marquee()` → a complete
+  page, `build_site()` → a website, the `marquee` CLI (same flags as npm's), turbolink plugins,
+  with the stylesheet/fonts/emoji table *embedded* — lockstep tests pin the embedded copies to
+  the npm packages byte-for-byte
 - `ts/parser/` — reference parser, TypeScript (`npm test` runs the same vectors; `npm run check` typechecks)
 - `ts/html_renderer/` — reference static HTML renderer (fragment out, embedder policy via `Profile`;
   behavioral suite encodes the spec's renderer obligations, self-goldens catch regressions)

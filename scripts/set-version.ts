@@ -55,15 +55,16 @@ function setCargoVersion(path: string): void {
   // The [package] version: first `version = "..."` line.
   toml = toml.replace(/^version = "[^"]*"$/m, `version = "${version}"`);
   // Path dependencies on sibling crates carry the lockstep version too
-  // (tolerant of dependency-renaming: `package = "..."` may precede path).
+  // (tolerant of dependency-renaming: `package = "..."` may precede path;
+  // global flag: the omnibus crate has two such lines).
   toml = toml.replace(
-    /^(marquee-[a-z-]+ = \{[^\n]*version = ")[^"]*("[^\n]*)$/m,
+    /^(marquee-[a-z-]+ = \{[^\n]*version = ")[^"]*("[^\n]*)$/gm,
     `$1${version}$2`,
   );
   writeFileSync(path, toml);
 }
 
-for (const crate of ["rust/parser", "rust/html_renderer"]) {
+for (const crate of ["rust/parser", "rust/html_renderer", "rust/markup"]) {
   setCargoVersion(`${root}/${crate}/Cargo.toml`);
   changed.push(`${crate}/Cargo.toml`);
 }
