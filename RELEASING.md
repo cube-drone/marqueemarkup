@@ -1,22 +1,21 @@
 # Releasing
 
-**Policy: lockstep.** Every publishable artifact — all npm packages and both crates — carries
-the same version, and every release publishes all of them, changed or not.
-
-Why: the spec, the vectors, and the implementations are one conformance unit (see README),
-and the vectors are shared state across every package *and both registries*. Lockstep makes
-cross-registry agreement a tautology: `@cube-drone/marquee-parser@0.4.0` and the
-`marquee-parser 0.4.0` crate passed the same corpus, by definition of the number. The cost —
-occasionally republishing an unchanged package — is mild and honest; version skew between
-reference implementations would not be.
 
 ## The flow: one flick of the wrist
 
+### The First Time (To Establish Packages)
 ```
 cp publish.env.example publish.env    # once: fill in the tokens (the file
                                       # explains how to mint each one)
 npm run release                       # prompts micro/minor/major, does the rest
 ```
+
+### Every Subsequent Time (Once You Have )
+
+```
+npm run release -- --tag-only 
+```
+
 
 `npm run release` runs the whole ceremony: release-check → set-version →
 release commit + git tag → every npm publish in dependency order → every
@@ -40,6 +39,18 @@ permanent, token-free flow:
    which re-runs the gate and publishes everywhere via per-run OIDC
    credentials — no stored secrets, npm provenance attestations included.
    Re-running the workflow is always safe (same skip-if-published checks).
+
+## Lockstep
+
+**Policy: lockstep.** Every publishable artifact — all npm packages and both crates — carries
+the same version, and every release publishes all of them, changed or not.
+
+Why: the spec, the vectors, and the implementations are one conformance unit (see README),
+and the vectors are shared state across every package *and both registries*. Lockstep makes
+cross-registry agreement a tautology: `@cube-drone/marquee-parser@0.4.0` and the
+`marquee-parser 0.4.0` crate passed the same corpus, by definition of the number. The cost —
+occasionally republishing an unchanged package — is mild and honest; version skew between
+reference implementations would not be.
 
 ## What it does, step by step (the manual fallback)
 
@@ -96,3 +107,4 @@ Notes:
   flag if it should ever be installable.
 - Vectors and the spec are CC0 and travel with the repo, not the packages; the version tag is
   the pointer that says which corpus a release passed.
+

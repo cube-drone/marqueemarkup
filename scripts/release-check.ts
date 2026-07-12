@@ -47,9 +47,12 @@ step(
   `${root}/rust/markup`,
 );
 // The crate-side packaging check (the analog of the npm pack-smoke below).
-// Only the parser: `cargo package` for the renderer and the omnibus
-// verifies their registry dependencies exist on crates.io, which is only
-// true after first publish - add them here once the parser ships.
+// PERMANENTLY only the parser, not "until first publish": under lockstep,
+// `cargo package` for the renderer/omnibus verifies against their deps'
+// NEW version on crates.io, which never exists at gate time (the gate runs
+// before the publishes, including in the release workflow). Their real
+// packaging verification happens inside `cargo publish` itself, which runs
+// in dependency order after each dep's new version is live.
 step("rust: cargo package (parser)", "cargo package --quiet", `${root}/rust/parser`);
 step(
   "differential fuzz (10k documents, seed 0)",
