@@ -462,12 +462,19 @@ Pratchett/Adams/Tufte margin aside, which every markdown ecosystem reinvents as 
 blessed vocabulary here. The span's body is the aside (rich inline content); it attaches at its
 position in the flow. The reference treatment is a sequentially numbered mark at the trigger
 with the note rendered just below the triggering paragraph - part of regular flow, where the
-reader actually is (nobody scrolls to end-of-document footnotes, and margin floats orphan
+reader actually is (most people don't bother to scroll to end-of-document footnotes, and margin floats orphan
 their triggers and reflow ugly). A gutter margin note or tap-to-expand are equally conforming
 where a renderer has the room or the runtime; it degrades - never hidden - to an inline
 parenthetical. No
 grammar change: it is a `span{name: "sidenote"}` like any other, just one the spec defines rather
-than the embedder. (Godot's RichTextLabel speaks BBCode with
+than the embedder. **`aside` and `footnote` are permanent synonyms for `sidenote`** - the
+list-marker rule, one layer up: the author often forgets which one is which, and an
+aside that silently isn't an aside (the unknown-vocabulary shrug) is worse than two extra
+names. *Permanent* is the load-bearing word: the synonymy is a spec promise that these names
+will never diverge into distinct constructs, so aliasing them is safe rather than a fork in
+waiting. (Unlike list markers, the choice is not canonicalized away - the parser is
+vocabulary-blind, so the AST records whichever name was typed; renderers treat all three
+identically. `sidenote` is the canonical spelling in documentation.) (Godot's RichTextLabel speaks BBCode with
 effect tags natively; a game-engine Marquee renderer for RPG dialogue is an intended
 embedder, and the effect set is chosen with it in mind.) The vocabulary is meant
 to *grow* - the early web's charm was people experimenting with a widening typographic palette,

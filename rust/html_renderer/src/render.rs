@@ -535,7 +535,8 @@ fn span(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
             }
             None => inner, // not on the list: words in their own clothes
         },
-        "sidenote" => {
+        // Permanent synonyms (SPEC.md): the list-marker rule, one layer up.
+        "sidenote" | "aside" | "footnote" => {
             // A numbered mark in the flow; the note flushes just below the
             // triggering paragraph (see flush_notes).
             ctx.note_n += 1;

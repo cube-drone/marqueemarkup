@@ -263,6 +263,12 @@ test("asides: numbered marks, notes flush below the triggering block", () => {
   assert.ok(html.includes('<span class="mq-note-num">2</span>note two'));
   const heading = renderMarquee("# Title[sidenote]on a heading[/sidenote]\n");
   assert.ok(heading.includes("</h1><aside"), "headings flush their notes too");
+  const synonyms = renderMarquee("a[aside]one[/aside] b[footnote]two[/footnote]\n");
+  assert.equal(
+    (synonyms.match(/mq-noteref/g) ?? []).length,
+    2,
+    "aside and footnote are permanent synonyms for sidenote",
+  );
 });
 
 test("unknown span shrugs but children survive styled context", () => {

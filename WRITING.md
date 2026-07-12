@@ -173,7 +173,7 @@ fun lives.
 | `[teeny]` `[tiny]` `[huge]` `[enormous]` | named rungs of that dial (1, 2, 6, 7) — unnecessary given the numbers, and yet |
 | `[font=orbitron]...[/font]` | a typeface from the closed list below (also a knob on pages and sections: `:::section font=vt323`) |
 | `[color=goldenrod]shiny[/color]` | colored text — a CSS color name or hex (`#f06`, `#ff0066`) |
-| `[sidenote]a witty aside[/sidenote]` | an aside: a numbered mark at the spot, the note itself set small and italic just below the paragraph |
+| `[sidenote]a witty aside[/sidenote]` | an aside: a numbered mark at the spot, the note itself set small and italic just below the paragraph. `[aside]` and `[footnote]` mean exactly the same thing — grab whichever word your fingers find |
 
 **The font list** — a closed menu, picked not uploaded, so every page renders everywhere.
 Four standard stacks: `sans`, `serif`, `mono`, `comic`. And the grab bag (freely-licensed

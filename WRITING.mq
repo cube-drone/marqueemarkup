@@ -218,7 +218,9 @@ are just text, and 3:30 is just a time.
 ```marquee
 E = mc[sup]2[/sup], H[sub]2[/sub]O, [small]the fine print[/small], colors by
 [color=goldenrod]name[/color] or [color=#f06]hex[/color], and
-asides[sidenote]like this one[/sidenote] that never interrupt the sentence.
+asides[sidenote]like this one[/sidenote] that never interrupt the sentence
+(and [footnote]this[/footnote] and [aside]this[/aside] are the same tag —
+sidenote, aside, footnote: whichever word your fingers find).
 
 The size dial goes [size=1]one[/size] [size=2]two[/size] [size=3]three[/size]
 [size=4]four[/size] [size=5]five[/size] [size=6]six[/size] [size=7]SEVEN[/size],
@@ -238,7 +240,8 @@ E = mc[sup]2[/sup], H[sub]2[/sub]O, [small]the fine print[/small], colors by
 [color=goldenrod]name[/color] or [color=#f06]hex[/color], and
 asides[sidenote]like this one — a numbered mark where it happened, the note set just below the
 paragraph, sequentially numbered through the whole document[/sidenote] that never interrupt
-the sentence.
+the sentence (and [footnote]this[/footnote] and [aside]this[/aside] are the same tag —
+sidenote, aside, footnote: whichever word your fingers find).
 
 The size dial goes [size=1]one[/size] [size=2]two[/size] [size=3]three[/size]
 [size=4]four[/size] [size=5]five[/size] [size=6]six[/size] [size=7]SEVEN[/size],

@@ -235,6 +235,13 @@ fn headings_seven_and_eight_are_aria_blocks() {
 }
 
 #[test]
+fn aside_and_footnote_are_sidenote_synonyms() {
+    let html = render_marquee("a[aside]one[/aside] b[footnote]two[/footnote]\n", &BareWebProfile).unwrap();
+    assert_eq!(html.matches("mq-noteref").count(), 2);
+    assert!(html.contains("<aside class=\"mq-notes\">"));
+}
+
+#[test]
 fn emoji_socket_text_image_and_literal() {
     use marquee_html_renderer::EmojiResolution;
     struct Table;

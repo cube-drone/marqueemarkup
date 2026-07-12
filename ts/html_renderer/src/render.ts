@@ -455,7 +455,12 @@ function span(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string {
       }
       return inner; // invalid value: the effect degrades, the words survive
     }
-    case "sidenote": {
+    case "sidenote":
+    case "aside":
+    case "footnote": {
+      // Permanent synonyms (SPEC.md): nobody keeps these three words
+      // distinct in their head, and an aside that silently isn't an aside
+      // is worse than two extra names - the list-marker rule, one layer up.
       // A numbered mark in the flow; the note itself flushes just below the
       // triggering paragraph (see flushNotes). Numbering runs sequentially
       // through the whole document.
