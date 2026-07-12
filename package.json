@@ -20,6 +20,7 @@
     "build": "npm run build --workspaces",
     "marquee": "node --conditions=marquee-src ts/marquee-markup/bin/marquee.ts",
     "set-version": "node scripts/set-version.ts",
-    "release-check": "node scripts/release-check.ts"
+    "release-check": "node scripts/release-check.ts",
+    "release": "node scripts/publish.ts"
   }
 }

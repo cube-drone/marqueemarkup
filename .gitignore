@@ -25,3 +25,6 @@ WRITING.html
 # npm workspaces
 node_modules/
 dist/
+
+# publish credentials (see publish.env.example)
+publish.env

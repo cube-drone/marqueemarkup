@@ -1,0 +1,56 @@
+# Tag-triggered release: pushing vX.Y.Z publishes everywhere via TRUSTED
+# PUBLISHING - short-lived OIDC credentials minted per run, no stored
+# tokens, npm provenance attestations for free.
+#
+# Prerequisite (one-time, after the first token-based release): configure
+# each npm package (npmjs.com -> package -> Settings -> Trusted Publisher:
+# this repo + this workflow file) and each crate (crates.io -> crate ->
+# Settings -> Trusted Publishing: same). Until a package is configured, its
+# publish here fails and the others continue - finish any stragglers with
+# the local token flow (`npm run release -- --skip-checks X.Y.Z`).
+#
+# The local `npm run release -- --tag-only` does gate/version/commit/tag/
+# push; the tag landing here does the uploads. scripts/publish.ts's
+# skip-if-published checks make re-running this workflow always safe.
+
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  id-token: write # OIDC for npm provenance + crates.io trusted publishing
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: "https://registry.npmjs.org"
+
+      - run: npm ci
+
+      # The same gate every push gets - a release tag is not exempt.
+      - run: |
+          (cd rust/parser && cargo clean -p cube-drone-marquee-parser) || true
+          (cd rust/html_renderer && cargo clean -p cube-drone-marquee-parser -p cube-drone-marquee-html-renderer) || true
+          (cd rust/markup && cargo clean -p cube-drone-marquee-parser -p cube-drone-marquee-html-renderer -p cube-drone-marquee-markup) || true
+      - run: npm run release-check
+
+      # crates.io trusted publishing: exchange this run's OIDC identity for
+      # a 30-minute registry token.
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: cargo-auth
+
+      - name: publish everywhere (idempotent; skips already-published versions)
+        run: node scripts/publish.ts --uploads-only "${GITHUB_REF_NAME#v}"
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.cargo-auth.outputs.token }}

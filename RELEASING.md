@@ -10,7 +10,38 @@ cross-registry agreement a tautology: `@cube-drone/marquee-parser@0.4.0` and the
 occasionally republishing an unchanged package — is mild and honest; version skew between
 reference implementations would not be.
 
-## The flow
+## The flow: one flick of the wrist
+
+```
+cp publish.env.example publish.env    # once: fill in the tokens (the file
+                                      # explains how to mint each one)
+npm run release                       # prompts micro/minor/major, does the rest
+```
+
+`npm run release` runs the whole ceremony: release-check → set-version →
+release commit + git tag → every npm publish in dependency order → every
+cargo publish in dependency order → offers to push. It's **safely
+rerunnable**: each publish checks the registry first and skips versions
+already there, so a run that dies halfway (network, expired token) resumes
+by running it again. `--dry-run` prints the plan without uploading or
+tagging; `--bump minor` / an explicit `0.2.0` skip the prompt;
+`--skip-checks` resumes without re-running the gate.
+
+**The token flow above is the bootstrap** (both registries require a
+package to exist before trusted publishing can be configured for it). The
+permanent, token-free flow:
+
+1. After the first release, configure **trusted publishing** for each npm
+   package (npmjs.com → package → Settings → Trusted Publisher → this repo,
+   `.github/workflows/release.yml`) and each crate (crates.io → crate →
+   Settings → Trusted Publishing → same), then **revoke the tokens**.
+2. From then on: `npm run release -- --tag-only` does the local half (gate,
+   version, commit, tag, push), and the pushed tag triggers `release.yml`,
+   which re-runs the gate and publishes everywhere via per-run OIDC
+   credentials — no stored secrets, npm provenance attestations included.
+   Re-running the workflow is always safe (same skip-if-published checks).
+
+## What it does, step by step (the manual fallback)
 
 1. **Pre-flight** (clean tree, both languages' full suites, a fuzz run):
 
@@ -19,14 +50,14 @@ reference implementations would not be.
    ```
 
 2. **Set the version everywhere** (root + all workspaces + internal `@cube-drone/*` ranges +
-   both Cargo.tomls + the crate path-dependency), then refresh the lockfile:
+   all three Cargo.tomls + the crate path-dependencies), then refresh the lockfile:
 
    ```
    npm run set-version -- X.Y.Z
    npm install
    ```
 
-3. **Commit and tag** (yours):
+3. **Commit and tag**:
 
    ```
    git commit -am "release: vX.Y.Z" && git tag vX.Y.Z && git push --tags
