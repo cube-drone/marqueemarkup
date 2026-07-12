@@ -489,8 +489,18 @@ function span(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string {
         return bySegments(name, attrs["by"], attrs["phase"], nodes, ctx);
       }
       return `<span class="mq-${name}">${inner}</span>`;
-    case "typewriter":
-      return `<span class="mq-${name}">${inner}</span>`;
+    case "typewriter": {
+      // Inherently per-unit: the reveal IS a by=letter effect (by=word for
+      // word-at-a-time). speed= is units per second; the container carries
+      // the per-unit delay step, each unit its ordinal in --mq-o.
+      const by = attrs["by"] === "word" ? "word" : "letter";
+      const speed =
+        attrs["speed"] !== undefined && COUNT.test(attrs["speed"]) && Number(attrs["speed"]) > 0
+          ? Number(attrs["speed"])
+          : 14;
+      const step = Math.round(1000 / speed) / 1000;
+      return bySegments(name, by, attrs["phase"], nodes, ctx, ` style="--mq-tw-step:${step}s"`);
+    }
   }
   return inner; // unknown span: pure shrug, children as plain content
 }
@@ -507,8 +517,12 @@ const SEGMENTERS = {
 
 type SplitBy = keyof typeof SEGMENTERS;
 
-/** DOM-weight discipline: past this many units, the run animates whole. */
+/** DOM-weight discipline: past this many units, the run animates whole.
+ * Loopers pay a live animation per element forever, so they cap low;
+ * typewriter's units are 1ms one-shots (finished animations cost nothing)
+ * and its natural material is long text, so it caps high. */
 const MAX_SPLIT_UNITS = 400;
+const MAX_TYPEWRITER_UNITS = 2000;
 
 type Phase = "ramp" | "scatter";
 
@@ -526,6 +540,7 @@ function bySegments(
   phaseAttr: string | undefined,
   nodes: Node[],
   ctx: Ctx,
+  containerStyle = "",
 ): string {
   // Each effect has a natural phase order (jitter scatters, the rest sweep);
   // the knob overrides it either way. Invalid values degrade to the default.
@@ -537,10 +552,11 @@ function bySegments(
         : "ramp";
   const state: SplitState = { effect, by, phase, i: 0, total: 0 };
   state.total = countUnits(nodes, by);
-  if (state.total === 0 || state.total > MAX_SPLIT_UNITS) {
+  const cap = effect === "typewriter" ? MAX_TYPEWRITER_UNITS : MAX_SPLIT_UNITS;
+  if (state.total === 0 || state.total > cap) {
     return `<span class="mq-${effect}">${children(nodes, ctx)}</span>`;
   }
-  return `<span class="mq-${effect} mq-split">${splitRender(nodes, ctx, state)}</span>`;
+  return `<span class="mq-${effect} mq-split"${containerStyle}>${splitRender(nodes, ctx, state)}</span>`;
 }
 
 /** A segment gets wrapped if it's animatable: for words, word-like segments
@@ -554,6 +570,19 @@ function isUnit(seg: Intl.SegmentData, by: SplitBy): boolean {
  * twice) in both phase orders: ramp sweeps, scatter scrambles by a fixed
  * integer hash - randomness-shaped, never random. */
 function unitOffset(state: SplitState): string {
+  // Typewriter offsets are sequential INTEGERS (the ordinal; delay = ordinal
+  // x step), unlike the cyclic 0..1 fractions the looping effects replay.
+  // phase=scatter reveals in a scrambled-but-deterministic order: a stride
+  // at the run's golden-ratio point, nudged coprime with the total, walks a
+  // well-spread permutation at EVERY length. (A fixed prime stride is a
+  // trap: 7919 mod 40 = 39 = -1, so forty-unit runs typed in backwards.)
+  if (state.effect === "typewriter") {
+    const o =
+      state.phase === "scatter"
+        ? (state.i * scatterStride(state.total)) % state.total
+        : state.i;
+    return String(o);
+  }
   let o: number;
   if (state.phase === "scatter") {
     o = ((state.i * 7919) % 101) / 101;
@@ -574,6 +603,20 @@ function unitOffset(state: SplitState): string {
     }
   }
   return String(Math.round(o * 1000) / 1000);
+}
+
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
+/** The smallest stride >= ~61.8% of total that's coprime with it (falls
+ * back to 1 for degenerate totals - a 1- or 2-unit "scramble" is fate). */
+function scatterStride(total: number): number {
+  let stride = Math.max(1, Math.round(total * 0.618));
+  while (stride < total && gcd(stride, total) !== 1) {
+    stride += 1;
+  }
+  return gcd(stride, total) === 1 ? stride : 1;
 }
 
 function countUnits(nodes: Node[], by: SplitBy): number {

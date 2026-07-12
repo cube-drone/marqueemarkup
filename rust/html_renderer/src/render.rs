@@ -567,12 +567,29 @@ fn span(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
         "rainbow" | "bounce" | "jitter" | "wave" => {
             match attrs.get("by").map(|s| s.as_str()) {
                 Some(by @ ("letter" | "word")) => {
-                    by_segments(name, by, attrs.get("phase").map(|s| s.as_str()), nodes, ctx)
+                    by_segments(name, by, attrs.get("phase").map(|s| s.as_str()), nodes, ctx, "")
                 }
                 _ => format!("<span class=\"mq-{name}\">{inner}</span>"),
             }
         }
-        "typewriter" => format!("<span class=\"mq-typewriter\">{inner}</span>"),
+        "typewriter" => {
+            // Inherently per-unit: the reveal IS a by=letter effect (by=word
+            // for word-at-a-time). speed= is units per second; the container
+            // carries the per-unit delay step, each unit its ordinal in --mq-o.
+            let by = match attrs.get("by").map(|s| s.as_str()) {
+                Some("word") => "word",
+                _ => "letter",
+            };
+            let speed: f64 = attrs
+                .get("speed")
+                .filter(|v| is_count(v))
+                .and_then(|v| v.parse::<f64>().ok())
+                .filter(|v| *v > 0.0)
+                .unwrap_or(14.0);
+            let step = (1000.0 / speed).round() / 1000.0;
+            let style = format!(" style=\"--mq-tw-step:{step}s\"");
+            by_segments(name, by, attrs.get("phase").map(|s| s.as_str()), nodes, ctx, &style)
+        }
         _ => inner, // unknown span: pure shrug, children as plain content
     }
 }
@@ -582,7 +599,33 @@ fn span(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
 // through a negative animation-delay. Segmentation is this renderer's own
 // (unicode-segmentation); per-renderer goldens, not cross-renderer bytes.
 
+/// Loopers pay a live animation per element forever, so they cap low;
+/// typewriter's units are 1ms one-shots and its natural material is long
+/// text, so it caps high.
 const MAX_SPLIT_UNITS: usize = 400;
+const MAX_TYPEWRITER_UNITS: usize = 2000;
+
+fn gcd(a: usize, b: usize) -> usize {
+    if b == 0 {
+        a
+    } else {
+        gcd(b, a % b)
+    }
+}
+
+/// The smallest stride >= ~61.8% of total that's coprime with it (falls
+/// back to 1 for degenerate totals).
+fn scatter_stride(total: usize) -> usize {
+    let mut stride = ((total as f64) * 0.618).round().max(1.0) as usize;
+    while stride < total && gcd(stride, total) != 1 {
+        stride += 1;
+    }
+    if gcd(stride, total) == 1 {
+        stride
+    } else {
+        1
+    }
+}
 
 struct SplitState<'s> {
     effect: &'s str,
@@ -598,6 +641,7 @@ fn by_segments(
     phase_attr: Option<&str>,
     nodes: &[Node],
     ctx: &mut Ctx,
+    container_style: &str,
 ) -> String {
     // Each effect has a natural phase order (jitter scatters, the rest
     // sweep); the knob overrides either way.
@@ -612,13 +656,14 @@ fn by_segments(
         }
     };
     let total = count_units(nodes, by);
-    if total == 0 || total > MAX_SPLIT_UNITS {
+    let cap = if effect == "typewriter" { MAX_TYPEWRITER_UNITS } else { MAX_SPLIT_UNITS };
+    if total == 0 || total > cap {
         let inner = children(nodes, ctx);
         return format!("<span class=\"mq-{effect}\">{inner}</span>");
     }
     let mut state = SplitState { effect, by, phase, i: 0, total };
     let inner = split_render(nodes, ctx, &mut state);
-    format!("<span class=\"mq-{effect} mq-split\">{inner}</span>")
+    format!("<span class=\"mq-{effect} mq-split\"{container_style}>{inner}</span>")
 }
 
 fn segments<'t>(text: &'t str, by: &str) -> Vec<&'t str> {
@@ -644,6 +689,19 @@ fn is_unit(segment: &str, by: &str) -> bool {
 /// twice) in both phase orders: ramp sweeps, scatter scrambles by a fixed
 /// integer hash - randomness-shaped, never random.
 fn unit_offset(state: &SplitState) -> String {
+    // Typewriter offsets are sequential INTEGERS (the ordinal; delay =
+    // ordinal x step), unlike the cyclic 0..1 fractions the looping effects
+    // replay. phase=scatter walks a golden-ratio-stride permutation - a
+    // fixed prime stride is a trap (7919 mod 40 = -1: forty-unit runs
+    // typed in backwards).
+    if state.effect == "typewriter" {
+        let o = if state.phase == "scatter" {
+            (state.i * scatter_stride(state.total)) % state.total
+        } else {
+            state.i
+        };
+        return o.to_string();
+    }
     let o: f64 = if state.phase == "scatter" {
         ((state.i * 7919) % 101) as f64 / 101.0
     } else {

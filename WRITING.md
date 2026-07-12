@@ -203,7 +203,7 @@ readable always, never blank.
 | `[bounce]...[/bounce]` | bounces | `by=letter/word`, `phase=scatter/ramp` |
 | `[jitter]...[/jitter]` | nervous energy | `by=letter/word`, `phase=scatter/ramp` |
 | `[wave]...[/wave]` | gentle undulation | `by=letter/word`, `phase=scatter/ramp` |
-| `[typewriter]...[/typewriter]` | types itself out (on clients with scripting; otherwise appears whole) | `speed=30` |
+| `[typewriter]...[/typewriter]` | types itself out, letter by letter — pure CSS, no scripting needed | `speed=30` (letters per second), `by=word` (word-at-a-time), `phase=scatter` (materialize in scrambled order) |
 
 `by=letter` gives each letter its own offset cycle — `[rainbow by=letter]` is the classic
 every-letter-its-own-hue gradient, `[wave by=letter]` a true undulating ripple. `by=word`
@@ -213,7 +213,7 @@ rippling shudders are both on the menu. Best at headline scale: every letter bec
 moving part.
 
 Effects nest freely — `[marquee][blink]still open at 3am[/blink][/marquee]` is not an edge
-case, it is the point. (Nesting is capped at 8 deep, which is already deeper than taste.)
+case, it is the point. (Nesting is capped at 16 deep, which is already deeper than taste.)
 
 An unclosed span, or a closer that doesn't match, renders as literal text — you'll see the
 `[blink]` on the page and know exactly what to fix. Unknown span names render their contents
@@ -460,6 +460,13 @@ Most of your habits transfer. The deliberate differences:
 Lists, quotes, and inline nesting cap at 16 levels; directive nesting at 8; URLs at 4096 bytes;
 attribute values at 2048 bytes; emoji shortcodes at 64 characters. Past a cap, content
 degrades to visible literal text — the same never-break rule as everywhere else.
+
+One renderer-side limit of the same flavor: per-letter effects (`by=letter`, `by=word`) wrap
+each unit in its own element, so runs are capped — 400 units for the looping effects (each
+unit animates forever; that's headline scale, on purpose), 2000 for `[typewriter]` (its
+letters animate once and go quiet, and long dramatic reveals are the whole point). Past the
+cap the run still renders and still animates — just as one piece instead of per-letter.
+Nothing is ever hidden or lost.
 
 ## Previewing your work
 

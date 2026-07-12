@@ -339,7 +339,7 @@ Nesting is the point: [marquee][blink]still open at 3am[/blink][/marquee]
 
 [blink]blink[/blink] · [rainbow]rainbow[/rainbow] · [bounce]bounce[/bounce] ·
 [jitter]jitter[/jitter] · [wave]wave[/wave] ·
-[typewriter speed=30]typewriter (types itself out on scripted clients; appears whole here)[/typewriter]
+[typewriter speed=30]typewriter — it types itself out, letter by letter, in pure CSS[/typewriter]
 
 Nesting is the point: [marquee][blink]still open at 3am[/blink][/marquee]
 
@@ -644,9 +644,11 @@ and immediately regret it:
 # [marquee][blink][wave][bounce][jitter][typewriter][rainbow by=letter phase=scatter]**WELCOME TO MY HOMEPAGE**[/rainbow][/typewriter][/jitter][/bounce][/wave][/blink][/marquee]
 :::
 
-(The typewriter is in there too, dormant, waiting for a scripted client. And if your
-reduced-motion setting is on, the abomination is a perfectly still green-on-black heading —
-the exit is contractual, even from this.)
+(The typewriter is in there too — but its content is a whole nested effect rather than bare
+letters, so it sits this one out: the per-letter machinery splits text, not other spans. On
+its own it types in pure CSS now; see the effects section. And if your reduced-motion
+setting is on, the abomination is a perfectly still green-on-black heading — the exit is
+contractual, even from this.)
 
 ---
 

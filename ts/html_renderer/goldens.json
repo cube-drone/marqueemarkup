@@ -353,7 +353,7 @@
   },
   {
     "name": "spans/attribute",
-    "html": "<div class=\"mq-doc\"><p><span class=\"mq-typewriter\">slow reveal</span></p></div>"
+    "html": "<div class=\"mq-doc\"><p><span class=\"mq-typewriter mq-split\" style=\"--mq-tw-step:0.033s\"><span class=\"mq-l\" style=\"--mq-o:0\">s</span><span class=\"mq-l\" style=\"--mq-o:1\">l</span><span class=\"mq-l\" style=\"--mq-o:2\">o</span><span class=\"mq-l\" style=\"--mq-o:3\">w</span> <span class=\"mq-l\" style=\"--mq-o:4\">r</span><span class=\"mq-l\" style=\"--mq-o:5\">e</span><span class=\"mq-l\" style=\"--mq-o:6\">v</span><span class=\"mq-l\" style=\"--mq-o:7\">e</span><span class=\"mq-l\" style=\"--mq-o:8\">a</span><span class=\"mq-l\" style=\"--mq-o:9\">l</span></span></p></div>"
   },
   {
     "name": "tables/basic-with-header-row",

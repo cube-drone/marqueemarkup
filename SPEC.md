@@ -494,6 +494,11 @@ canvas - the "yet" is real, the CSS swamp stays drained.
    never marquee; it was marquee without an exit.
 4. A renderer that doesn't implement an effect renders the text unstyled - degradation is
    always to plain, readable content.
+5. **A reveal effect may never hold text hostage.** Anything that starts hidden (typewriter's
+   letter-by-letter reveal) must arrange the hiding so that wherever its animation doesn't run
+   (reduced motion, print, an incapable client), the content is simply visible - in CSS terms,
+   the hiding lives in the animation's own keyframes, never in base styles. The failure mode
+   of a reveal is "no effect", never "no words".
 
 ### Media: one embed, kind resolved at render
 

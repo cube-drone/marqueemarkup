@@ -334,6 +334,16 @@ big {
     animation-delay: calc(var(--mq-o, 0) * -1.4s);
   }
 
+  /* Typewriter: each unit pops in at ordinal x step (--mq-o is the
+     sequential integer here, not the loopers' 0..1 fraction). The hiding
+     lives ONLY in this animation - fill-mode holds the from-frame through
+     the delay - so wherever animations don't run (reduced motion, print,
+     old browsers) the text is simply visible. Never a hostage situation. */
+  .mq-typewriter.mq-split .mq-l {
+    animation: mq-tw-in 1ms steps(1, end) both;
+    animation-delay: calc(var(--mq-o, 0) * var(--mq-tw-step, 0.07s));
+  }
+
   .mq-marquee-inner {
     animation: mq-marquee calc(16s / max(var(--mq-speed, 1), 1)) linear infinite;
   }
@@ -405,8 +415,18 @@ big {
   }
 }
 
-/* .mq-typewriter ships no motion: letter-by-letter reveal needs JS (the
- * interactive renderer); here it is its full static text, per contract. */
+@keyframes mq-tw-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* (The typewriter's JS halves - start-on-visibility, tap-to-skip - still
+ * belong to the interactive renderer; this is the best-effort CSS reveal,
+ * same tier as every other effect.) */
 
 /* ---- layouts: picked, not authored ---- */
 

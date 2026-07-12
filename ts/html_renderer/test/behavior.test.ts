@@ -60,10 +60,14 @@ for (const file of readdirSync(vectorsDir).filter((f) => f.endsWith(".json")).so
       const html = render(ast);
       const got: Collected = { visible: [], comments: [], invalids: 0 };
       collect(ast, got);
+      // Never-eat is about CHARACTERS surviving, not element boundaries:
+      // per-unit effects (typewriter, by=letter) legitimately interleave
+      // markup between characters, so check the tag-stripped text.
+      const textOnly = html.replace(/<[^>]*>/g, "");
       for (const value of got.visible) {
         if (value !== "") {
           assert.ok(
-            html.includes(escapeText(value)),
+            textOnly.includes(escapeText(value)),
             `authored content eaten: ${JSON.stringify(value)}\nhtml: ${html}`,
           );
         }
@@ -207,6 +211,28 @@ test("background tiles: media policy applies, URLs are CSS-sanitized", () => {
   const token = sly.match(/--mq-bg-tile:url\('([^']*)'\)/);
   assert.ok(token !== null, "sly url still lands in exactly one url token");
   assert.ok(!/[()'"\\]/.test(token![1]!), "quotes, parens, backslashes never survive into it");
+});
+
+test("typewriter: per-letter reveal ordinals, speed knob, word mode, cap fallback", () => {
+  const html = renderMarquee("[typewriter speed=20]hi[/typewriter]\n");
+  assert.ok(html.includes('class="mq-typewriter mq-split" style="--mq-tw-step:0.05s"'));
+  assert.ok(html.includes('--mq-o:0') && html.includes('--mq-o:1'), "sequential integer ordinals");
+  const dflt = renderMarquee("[typewriter]hi[/typewriter]\n");
+  assert.ok(dflt.includes("--mq-tw-step:0.071s"), "invalid/absent speed: the default");
+  const words = renderMarquee("[typewriter by=word]two words[/typewriter]\n");
+  assert.equal((words.match(/mq-l/g) ?? []).length, 2, "by=word reveals word-at-a-time");
+  const long = renderMarquee(`[typewriter]${"x".repeat(500)}[/typewriter]\n`);
+  assert.ok(long.includes("mq-split"), "typewriter's cap is high: long text is the use case");
+  const past = renderMarquee(`[typewriter]${"x".repeat(2500)}[/typewriter]\n`);
+  assert.ok(!past.includes("mq-split"), "past 2000 units: whole and static, words first");
+  // scatter is a permutation of 0..total-1 and never a mirror: the fixed
+  // prime stride once typed 40-unit runs in backwards.
+  const scattered = renderMarquee(`[typewriter phase=scatter]${"ab ".repeat(20).trim()}[/typewriter]\n`);
+  const ordinals = [...scattered.matchAll(/--mq-o:(\d+)/g)].map((m) => Number(m[1]));
+  assert.equal(new Set(ordinals).size, ordinals.length, "a true permutation, no collisions");
+  const reversed = [...ordinals].every((o, i) => o === ordinals.length - 1 - i);
+  const ascending = [...ordinals].every((o, i) => o === i);
+  assert.ok(!reversed && !ascending, "scrambled, not a mirror or a no-op");
 });
 
 test("tables: paragraph-rows, [c] cells, header promotion, nothing eaten", () => {

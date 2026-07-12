@@ -9,6 +9,21 @@
 //!   4. Escaping: author bytes cannot become markup.
 
 use marquee_html_renderer::{escape_text, render, render_marquee, BareWebProfile};
+
+/// Drop every <...> tag, keeping the (escaped) text between them.
+fn strip_tags(html: &str) -> String {
+    let mut out = String::with_capacity(html.len());
+    let mut in_tag = false;
+    for c in html.chars() {
+        match c {
+            '<' => in_tag = true,
+            '>' => in_tag = false,
+            _ if !in_tag => out.push(c),
+            _ => {}
+        }
+    }
+    out
+}
 use marquee_parser::{parse, Node};
 use std::fs;
 use std::path::PathBuf;
@@ -75,8 +90,12 @@ fn obligations_over_the_vector_corpus() {
             let html = render(&doc, &BareWebProfile);
             let mut got = Collected::default();
             collect(&doc, &mut got);
+            // Never-eat is about CHARACTERS surviving, not element
+            // boundaries: per-unit effects (typewriter, by=letter)
+            // legitimately interleave markup, so check tag-stripped text.
+            let text_only = strip_tags(&html);
             for value in &got.visible {
-                if !value.is_empty() && !html.contains(&escape_text(value)) {
+                if !value.is_empty() && !text_only.contains(&escape_text(value)) {
                     failures.push(format!("{name}: authored content eaten: {value:?}"));
                 }
             }
