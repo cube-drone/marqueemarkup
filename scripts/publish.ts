@@ -214,7 +214,13 @@ if (!uploadsOnly) {
   } else {
     sh(`node scripts/set-version.ts ${version}`);
     sh("npm install --package-lock-only --no-fund --no-audit"); // lockfile follows the manifests
-    sh(`git add -A && git commit -m "release: ${tag}"`);
+    // First release: manifests may already carry the version (set-version
+    // is a no-op) - "nothing to commit" is fine, the tag goes on HEAD.
+    if (shQuiet("git status --porcelain") !== "") {
+      sh(`git add -A && git commit -m "release: ${tag}"`);
+    } else {
+      console.log("manifests already at this version - nothing to commit, tagging HEAD");
+    }
     sh(`git tag ${tag}`);
   }
 }
