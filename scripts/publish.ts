@@ -27,10 +27,11 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 
 // npm publish order: dependencies before dependents (RELEASING.md).
 const NPM_ORDER = [
-  "ts/parser",
+  "ts/marquee-parser",
   "ts/marquee-turbolink",
   "ts/marquee-css",
-  "ts/html_renderer",
+  "ts/marquee-html-renderer",
+  "ts/marquee-react-renderer",
   "ts/marquee-fonts",
   "ts/marquee-emoji",
   "ts/marquee-markup",

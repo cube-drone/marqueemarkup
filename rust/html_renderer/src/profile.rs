@@ -1,7 +1,7 @@
 //! Embedder profiles: the language defines meaning, the embedder defines
 //! policy. Every render-time capability decision routes through here; the
 //! renderer itself never fetches, never guesses trust, never widens a
-//! scheme allowlist. Rust spelling of ts/html_renderer's Profile: a trait
+//! scheme allowlist. Rust spelling of ts/marquee-html-renderer's Profile: a trait
 //! whose default methods ARE the bare-web profile.
 
 use marquee_parser::Attrs;

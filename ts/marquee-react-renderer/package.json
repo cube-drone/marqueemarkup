@@ -1,12 +1,12 @@
 {
-  "name": "@cube-drone/marquee-react",
+  "name": "@cube-drone/marquee-react-renderer",
   "version": "0.3.0",
   "description": "Interactive React renderer for the Marquee markup language: the JS halves of the animation contract (start-on-visible, tap-to-skip) plus source-position scroll sync for side-by-side editors",
   "license": "MPL-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cube-drone/marqueemarkup.git",
-    "directory": "ts/react_renderer"
+    "directory": "ts/marquee-react-renderer"
   },
   "type": "module",
   "engines": {

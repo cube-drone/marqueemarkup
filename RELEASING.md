@@ -86,6 +86,7 @@ reference implementations would not be.
    npm publish --workspace=@cube-drone/marquee-turbolink
    npm publish --workspace=@cube-drone/marquee-css
    npm publish --workspace=@cube-drone/marquee-html-renderer
+   npm publish --workspace=@cube-drone/marquee-react-renderer
    npm publish --workspace=@cube-drone/marquee-fonts
    npm publish --workspace=@cube-drone/marquee-emoji
    npm publish --workspace=@cube-drone/marquee-markup

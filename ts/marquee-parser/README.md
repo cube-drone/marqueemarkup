@@ -26,6 +26,16 @@ literals, resolved escapes) are covered but not subdivided. Built for CodeMirror
 decorations; deliberately outside the cross-implementation conformance corpus (see SPEC.md,
 "Source positions").
 
+Three sharp edges, all consequences of "a span is a *source* extent":
+
+- `slice(span) !== node.value` wherever the source is denser than the text — `a \*b\* c`
+  slices nine characters for a seven-character text node.
+- A construct that crosses a line inside a container **contains that container's prefix**:
+  in `> *a\n> b*`, the emphasis span slices `*a\n> b*`, `> ` and all. Range *marks* are fine;
+  a *replace* decoration over such a range would swallow the quote marker, so split
+  multi-line ranges per line before replacing.
+- Blank lines between blocks belong to no node: coverage has gaps, by design.
+
 You probably want [`@cube-drone/marquee-markup`](https://www.npmjs.com/package/@cube-drone/marquee-markup)
 (batteries included: parse + render + CLI) unless you're building a renderer or tool of your
 own — in which case the AST contract is specified in

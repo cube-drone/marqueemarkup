@@ -6,7 +6,7 @@
 //!     cargo run --release --bin diff_fuzz -- [--n 20000] [--seed 0] [--batch 2000]
 //!
 //! The Rust side parses in-process; the TypeScript side runs via
-//! ts/parser/scripts/ast.ts, so `node` must be on PATH. Exit code 0 = no
+//! ts/marquee-parser/scripts/ast.ts, so `node` must be on PATH. Exit code 0 = no
 //! divergence. On divergence, prints a minimized repro and writes the full
 //! input to target/diff_fuzz_failure.mq.
 
@@ -129,7 +129,7 @@ fn rust_result(doc: &str) -> serde_json::Value {
 }
 
 fn ts_results(inputs: &[String]) -> Vec<serde_json::Value> {
-    let script = manifest_relative("../../ts/parser/scripts/ast.ts");
+    let script = manifest_relative("../../ts/marquee-parser/scripts/ast.ts");
     let mut child = Command::new("node")
         .arg(&script)
         .stdin(Stdio::piped())

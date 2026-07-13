@@ -1,17 +1,17 @@
 <img src="https://raw.githubusercontent.com/cube-drone/marqueemarkup/main/marquee-logo.png" alt="Marquee Markup" width="96" align="right">
 
-# @cube-drone/marquee-react
+# @cube-drone/marquee-react-renderer
 
 The **interactive** renderer for [Marquee](https://github.com/cube-drone/marqueemarkup): a
 React component that renders Marquee source (or a parsed AST) into React elements — and adds
 the three things a string of HTML cannot do.
 
 ```
-npm install @cube-drone/marquee-react @cube-drone/marquee-css
+npm install @cube-drone/marquee-react-renderer @cube-drone/marquee-css
 ```
 
 ```tsx
-import { Marquee } from "@cube-drone/marquee-react";
+import { Marquee } from "@cube-drone/marquee-react-renderer";
 import "@cube-drone/marquee-css/marquee.css";
 
 <Marquee source="# hello [rainbow by=letter]world[/rainbow]" />

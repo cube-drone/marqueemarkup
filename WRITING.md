@@ -3,7 +3,7 @@
 Marquee is a markup language for pages, posts, notes, and messages: a little bit of markdown, a
 little bit of the dumb old internet, on purpose. This guide is for *writing* it. (If you're
 implementing it, you want [SPEC.md](SPEC.md); if you're wondering what a construct renders
-like, `ts/html_renderer` has a preview tool — see [Previewing your work](#previewing-your-work).)
+like, `ts/marquee-html-renderer` has a preview tool — see [Previewing your work](#previewing-your-work).)
 
 The one rule that shapes everything: **you cannot break the page.** Anything you type renders.
 If you get syntax wrong, the worst outcome is that your characters show up literally.
@@ -484,7 +484,7 @@ Nothing is ever hidden or lost.
 
 ## Previewing your work
 
-From `ts/html_renderer/` in this repository:
+From `ts/marquee-html-renderer/` in this repository:
 
 ```
 npm run preview -- path/to/your-file.mq > preview.html

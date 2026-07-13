@@ -223,9 +223,13 @@ Rust docs are [here](./rust/markup/README.md)
 - `rust/html_renderer/` - reference static HTML renderer, Rust: same class contract and Profile
   socket as the TypeScript renderer, its own behavioral suite and self-goldens
   (`cargo run --bin bless` re-blesses)
-- `ts/parser/` - reference parser, TypeScript (`npm test` runs the same vectors; `npm run check` typechecks)
-- `ts/html_renderer/` - reference static HTML renderer (fragment out, embedder policy via `Profile`;
+- `ts/marquee-parser/` - reference parser, TypeScript (`npm test` runs the same vectors; `npm run check` typechecks)
+- `ts/marquee-html-renderer/` - reference static HTML renderer (fragment out, embedder policy via `Profile`;
   behavioral suite encodes the spec's renderer obligations, self-goldens catch regressions)
+- `ts/marquee-react-renderer/` - the **interactive** renderer: a React component that does the things a
+  string of HTML can't - effects that start when scrolled into view, one-click skip, and
+  source-position scroll sync in both directions (for side-by-side editors). Same stylesheet,
+  same `Profile` socket, zero animation libraries: JS controls the CSS clock, it never animates
 - `ts/marquee-turbolink/` - pluggable turbolink rendering: link expanders as plugins (YouTube, Spotify, media,
   OpenGraph-fetch-ahead), composed by the embedder into `Profile.turbolink`; each plugin declares the
   CSS for the markup it emits, and `turbolinkStyles()` collects the composed chain's skins into one artifact
@@ -243,7 +247,7 @@ Rust docs are [here](./rust/markup/README.md)
 - differential fuzzer - `cargo run --release --bin diff_fuzz` (in `rust/parser/`, needs `node` on PATH):
   seeded generated documents through both parsers, identical ASTs demanded; fuzz: overwhelming.
 
-Renderers land beside the parsers as they come (`rust/html_renderer`, `ts/html_renderer`,
+Renderers land beside the parsers as they come (`rust/html_renderer`, `ts/marquee-html-renderer`,
 `ts/preact_interactive_renderer`, ...): one parser per language, many renderers, per the
 "parsers may never differ, renderers may" contract in the spec.
 

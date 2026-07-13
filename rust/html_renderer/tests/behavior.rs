@@ -1,5 +1,5 @@
 //! The behavioral suite: the spec's renderer obligations, ported from
-//! ts/html_renderer's behavior tests and run over the whole vector corpus.
+//! ts/marquee-html-renderer's behavior tests and run over the whole vector corpus.
 //! These are renderer-agnostic - passing them does NOT require matching the
 //! TypeScript renderer's bytes.
 //!

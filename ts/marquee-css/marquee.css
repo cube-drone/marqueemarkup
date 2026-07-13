@@ -512,6 +512,35 @@ big {
  * belong to the interactive renderer; this is the best-effort CSS reveal,
  * same tier as every other effect.) */
 
+/* ---- the interactive renderer's half of the animation contract.
+   Every rule here is inert without `.mq-js`, which only an interactive
+   renderer adds, and only AFTER mount - so a static page (or markup that
+   never hydrates) animates immediately, exactly as before. The hold exists
+   only where JavaScript is alive to release it: never a hostage situation.
+
+   `.mq-anim` marks an effect element; `[data-mq-play]` is the observer
+   saying "this one has been seen"; `[data-mq-skip]` on an ancestor is the
+   reader saying "enough" - which stills every effect and, because reveal
+   effects hide only inside their keyframes, shows all text whole. ---- */
+
+.mq-js .mq-anim,
+.mq-js .mq-anim .mq-l,
+.mq-js .mq-anim .mq-marquee-inner {
+  animation-play-state: paused;
+}
+
+.mq-js .mq-anim[data-mq-play],
+.mq-js .mq-anim[data-mq-play] .mq-l,
+.mq-js .mq-anim[data-mq-play] .mq-marquee-inner {
+  animation-play-state: running;
+}
+
+[data-mq-skip] .mq-anim,
+[data-mq-skip] .mq-anim .mq-l,
+[data-mq-skip] .mq-anim .mq-marquee-inner {
+  animation: none;
+}
+
 /* ---- layouts: picked, not authored ---- */
 
 .mq-page {

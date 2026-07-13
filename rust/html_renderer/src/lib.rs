@@ -1,6 +1,6 @@
 //! Reference static HTML renderer for the Marquee markup language (Rust).
 //!
-//! A faithful port of ts/html_renderer: same class contract (marquee.css),
+//! A faithful port of ts/marquee-html-renderer: same class contract (marquee.css),
 //! same Profile socket, same behavioral obligations. Output is NOT required
 //! to match the TypeScript renderer byte-for-byte - renderers may differ;
 //! the shared surface is the mq-* class vocabulary and the spec's renderer

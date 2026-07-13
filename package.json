@@ -5,13 +5,14 @@
   "description": "The Marquee markup language: spec, conformance vectors, and reference implementations",
   "type": "module",
   "workspaces": [
-    "ts/parser",
+    "ts/marquee-parser",
     "ts/marquee-turbolink",
     "ts/marquee-turbolink-example-plugin",
-    "ts/html_renderer",
+    "ts/marquee-html-renderer",
     "ts/marquee-css",
     "ts/marquee-fonts",
     "ts/marquee-emoji",
+    "ts/marquee-react-renderer",
     "ts/marquee-markup",
     "editors/vscode-marquee"
   ],
