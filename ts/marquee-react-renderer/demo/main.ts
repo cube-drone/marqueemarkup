@@ -61,23 +61,18 @@ function App(): ReactNode {
     if (handle === null || ta === null || echo.current) {
       return; // this selection came from the preview: don't bounce it back
     }
-    const node = handle.nodeAt(ta.selectionStart);
+    // NEAREST, not "containing": a cursor in the blank line between two
+    // paragraphs is contained only by the document, and centering *that*
+    // would be a trip to the middle of the tour.
     marked.current?.classList.remove("demo-cursor-node");
     marked.current = null;
-    if (node === null) {
+    const el = handle.elementNear(ta.selectionStart);
+    if (el === null) {
       return;
     }
     handle.scrollToSource(ta.selectionStart);
-    // Outline the nearest node that actually has an element on screen.
-    let el = handle.elementFor(node);
-    if (el === null) {
-      const parent = handle.nodeAt(ta.selectionStart);
-      el = parent === null ? null : handle.elementFor(parent);
-    }
-    if (el !== null) {
-      el.classList.add("demo-cursor-node");
-      marked.current = el;
-    }
+    el.classList.add("demo-cursor-node");
+    marked.current = el;
   };
 
   /** Preview click -> editor: put the cursor where that node came from. */

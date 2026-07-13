@@ -95,7 +95,9 @@ Reduced-motion is honored by the stylesheet, not by this component: under
 interface MarqueeHandle {
   root: HTMLElement | null;
   elementFor(node: Node): HTMLElement | null;
-  nodeAt(offset: number): Node | null;
+  elementNear(offset: number): HTMLElement | null;
+  nodeAt(offset: number): Node | null;    // deepest node CONTAINING the offset
+  nodeNear(offset: number): Node | null;  // deepest node at or NEAREST it
   scrollToNode(node: Node, options?: ScrollIntoViewOptions): boolean;
   scrollToSource(offset: number, options?: ScrollIntoViewOptions): boolean;
   skip(): void;
@@ -104,8 +106,25 @@ interface MarqueeHandle {
 ```
 
 `scrollToSource` centers by default (`block: "center"`), because the top edge of the viewport
-is not where a human looks. If the innermost node at that offset has no element of its own
-(inline text inside a split effect), it walks outward until it finds one that does.
+is not where a human looks.
+
+**`nodeAt` vs `nodeNear` matters more than it sounds like it does.** Containment has holes: a
+span covers a construct's source extent, and the blank line *between* two blocks belongs to
+no child — only to their container. So a cursor parked on a blank line is, strictly, inside
+nothing smaller than the container, and `nodeAt` correctly answers "the section" (or, between
+two top-level paragraphs, "the document"). Scrolling *there* centers the whole group, which
+feels like the preview lurching away for no reason.
+
+`nodeNear` is the editor-shaped answer: at each level it descends into the *nearest* child
+rather than stopping at the container, so a cursor in the gap finds the block beside it.
+`scrollToSource` and `elementNear` both use it. Both functions are also exported standalone
+(`nodeAt`, `nodeNear`) for hosts doing their own DOM work.
+
+One more thing bidirectional sync needs, learned the hard way: **guard the echo.** Moving the
+editor's cursor in response to `onNodeClick` will fire the editor's own selection event,
+which — if you wire it straight back to `scrollToSource` — re-centers the node the reader
+just clicked, yanking it out from under them. A click should move the editor and *leave the
+preview alone*. The demo shows the guard.
 
 ## Safety
 

@@ -8,6 +8,9 @@
 export { Marquee } from "./Marquee.ts";
 export type { MarqueeHandle, MarqueeProps } from "./Marquee.ts";
 export type { ReactHooks } from "./render.ts";
+// Locating a cursor in the tree - pure, and useful to any host doing its
+// own DOM work (the component uses exactly these).
+export { nodeAt, nodeNear } from "./locate.ts";
 
 // The toolbox underneath, re-exported: the same parser, the same Profile
 // socket, so an embedder's policy is written once and honored by both

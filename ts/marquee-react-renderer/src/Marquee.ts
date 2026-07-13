@@ -35,6 +35,7 @@ import {
 } from "@cube-drone/marquee-parser";
 import { bareWebProfile, type Profile } from "@cube-drone/marquee-html-renderer";
 import { ANIM_CLASS, renderNode, type Ctx, type ReactHooks } from "./render.ts";
+import { nodeAt as locateAt, nodeNear as locateNear } from "./locate.ts";
 
 /** SSR-safe: layout effects only exist in the browser. The `mq-js` hold is
  * applied here (before paint) rather than in the rendered markup, so a page
@@ -47,8 +48,18 @@ export interface MarqueeHandle {
   readonly root: HTMLElement | null;
   /** The DOM element a node rendered to, if it is currently mounted. */
   elementFor(node: Node): HTMLElement | null;
-  /** The deepest node whose source span contains this offset (needs `source`). */
+  /** The element `scrollToSource(offset)` would scroll to: the nearest node
+   * to that offset that actually has an element (text nodes render as
+   * strings, so they have none). Handy for highlighting it too. */
+  elementNear(offset: number): HTMLElement | null;
+  /** The deepest node whose source span CONTAINS this offset (needs
+   * `source`). Exact, with holes: a cursor in the blank line between two
+   * paragraphs is contained by nothing smaller than their container. */
   nodeAt(offset: number): Node | null;
+  /** The deepest node at or NEAREST this offset - the editor-shaped answer,
+   * and what `scrollToSource` uses. A cursor in the gap between two blocks
+   * finds the block beside it, not the container above it. */
+  nodeNear(offset: number): Node | null;
   /** Scroll a node into view. Returns false if it isn't mounted. */
   scrollToNode(node: Node, options?: ScrollIntoViewOptions): boolean;
   /** Scroll to whatever the editor's cursor is sitting in: the side-by-side
@@ -87,24 +98,6 @@ export interface MarqueeProps {
   /** Reverse sync: which node did the reader just click? Gives you the node
    * and its source span, so the editor can move its cursor there. */
   onNodeClick?: (node: Node, span: Span | null, event: React.MouseEvent) => void;
-}
-
-function findNodeAt(doc: Node, spans: WeakMap<Node, Span>, offset: number): Node | null {
-  let best: Node | null = null;
-  const walk = (node: Node): void => {
-    const span = spans.get(node);
-    if (span === undefined || offset < span.start || offset > span.end) {
-      return;
-    }
-    best = node; // deeper matches overwrite: the innermost wins
-    if ("children" in node) {
-      for (const child of node.children) {
-        walk(child);
-      }
-    }
-  };
-  walk(doc);
-  return best;
 }
 
 export const Marquee = forwardRef<MarqueeHandle, MarqueeProps>(function Marquee(props, ref) {
@@ -205,6 +198,29 @@ export const Marquee = forwardRef<MarqueeHandle, MarqueeProps>(function Marquee(
     return () => observer.disconnect();
   }, [parsed.doc, animate, generation]);
 
+  /** NEAREST, not "containing": a cursor in the whitespace between two
+   * blocks is contained only by their parent, and scrolling to the parent
+   * means scrolling to the middle of the whole group (or, on a blank line
+   * between top-level paragraphs, the middle of the whole document). Then
+   * walk out until something has an element: text nodes render as strings. */
+  const elementNear = useCallback(
+    (offset: number): HTMLElement | null => {
+      if (parsed.doc === null || parsed.spans === null) {
+        return null;
+      }
+      let node = locateNear(parsed.doc, parsed.spans, offset);
+      while (node !== null) {
+        const el = elements.get(node);
+        if (el !== undefined) {
+          return el;
+        }
+        node = parentOf(parsed.doc, node);
+      }
+      return null;
+    },
+    [parsed, elements],
+  );
+
   const skip = useCallback(() => setSkipped(true), []);
   const replay = useCallback(() => {
     setSkipped(false);
@@ -221,7 +237,11 @@ export const Marquee = forwardRef<MarqueeHandle, MarqueeProps>(function Marquee(
       nodeAt: (offset) =>
         parsed.doc === null || parsed.spans === null
           ? null
-          : findNodeAt(parsed.doc, parsed.spans, offset),
+          : locateAt(parsed.doc, parsed.spans, offset),
+      nodeNear: (offset) =>
+        parsed.doc === null || parsed.spans === null
+          ? null
+          : locateNear(parsed.doc, parsed.spans, offset),
       scrollToNode: (node, options) => {
         const el = elements.get(node);
         if (el === undefined) {
@@ -230,27 +250,19 @@ export const Marquee = forwardRef<MarqueeHandle, MarqueeProps>(function Marquee(
         el.scrollIntoView({ block: "center", behavior: "smooth", ...options });
         return true;
       },
+      elementNear: (offset) => elementNear(offset),
       scrollToSource: (offset, options) => {
-        if (parsed.doc === null || parsed.spans === null) {
+        const el = elementNear(offset);
+        if (el === null) {
           return false;
         }
-        // Walk out from the innermost node until something is on screen:
-        // inline nodes inside a split effect have no element of their own.
-        let node = findNodeAt(parsed.doc, parsed.spans, offset);
-        while (node !== null) {
-          const el = elements.get(node);
-          if (el !== undefined) {
-            el.scrollIntoView({ block: "center", behavior: "smooth", ...options });
-            return true;
-          }
-          node = parentOf(parsed.doc, node);
-        }
-        return false;
+        el.scrollIntoView({ block: "center", behavior: "smooth", ...options });
+        return true;
       },
       skip,
       replay,
     }),
-    [parsed, elements, skip, replay],
+    [parsed, elements, elementNear, skip, replay],
   );
 
   const handleClick = useCallback(
