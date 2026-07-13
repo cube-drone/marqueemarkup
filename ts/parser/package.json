@@ -1,6 +1,6 @@
 {
   "name": "@cube-drone/marquee-parser",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Reference parser for the Marquee markup language",
   "license": "MPL-2.0",
   "repository": {
