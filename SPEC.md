@@ -451,7 +451,10 @@ oscillation), `typewriter` (speed, by), `fadein` (speed, by); typographic - `sup
 enum, deliberately not a unit-bearing number), and the named rungs `teeny` (1), `tiny`
 (2), `huge` (6), `enormous` (7) - unnecessary given the dial, and yet; `color` (hex or
 palette token - the color model is settled in Styling); `font` (a name from the closed family
-enum - see Styling).
+enum - see Styling); `spoiler` (content withheld until a deliberate reveal - blurred and
+hover/focus-revealed in a static renderer, click-to-reveal in an interactive one; the content
+is always present in the AST and the DOM, never eaten, and degrades to plain visible text
+without a stylesheet).
 **`by=letter` / `by=word`** animates the run unit by unit with phase-offset cycles -
 sequential offsets for `rainbow`/`wave`/`bounce`/`blink` (the gradient / ripple / chase-light
 look), deterministically scattered for `jitter`; the default animates the run as one piece.

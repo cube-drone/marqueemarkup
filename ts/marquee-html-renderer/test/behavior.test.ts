@@ -253,6 +253,14 @@ test("alignment trio: center reborn, right for symmetry, left un-aligns", () => 
   assert.ok(html.includes('<div class="mq-right"><p>bye</p></div>'));
 });
 
+test("spoiler: content present and never eaten, just withheld", () => {
+  const html = renderMarquee("who dies? [spoiler]everyone[/spoiler] eventually\n");
+  assert.ok(html.includes('<span class="mq-spoiler" tabindex="0">everyone</span>'));
+  assert.ok(html.includes("everyone"), "the words are in the DOM, only visually blurred");
+  const rich = renderMarquee("[spoiler]the *twist* is [color=#f06]red[/color][/spoiler]\n");
+  assert.ok(rich.includes("<em>twist</em>") && rich.includes("mq-color"), "rich content inside");
+});
+
 test("tables: paragraph-rows, [c] cells, header promotion, nothing eaten", () => {
   const html = renderMarquee(
     ":::table header=row\n[c]dish[/c] [c]price[/c]\n\n[c]*Spaghetti*[/c] [c]$12[/c]\n:::\n",

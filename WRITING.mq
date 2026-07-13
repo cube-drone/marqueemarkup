@@ -232,6 +232,9 @@ and [big]big[/big] is [small]small[/small]'s mirror.
 When numbers feel cold, the rungs have names: [teeny]teeny[/teeny],
 [tiny]tiny[/tiny], [huge]huge[/huge], [enormous]ENORMOUS[/enormous].
 
+And a spoiler stays hidden until you ask: [spoiler]jesus dies at the end[/spoiler] —
+click to reveal it here, hover to peek at it in a plain HTML page.
+
 Fonts are picked from a closed list, never uploaded: [font=orbitron]SPACE STATION[/font],
 [font=vt323]terminal green[/font], [font=im-fell-english]ye olde booke[/font],
 [font=press-start]INSERT COIN[/font], [font=lobster]a fancy lobster[/font],
@@ -245,6 +248,9 @@ asides[sidenote]like this one — a numbered mark where it happened, the note se
 paragraph, sequentially numbered through the whole document[/sidenote] that never interrupt
 the sentence (and [footnote]this[/footnote] and [aside]this[/aside] are the same tag —
 sidenote, aside, footnote: whichever word your fingers find).
+
+And a spoiler stays hidden until you ask: [spoiler]jesus dies at the end[/spoiler] —
+click to reveal it here, hover to peek at it in a plain HTML page.
 
 The size dial goes [size=1]one[/size] [size=2]two[/size] [size=3]three[/size]
 [size=4]four[/size] [size=5]five[/size] [size=6]six[/size] [size=7]SEVEN[/size],

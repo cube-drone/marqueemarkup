@@ -514,6 +514,10 @@ fn span(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
         "sub" => format!("<sub>{inner}</sub>"),
         "small" => format!("<small>{inner}</small>"),
         "big" => format!("<big>{inner}</big>"), // obsolete and eternal
+        // Content present, never eaten - blurred, revealed on hover/focus
+        // (no JS to gate a click here); an interactive renderer makes the
+        // same class click-to-reveal. Degrades to a visible spoiler.
+        "spoiler" => format!("<span class=\"mq-spoiler\" tabindex=\"0\">{inner}</span>"),
         "size" => match attrs.get("size").map(|s| s.as_str()) {
             Some(v @ ("1" | "2" | "3" | "4" | "5" | "6" | "7")) => size_rung(v, &inner),
             _ => inner, // off the dial: the effect degrades, the words survive

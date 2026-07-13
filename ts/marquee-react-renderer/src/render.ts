@@ -10,7 +10,7 @@
 // author bytes only ever reach it as a target string, which the hook escapes.
 // Pass React-returning `hooks` instead to avoid the string path entirely.
 
-import { createElement as h, type ReactNode } from "react";
+import { createElement as h, useState, type KeyboardEvent, type ReactNode } from "react";
 import type { Attrs, Node, Span } from "@cube-drone/marquee-parser";
 import {
   FONTS,
@@ -255,6 +255,35 @@ export function renderNode(node: Node, ctx: Ctx, key: string): ReactNode {
   }
 }
 
+/** A spoiler that reveals on a deliberate click (or Enter/Space), and
+ * stays revealed. Keyboard- and screen-reader-accessible: it announces
+ * itself as an expandable button. The `rest` carries nodeProps (the
+ * register ref + source-position data attrs), so scroll sync still finds
+ * it. */
+function Spoiler({ children, ...rest }: { children?: ReactNode } & Record<string, unknown>): ReactNode {
+  const [revealed, setRevealed] = useState(false);
+  const reveal = (): void => setRevealed(true);
+  return h(
+    "span",
+    {
+      ...rest,
+      role: "button",
+      tabIndex: 0,
+      "aria-expanded": revealed,
+      "aria-label": revealed ? undefined : "spoiler, click to reveal",
+      "data-mq-revealed": revealed ? "" : undefined,
+      onClick: reveal,
+      onKeyDown: (e: KeyboardEvent<HTMLSpanElement>) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          reveal();
+        }
+      },
+    },
+    children,
+  );
+}
+
 function infoToken(info: string | undefined): string | null {
   if (info === undefined) {
     return null;
@@ -478,6 +507,11 @@ function span(node: Node & { type: "span" }, ctx: Ctx, key: string): ReactNode {
       return h("small", nodeProps(node, ctx, { key }), ...kids);
     case "big":
       return h("big", nodeProps(node, ctx, { key }), ...kids);
+    case "spoiler":
+      // Click-to-reveal (the static renderer can only blur-until-hover).
+      // Same mq-spoiler class; .mq-root in the shared CSS gates hover off
+      // and honors the data-mq-revealed this component sets on click.
+      return h(Spoiler, nodeProps(node, ctx, { key, className: "mq-spoiler" }), ...kids);
     case "size": {
       const value = attrs["size"];
       return value !== undefined && /^[1-7]$/.test(value)

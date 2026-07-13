@@ -433,6 +433,13 @@ function span(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string {
       return `<small>${inner}</small>`;
     case "big":
       return `<big>${inner}</big>`; // obsolete and eternal, like <font>
+    case "spoiler":
+      // The content is present and never eaten - just blurred, revealed on
+      // hover/focus (the static renderer has no JS to gate a click). An
+      // interactive renderer turns the same class into click-to-reveal.
+      // Degrades, like everything, to readable content: no stylesheet means
+      // a visible spoiler, which beats a hidden one.
+      return `<span class="mq-spoiler" tabindex="0">${inner}</span>`;
     case "size": {
       const value = attrs["size"];
       if (value !== undefined && /^[1-7]$/.test(value)) {

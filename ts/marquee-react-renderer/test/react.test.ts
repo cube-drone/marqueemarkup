@@ -40,6 +40,14 @@ test("typewriter is per-unit by nature; speed sets the step", () => {
   assert.ok(out.includes("--mq-tw-step:0.05s"));
 });
 
+test("spoiler: click-to-reveal button, content present, never eaten", () => {
+  const out = html({ source: "[spoiler]everyone[/spoiler]\n" });
+  assert.ok(out.includes('class="mq-spoiler"'), "the shared class");
+  assert.ok(out.includes('role="button"') && out.includes('aria-expanded="false"'), "accessible, gated");
+  assert.ok(out.includes("everyone"), "the words are present, just withheld by CSS");
+  assert.ok(!out.includes("data-mq-revealed"), "starts hidden");
+});
+
 test("never eat content: unknown vocabulary shrugs, children survive", () => {
   const out = html({ source: "[spiral]still here[/spiral]\n\n:::nonsense\ninside\n:::\n" });
   assert.ok(out.includes("still here"), "unknown span keeps its children");

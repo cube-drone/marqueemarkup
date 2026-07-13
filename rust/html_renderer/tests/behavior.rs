@@ -228,6 +228,13 @@ fn background_tiles_policy_and_sanitization() {
 }
 
 #[test]
+fn spoiler_withholds_but_never_eats() {
+    let html = render_marquee("who dies? [spoiler]everyone[/spoiler] eventually\n", &BareWebProfile).unwrap();
+    assert!(html.contains("<span class=\"mq-spoiler\" tabindex=\"0\">everyone</span>"));
+    assert!(html.contains("everyone"), "the words are in the DOM, only blurred");
+}
+
+#[test]
 fn tables_rows_cells_headers_nothing_eaten() {
     let html = render_marquee(
         ":::table header=row\n[c]dish[/c] [c]price[/c]\n\n[c]*Spaghetti*[/c] [c]$12[/c]\n:::\n",
