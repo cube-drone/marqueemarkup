@@ -259,6 +259,10 @@ test("spoiler: content present and never eaten, just withheld", () => {
   assert.ok(html.includes("everyone"), "the words are in the DOM, only visually blurred");
   const rich = renderMarquee("[spoiler]the *twist* is [color=#f06]red[/color][/spoiler]\n");
   assert.ok(rich.includes("<em>twist</em>") && rich.includes("mq-color"), "rich content inside");
+  // Block form: hide a whole region (an image, a paragraph).
+  const block = renderMarquee(":::spoiler\n![the ending](end.jpg)\n:::\n");
+  assert.ok(block.includes('<div class="mq-spoiler mq-spoiler-block" tabindex="0">'));
+  assert.ok(block.includes("<img") && block.includes("end.jpg"), "the image survives, just blurred");
 });
 
 test("tables: paragraph-rows, [c] cells, header promotion, nothing eaten", () => {

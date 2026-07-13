@@ -174,7 +174,7 @@ fun lives.
 | `[font=orbitron]...[/font]` | a typeface from the closed list below (also a knob on pages and sections: `:::section font=vt323`) |
 | `[color=goldenrod]shiny[/color]` | colored text — a CSS color name or hex (`#f06`, `#ff0066`) |
 | `[sidenote]a witty aside[/sidenote]` | an aside: a numbered mark at the spot, the note itself set small and italic just below the paragraph. `[aside]` and `[footnote]` mean exactly the same thing — grab whichever word your fingers find |
-| `[spoiler]jesus dies at the end[/spoiler]` | hidden until you ask: click-to-reveal in an interactive reader, blurred-until-hover in a plain HTML one. The words are always *there* — never eaten — just withheld |
+| `[spoiler]jesus dies at the end[/spoiler]` | hidden until you ask: click-to-reveal in an interactive reader, blurred-until-hover in a plain HTML one. The words are always *there* — never eaten — just withheld. Also works as a block: wrap a whole image or paragraph in `:::spoiler` … `:::` |
 
 **The font list** — a closed menu, picked not uploaded, so every page renders everywhere.
 Four standard stacks: `sans`, `serif`, `mono`, `comic`. And the grab bag (freely-licensed

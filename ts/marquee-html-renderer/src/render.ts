@@ -357,6 +357,11 @@ function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string 
       // only inside the other two, which is exactly when you want it).
       // Physical directions, deliberately: predictable beats logical.
       return `<div class="mq-${name}">${inner}</div>`;
+    case "spoiler":
+      // The block form of the [spoiler] span: hide a whole region (an image,
+      // a paragraph) behind the same blur, same reveal-on-hover. Reuses the
+      // mq-spoiler class - the CSS is element-agnostic.
+      return `<div class="mq-spoiler mq-spoiler-block" tabindex="0">${inner}</div>`;
   }
   // Unknown vocabulary: a container renders its children with an affordance
   // that something wrapped them; a leaf renders the inert placeholder.

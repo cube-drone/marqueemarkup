@@ -232,6 +232,9 @@ fn spoiler_withholds_but_never_eats() {
     let html = render_marquee("who dies? [spoiler]everyone[/spoiler] eventually\n", &BareWebProfile).unwrap();
     assert!(html.contains("<span class=\"mq-spoiler\" tabindex=\"0\">everyone</span>"));
     assert!(html.contains("everyone"), "the words are in the DOM, only blurred");
+    let block = render_marquee(":::spoiler\n![the ending](end.jpg)\n:::\n", &BareWebProfile).unwrap();
+    assert!(block.contains("<div class=\"mq-spoiler mq-spoiler-block\" tabindex=\"0\">"));
+    assert!(block.contains("end.jpg"), "the image survives, just blurred");
 }
 
 #[test]

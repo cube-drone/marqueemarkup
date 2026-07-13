@@ -427,6 +427,12 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
         // right for symmetry and left as the un-aligner. Physical
         // directions, deliberately: predictable beats logical.
         "center" | "right" | "left" => format!("<div class=\"mq-{name}\">{inner}</div>"),
+        // Block form of the [spoiler] span: hide a whole region (image,
+        // paragraph) behind the same blur; the mq-spoiler CSS is
+        // element-agnostic.
+        "spoiler" => {
+            format!("<div class=\"mq-spoiler mq-spoiler-block\" tabindex=\"0\">{inner}</div>")
+        }
         // Unknown vocabulary: a container renders its children with an
         // affordance that something wrapped them; a leaf renders the inert
         // placeholder. Never eat authored content.

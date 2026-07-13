@@ -454,7 +454,11 @@ palette token - the color model is settled in Styling); `font` (a name from the 
 enum - see Styling); `spoiler` (content withheld until a deliberate reveal - blurred and
 hover/focus-revealed in a static renderer, click-to-reveal in an interactive one; the content
 is always present in the AST and the DOM, never eaten, and degrades to plain visible text
-without a stylesheet).
+without a stylesheet). **`spoiler` also works as a block directive** (`:::spoiler` withholds a
+whole region - an image, a paragraph): it is a *region decoration*, and region decorations are
+level-agnostic by nature - the syntax picks inline (`[spoiler]`) vs. block (`:::spoiler`)
+containment. (Text-relative spans - `sup`, `sub`, the `sidenote` family - are inherently
+inline; block-level color and font are the `:::section` style knobs.)
 **`by=letter` / `by=word`** animates the run unit by unit with phase-offset cycles -
 sequential offsets for `rainbow`/`wave`/`bounce`/`blink` (the gradient / ripple / chase-light
 look), deterministically scattered for `jitter`; the default animates the run as one piece.

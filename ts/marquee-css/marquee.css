@@ -156,6 +156,13 @@
   cursor: text;
 }
 
+/* Block spoiler (`:::spoiler`): the same withholding, sized to a region -
+   an image, a paragraph - rather than a run of words. */
+.mq-spoiler-block {
+  display: block;
+  padding: 0.5rem;
+}
+
 /* ---- the color slot: validated author values, property mapping ours ---- */
 
 .mq-color {

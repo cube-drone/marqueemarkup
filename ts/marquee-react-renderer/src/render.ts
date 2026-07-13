@@ -260,11 +260,15 @@ export function renderNode(node: Node, ctx: Ctx, key: string): ReactNode {
  * itself as an expandable button. The `rest` carries nodeProps (the
  * register ref + source-position data attrs), so scroll sync still finds
  * it. */
-function Spoiler({ children, ...rest }: { children?: ReactNode } & Record<string, unknown>): ReactNode {
+function Spoiler({
+  children,
+  tag = "span",
+  ...rest
+}: { children?: ReactNode; tag?: string } & Record<string, unknown>): ReactNode {
   const [revealed, setRevealed] = useState(false);
   const reveal = (): void => setRevealed(true);
   return h(
-    "span",
+    tag,
     {
       ...rest,
       role: "button",
@@ -413,6 +417,13 @@ function directive(node: Node & { type: "directive" }, ctx: Ctx, key: string): R
     case "right":
     case "left":
       return h("div", nodeProps(node, ctx, { key, className: `mq-${name}` }), ...kids);
+    case "spoiler":
+      // Block spoiler: same click-to-reveal as the inline one, on a div.
+      return h(
+        Spoiler,
+        nodeProps(node, ctx, { key, tag: "div", className: "mq-spoiler mq-spoiler-block" }),
+        ...kids,
+      );
   }
   // Unknown vocabulary: a container renders its children with an affordance;
   // a leaf renders the inert placeholder. Never eat authored content.

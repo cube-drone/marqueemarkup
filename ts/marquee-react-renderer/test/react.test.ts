@@ -46,6 +46,10 @@ test("spoiler: click-to-reveal button, content present, never eaten", () => {
   assert.ok(out.includes('role="button"') && out.includes('aria-expanded="false"'), "accessible, gated");
   assert.ok(out.includes("everyone"), "the words are present, just withheld by CSS");
   assert.ok(!out.includes("data-mq-revealed"), "starts hidden");
+  // Block form: a div spoiler around a whole region.
+  const block = html({ source: ":::spoiler\n![end](end.jpg)\n:::\n" });
+  assert.ok(block.includes('class="mq-spoiler mq-spoiler-block"') && block.includes("<div"));
+  assert.ok(block.includes("end.jpg"), "the image is present, withheld");
 });
 
 test("never eat content: unknown vocabulary shrugs, children survive", () => {
