@@ -5,13 +5,25 @@
 //
 // Works on code points (Array.from), mirroring Rust's Vec<char>, so the two
 // implementations scan identical units.
+//
+// Positions (SPEC.md, "Source positions"): when a PosCtx rides along, every
+// node gets a [start, end) span in the side-table - UTF-16 offsets into the
+// normalized source, translated from code-point indices via `map`. The AST
+// itself is untouched either way: spans live outside the wire contract.
 
 import type { Attrs, Node } from "./ast.ts";
 import { isName, nameLen, parseAttrs, parseValue, utf8Len } from "./attrs.ts";
-import { MAX_TARGET_BYTES } from "./blocks.ts";
+import { MAX_TARGET_BYTES, type Span } from "./blocks.ts";
 
 export const MAX_INLINE_DEPTH = 16;
 export const MAX_EMOJI_SLUG_BYTES = 64;
+
+/** Positions context: map[cpIndex] = source UTF-16 offset of that code
+ * point in the logical text (one extra entry for the end). */
+export interface PosCtx {
+  map: number[];
+  spans: WeakMap<Node, Span>;
+}
 
 type DelimKind = "em" | "strong" | "strike";
 
@@ -19,6 +31,8 @@ interface Delim {
   kind: DelimKind;
   idx: number;
   raw: string;
+  /** Code-point index of the delimiter run in the logical text. */
+  cp: number;
 }
 
 interface Frame {
@@ -28,10 +42,13 @@ interface Frame {
   attrs: Attrs;
   children: Node[];
   delims: Delim[];
+  /** Code-point range of the opener in the logical text. */
+  openerCp: number;
+  openerCpEnd: number;
 }
 
 function rootFrame(): Frame {
-  return { openerRaw: "", name: "", attrs: {}, children: [], delims: [] };
+  return { openerRaw: "", name: "", attrs: {}, children: [], delims: [], openerCp: 0, openerCpEnd: 0 };
 }
 
 const ASCII_PUNCT = new Set("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~");
@@ -46,14 +63,22 @@ function isSlugChar(c: string): boolean {
   return /^[a-z0-9_+-]$/.test(c);
 }
 
-export function parseInlines(text: string): Node[] {
-  return parseInlinesAt(text, 0);
+export function parseInlines(text: string, P: PosCtx | null = null): Node[] {
+  return parseInlinesAt(text, 0, P);
+}
+
+/** Record a node's span from code-point range; returns the node. */
+function mk(P: PosCtx | null, node: Node, cpStart: number, cpEnd: number): Node {
+  if (P !== null) {
+    P.spans.set(node, { start: P.map[cpStart]!, end: P.map[cpEnd]! });
+  }
+  return node;
 }
 
 /** `base` is the inline depth already spent by enclosing link text: spans,
  * delimiters, and link nesting share the one <= 16 cap (a per-construct cap
  * would let composition multiply past it). */
-function parseInlinesAt(text: string, base: number): Node[] {
+function parseInlinesAt(text: string, base: number, P: PosCtx | null): Node[] {
   const chars = Array.from(text);
   const frames: Frame[] = [rootFrame()];
   let i = 0;
@@ -63,29 +88,31 @@ function parseInlinesAt(text: string, base: number): Node[] {
     if (c === "\\") {
       const n = chars[i + 1];
       if (n === "\n") {
-        top(frames).children.push({ type: "hard_break" });
+        top(frames).children.push(mk(P, { type: "hard_break" }, i, i + 2));
         i += 2;
       } else if (n !== undefined && ASCII_PUNCT.has(n)) {
-        pushStr(frames, n);
+        pushStr(frames, n, P, i, i + 2);
         i += 2;
       } else {
-        pushStr(frames, "\\");
+        pushStr(frames, "\\", P, i, i + 1);
         i += 1;
       }
     } else if (c === "`") {
       const n = runLen(chars, i, "`");
       const k = findBacktickCloser(chars, i + n, n);
       if (k !== null) {
-        top(frames).children.push({ type: "code_span", text: chars.slice(i + n, k).join("") });
+        top(frames).children.push(
+          mk(P, { type: "code_span", text: chars.slice(i + n, k).join("") }, i, k + n),
+        );
         i = k + n;
       } else {
-        pushStr(frames, "`".repeat(n));
+        pushStr(frames, "`".repeat(n), P, i, i + n);
         i += n;
       }
     } else if (c === "[") {
-      i = bracket(chars, i, false, frames, base);
+      i = bracket(chars, i, false, frames, base, P);
     } else if (c === "!" && chars[i + 1] === "[") {
-      i = bracket(chars, i + 1, true, frames, base);
+      i = bracket(chars, i + 1, true, frames, base, P);
     } else if (c === ":") {
       let k = i + 1;
       while (k < chars.length && isSlugChar(chars[k]!)) {
@@ -93,32 +120,34 @@ function parseInlinesAt(text: string, base: number): Node[] {
       }
       const slugLen = k - (i + 1);
       if (slugLen >= 1 && slugLen <= MAX_EMOJI_SLUG_BYTES && chars[k] === ":") {
-        top(frames).children.push({ type: "emoji", slug: chars.slice(i + 1, k).join("") });
+        top(frames).children.push(
+          mk(P, { type: "emoji", slug: chars.slice(i + 1, k).join("") }, i, k + 1),
+        );
         i = k + 1;
       } else {
-        pushStr(frames, ":");
+        pushStr(frames, ":", P, i, i + 1);
         i += 1;
       }
     } else if (c === "*") {
       const n = runLen(chars, i, "*");
       if (n === 1) {
-        i = delimiter(chars, i, n, "em", "*", frames, base);
+        i = delimiter(chars, i, n, "em", "*", frames, base, P);
       } else if (n === 2) {
-        i = delimiter(chars, i, n, "strong", "**", frames, base);
+        i = delimiter(chars, i, n, "strong", "**", frames, base, P);
       } else {
-        pushStr(frames, "*".repeat(n));
+        pushStr(frames, "*".repeat(n), P, i, i + n);
         i += n;
       }
     } else if (c === "~") {
       const n = runLen(chars, i, "~");
       if (n === 2) {
-        i = delimiter(chars, i, n, "strike", "~~", frames, base);
+        i = delimiter(chars, i, n, "strike", "~~", frames, base, P);
       } else {
-        pushStr(frames, "~".repeat(n));
+        pushStr(frames, "~".repeat(n), P, i, i + n);
         i += n;
       }
     } else {
-      pushStr(frames, c);
+      pushStr(frames, c, P, i, i + 1);
       i += 1;
     }
   }
@@ -126,17 +155,17 @@ function parseInlinesAt(text: string, base: number): Node[] {
   // Container end: unclosed spans and delimiters revert to literal text.
   while (frames.length > 1) {
     const frame = frames.pop()!;
-    top(frames).children.push(...revertFrame(frame));
+    top(frames).children.push(...revertFrame(frame, P));
   }
   const root = frames.pop()!;
-  return normalize(revertDelims(root.children, root.delims));
+  return normalize(revertDelims(root.children, root.delims, P), P);
 }
 
 function top(frames: Frame[]): Frame {
   return frames[frames.length - 1]!;
 }
 
-function pushStr(frames: Frame[], s: string): void {
+function pushStr(frames: Frame[], s: string, P: PosCtx | null, cpStart: number, cpEnd: number): void {
   const frame = top(frames);
   // An open delimiter sits (invisibly, until it closes) at its recorded
   // index: text on its far side must not merge into text before it.
@@ -146,10 +175,16 @@ function pushStr(frames: Frame[], s: string): void {
     const last = children[children.length - 1]!;
     if (last.type === "text") {
       last.value += s;
+      if (P !== null) {
+        const span = P.spans.get(last);
+        if (span !== undefined) {
+          span.end = P.map[cpEnd]!;
+        }
+      }
       return;
     }
   }
-  children.push({ type: "text", value: s });
+  children.push(mk(P, { type: "text", value: s }, cpStart, cpEnd));
 }
 
 function runLen(chars: string[], i: number, c: string): number {
@@ -192,6 +227,7 @@ function delimiter(
   raw: string,
   frames: Frame[],
   base: number,
+  P: PosCtx | null,
 ): number {
   const canClose = i > 0 && !isWs(chars[i - 1]!);
   const next = chars[i + n];
@@ -201,18 +237,23 @@ function delimiter(
   const innermost = frame.delims[frame.delims.length - 1];
   if (canClose && innermost !== undefined && innermost.kind === kind) {
     frame.delims.pop();
-    const inner = normalize(frame.children.splice(innermost.idx));
+    const inner = normalize(frame.children.splice(innermost.idx), P);
     frame.children.push(
-      kind === "em"
-        ? { type: "emphasis", children: inner }
-        : kind === "strong"
-          ? { type: "strong", children: inner }
-          : { type: "strikethrough", children: inner },
+      mk(
+        P,
+        kind === "em"
+          ? { type: "emphasis", children: inner }
+          : kind === "strong"
+            ? { type: "strong", children: inner }
+            : { type: "strikethrough", children: inner },
+        innermost.cp,
+        i + n,
+      ),
     );
   } else if (canOpen && !deep) {
-    frame.delims.push({ kind, idx: frame.children.length, raw });
+    frame.delims.push({ kind, idx: frame.children.length, raw, cp: i });
   } else {
-    pushStr(frames, raw);
+    pushStr(frames, raw, P, i, i + n);
   }
   return i + n;
 }
@@ -225,10 +266,11 @@ function bracket(
   embed: boolean,
   frames: Frame[],
   base: number,
+  P: PosCtx | null,
 ): number {
   const bang = embed ? open - 1 : open;
   const fallback = (): number => {
-    pushStr(frames, chars[bang]!);
+    pushStr(frames, chars[bang]!, P, bang, bang + 1);
     return bang + 1;
   };
 
@@ -264,10 +306,19 @@ function bracket(
     const lexed = lexTarget(chars, k + 2);
     if (lexed !== null) {
       const depth = base + totalDepth(frames) + 1;
+      // The link text's own positions: the interior is a contiguous slice
+      // of this logical text, so its map is a slice of ours.
+      const subP: PosCtx | null =
+        P === null ? null : { map: P.map.slice(open + 1, k + 1), spans: P.spans };
       top(frames).children.push(
-        embed
-          ? { type: "embed", target: lexed.target, alt: resolveEscapes(interior) }
-          : { type: "link", target: lexed.target, children: parseInlinesAt(interior, depth) },
+        mk(
+          P,
+          embed
+            ? { type: "embed", target: lexed.target, alt: resolveEscapes(interior) }
+            : { type: "link", target: lexed.target, children: parseInlinesAt(interior, depth, subP) },
+          bang,
+          lexed.end,
+        ),
       );
       return lexed.end;
     }
@@ -279,15 +330,17 @@ function bracket(
     const name = interior.slice(1);
     if (isName(name)) {
       if (embed) {
-        pushStr(frames, "!"); // the ! belongs to links/embeds, not spans
+        pushStr(frames, "!", P, bang, bang + 1); // the ! belongs to links/embeds, not spans
       }
       if (frames.length > 1 && top(frames).name === name) {
         const frame = frames.pop()!;
-        const children = normalize(revertDelims(frame.children, frame.delims));
-        top(frames).children.push({ type: "span", name: frame.name, attrs: frame.attrs, children });
+        const children = normalize(revertDelims(frame.children, frame.delims, P), P);
+        top(frames).children.push(
+          mk(P, { type: "span", name: frame.name, attrs: frame.attrs, children }, frame.openerCp, k + 1),
+        );
       } else {
         // Well-formed but mismatched or orphan: the characters back.
-        pushStr(frames, `[/${name}]`);
+        pushStr(frames, `[/${name}]`, P, open, k + 1);
       }
       return k + 1;
     }
@@ -299,10 +352,10 @@ function bracket(
   const opener = parseSpanOpener(interior);
   if (opener !== null) {
     if (embed) {
-      pushStr(frames, "!"); // the ! belongs to links/embeds, not spans
+      pushStr(frames, "!", P, bang, bang + 1); // the ! belongs to links/embeds, not spans
     }
     if (base + totalDepth(frames) >= MAX_INLINE_DEPTH) {
-      pushStr(frames, chars.slice(open, k + 1).join(""));
+      pushStr(frames, chars.slice(open, k + 1).join(""), P, open, k + 1);
     } else {
       frames.push({
         openerRaw: chars.slice(open, k + 1).join(""),
@@ -310,6 +363,8 @@ function bracket(
         attrs: opener.attrs,
         children: [],
         delims: [],
+        openerCp: open,
+        openerCpEnd: k + 1,
       });
     }
     return k + 1;
@@ -407,21 +462,28 @@ function resolveEscapes(s: string): string {
 
 /** An unclosed span reverts: its opener text, then its children, flattened
  * into the parent (its own unmatched delimiters reverting first). */
-function revertFrame(frame: Frame): Node[] {
-  const out: Node[] = [{ type: "text", value: frame.openerRaw }];
-  out.push(...revertDelims(frame.children, frame.delims));
+function revertFrame(frame: Frame, P: PosCtx | null): Node[] {
+  const out: Node[] = [
+    mk(P, { type: "text", value: frame.openerRaw }, frame.openerCp, frame.openerCpEnd),
+  ];
+  out.push(...revertDelims(frame.children, frame.delims, P));
   return out;
 }
 
-function revertDelims(children: Node[], delims: Delim[]): Node[] {
+function revertDelims(children: Node[], delims: Delim[], P: PosCtx | null): Node[] {
   for (let d = delims.length - 1; d >= 0; d -= 1) {
-    children.splice(delims[d]!.idx, 0, { type: "text", value: delims[d]!.raw });
+    const delim = delims[d]!;
+    children.splice(
+      delim.idx,
+      0,
+      mk(P, { type: "text", value: delim.raw }, delim.cp, delim.cp + delim.raw.length),
+    );
   }
   return children;
 }
 
 /** Canonical text: adjacent literals merge, empty text nodes vanish. */
-function normalize(children: Node[]): Node[] {
+function normalize(children: Node[], P: PosCtx | null): Node[] {
   const out: Node[] = [];
   for (const node of children) {
     if (node.type === "text") {
@@ -431,6 +493,13 @@ function normalize(children: Node[]): Node[] {
       const last = out[out.length - 1];
       if (last !== undefined && last.type === "text") {
         last.value += node.value;
+        if (P !== null) {
+          const lastSpan = P.spans.get(last);
+          const nodeSpan = P.spans.get(node);
+          if (lastSpan !== undefined && nodeSpan !== undefined) {
+            lastSpan.end = Math.max(lastSpan.end, nodeSpan.end);
+          }
+        }
         continue;
       }
     }

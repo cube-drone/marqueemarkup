@@ -266,8 +266,8 @@ export async function marqueeFetch(source: string, opts: MarqueeOptions = {}): P
 export { buildSite, buildSiteFetch, type SiteReport } from "./build-site.ts";
 
 // The full toolbox, re-exported: growth never requires switching packages.
-export { parse, UnsupportedVersionError } from "@cube-drone/marquee-parser";
-export type { Attrs, Node, Reason } from "@cube-drone/marquee-parser";
+export { parse, parseWithPositions, UnsupportedVersionError } from "@cube-drone/marquee-parser";
+export type { Attrs, Node, Reason, Span } from "@cube-drone/marquee-parser";
 export {
   FONTS,
   bareWebProfile,

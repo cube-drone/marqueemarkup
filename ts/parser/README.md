@@ -15,6 +15,17 @@ const doc = parse("# hello *world*\n");
 version (`UnsupportedVersionError`). Malformed constructs become `invalid_directive` nodes
 with spec'd reasons; confusing inline input degrades to literal text. Nothing is ever eaten.
 
+**For editor tooling** there's `parseWithPositions(source)`, returning
+`{ doc, spans, source }`: the same AST byte-for-byte (positions live in a `WeakMap`
+side-table, never on the nodes, so serialization and the wire contract are untouched), with
+each node mapped to its `[start, end)` extent in **UTF-16 code units** over the *normalized*
+source (`\r\n` → `\n`; the returned `source` is the string offsets refer to — hand it, not
+your raw input, to anything consuming the spans). A span covers its construct
+opener-through-closer, markers included; the interiors of canonicalized text (merged
+literals, resolved escapes) are covered but not subdivided. Built for CodeMirror
+decorations; deliberately outside the cross-implementation conformance corpus (see SPEC.md,
+"Source positions").
+
 You probably want [`@cube-drone/marquee-markup`](https://www.npmjs.com/package/@cube-drone/marquee-markup)
 (batteries included: parse + render + CLI) unless you're building a renderer or tool of your
 own — in which case the AST contract is specified in

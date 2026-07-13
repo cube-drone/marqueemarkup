@@ -748,6 +748,32 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   publication step* (free wherever publication already re-encodes the document); standalone
   bare-web files ship their comments in the file, exactly like HTML, and the spec says so plainly.
 
+### Source positions (outside the contract)
+
+Editor tooling (live-preview editing, diagnostics, decorations) needs to know *where in the
+source* each node came from. Positions are deliberately **a parser-API extra, not part of the
+AST wire contract**:
+
+- **Not serialized, not vectored.** The AST is a content-interchange format; the receiving
+  side of a wire may not hold the source bytes at all, so offsets there are dead weight. A
+  parser exposes positions through a side channel (the TypeScript reference:
+  `parseWithPositions()`, returning a spans side-table keyed by node - the AST itself is
+  byte-identical to a plain parse), never as node fields in the serialized form.
+- **Units are host-natural, per implementation.** Positions are only ever consumed by an
+  editor embedding *that* parser, in *that* runtime - they never cross a language boundary -
+  so each implementation uses its language's native offset unit (UTF-16 code units in
+  JavaScript, bytes in Rust) and documents the choice. Pinning one unit in a shared contract
+  would be a permanent conversion tax and a differential surface, purchased for a consumer
+  that does not exist.
+- **Guidance, normative in intent:** offsets refer to the front-door-*normalized* source
+  (`\n` line endings; the version shebang line, when present, counted in the offset space -
+  that is the buffer an editor holds). A node's span is `[start, end)` covering its full
+  construct extent - opener through closer, markers and delimiters included. Canonicalization
+  (merged text literals, resolved escapes, stripped container prefixes) means the *interior*
+  of a text node is covered but not subdivided; node-level extents are the guarantee.
+- If cross-implementation position agreement ever matters, a `positions` vector family can be
+  added *additively* - a parallel artifact, never a change to the AST serialization.
+
 ## Conformance
 
 - Two reference implementations from birth (Rust: validation/authoring-gate; TypeScript:
