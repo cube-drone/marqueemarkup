@@ -30,11 +30,12 @@
     "test": "node --conditions=marquee-src --test test/*.test.ts",
     "check": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "demo": "node --conditions=marquee-src scripts/demo.ts"
   },
   "dependencies": {
-    "@cube-drone/marquee-parser": "^0.3.0",
-    "@cube-drone/marquee-html-renderer": "^0.3.0"
+    "@cube-drone/marquee-html-renderer": "^0.3.0",
+    "@cube-drone/marquee-parser": "^0.3.0"
   },
   "peerDependencies": {
     "react": ">=18"
@@ -43,8 +44,13 @@
     "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "esbuild": "^0.28.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.0",
+    "@cube-drone/marquee-css": "^0.3.0",
+    "@cube-drone/marquee-fonts": "^0.3.0",
+    "@cube-drone/marquee-emoji": "^0.3.0",
+    "@cube-drone/marquee-turbolink": "^0.3.0"
   }
 }

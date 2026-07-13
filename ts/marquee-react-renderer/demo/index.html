@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marquee — interactive renderer demo</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; font-family: system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; }
+
+  header {
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+    padding: 0.6rem 1rem; border-bottom: 1px solid rgba(127,127,127,.35);
+  }
+  header h1 { font-size: 1rem; margin: 0; font-weight: 600; }
+  header .spacer { flex: 1; }
+  header button, header select {
+    font: inherit; font-size: 0.85rem; padding: 0.25rem 0.6rem;
+    border: 1px solid rgba(127,127,127,.45); border-radius: 0.3rem;
+    background: transparent; color: inherit; cursor: pointer;
+  }
+  header .hint { font-size: 0.78rem; opacity: 0.65; }
+
+  html, body { height: 100%; overflow: hidden; } /* the PANES scroll, not the page */
+  /* React mounts into #root: without this it is an unstyled block box
+     between body's flex column and the header/main that want to BE that
+     column - so `flex: 1` on main would apply to nothing, main would grow
+     to its full content height, and the whole window would scroll. */
+  #root { display: contents; }
+  main { flex: 1; display: grid; grid-template-columns: 1fr 1fr; min-height: 0; }
+  /* grid children default to min-height:auto, so without this the preview
+     grows to its full content height and the WINDOW scrolls instead - which
+     makes scrollIntoView move both panes at once. */
+  main > * { min-height: 0; overflow-y: auto; }
+  @media (max-width: 60rem) { main { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; } }
+
+  #source {
+    font-family: ui-monospace, monospace; font-size: 13px; line-height: 1.5;
+    border: 0; border-right: 1px solid rgba(127,127,127,.35);
+    padding: 1rem; resize: none; outline: none;
+    background: transparent; color: inherit;
+  }
+  #preview { overflow-y: auto; padding: 1rem 1.5rem; scroll-behavior: smooth; }
+
+  /* the node the editor's cursor is inside, so the sync is *visible* */
+  .demo-cursor-node { outline: 2px solid rgba(120, 170, 255, .9); outline-offset: 2px; border-radius: 2px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="demo.js"></script>
+</body>
+</html>

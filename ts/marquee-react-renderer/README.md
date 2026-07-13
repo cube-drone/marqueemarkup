@@ -118,6 +118,24 @@ The one exception is embedder-trusted hook output: `Profile.turbolink` / `.direc
 trusted HTML — exactly the same trust boundary as a turbolink plugin, where author bytes only
 ever arrive as a target string. Pass `hooks` instead and even that path disappears.
 
+## The demo
+
+```
+npm run demo                                    # in this package
+npx serve ts/marquee-react-renderer/demo/dist   # from the repo root
+```
+
+Builds `WRITING.mq` — the language's own tour — into a **side-by-side editor**: source on
+the left, live preview on the right, cursor sync in both directions, and buttons for
+skip/replay/animate-mode. It's the fastest way to see what this renderer adds, and it's the
+honest prototype of the live-preview editor.
+
+esbuild is the whole toolchain (one dev dependency, no config file), and it bundles the
+repo's TypeScript *source* via the `marquee-src` export condition — what you see is the
+working tree, not a stale `dist`. The demo assembles its own stylesheet from
+`@cube-drone/marquee-css` + the composed plugins' skins + exactly the font faces the
+document wears, because that assembly is a *host's* job, not a renderer's.
+
 ## Preact
 
 React is a peer dependency (`>=18`), and this package uses no React internals — so

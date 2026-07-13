@@ -34,3 +34,6 @@ publish.env
 
 # GitHub Pages build output (scripts/build-pages.ts)
 _site/
+
+# demo builds (npm run demo)
+demo/dist/
