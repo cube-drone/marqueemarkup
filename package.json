@@ -13,6 +13,7 @@
     "ts/marquee-fonts",
     "ts/marquee-emoji",
     "ts/marquee-react-renderer",
+    "ts/marquee-codemirror",
     "ts/marquee-markup",
     "editors/vscode-marquee"
   ],
@@ -24,6 +25,7 @@
     "set-version": "node scripts/set-version.ts",
     "release-check": "node scripts/release-check.ts",
     "release": "node scripts/publish.ts",
-    "demo:react": "npm run demo --workspace=@cube-drone/marquee-react-renderer"
+    "demo:react": "npm run demo --workspace=@cube-drone/marquee-react-renderer",
+    "demo:cm": "npm run demo --workspace=@cube-drone/marquee-codemirror"
   }
 }

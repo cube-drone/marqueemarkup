@@ -32,6 +32,7 @@ const NPM_ORDER = [
   "ts/marquee-css",
   "ts/marquee-html-renderer",
   "ts/marquee-react-renderer",
+  "ts/marquee-codemirror",
   "ts/marquee-fonts",
   "ts/marquee-emoji",
   "ts/marquee-markup",

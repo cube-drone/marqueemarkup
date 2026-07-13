@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marquee — live-preview editor</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; font-family: system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; }
+  html, body { height: 100%; overflow: hidden; }
+  #root { display: contents; }
+  header {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 0.6rem 1rem; border-bottom: 1px solid rgba(127,127,127,.35);
+  }
+  header h1 { font-size: 1rem; margin: 0; font-weight: 600; }
+  header .hint { font-size: 0.78rem; opacity: 0.65; }
+  main { flex: 1; min-height: 0; overflow: hidden; }
+  .cm-editor { height: 100%; }
+  .cm-scroller { font-size: 16px; line-height: 1.6; padding: 1rem clamp(1rem, 6vw, 6rem); }
+  .cm-content { max-width: 50rem; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="demo.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{
+  "name": "@cube-drone/marquee-codemirror",
+  "version": "0.3.0",
+  "description": "A CodeMirror 6 extension for editing Marquee: Obsidian-style live preview - the source stays plain text, rendering is projected onto it as decorations, and the element under the cursor opens to show its syntax",
+  "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cube-drone/marqueemarkup.git",
+    "directory": "ts/marquee-codemirror"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "marquee-src": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "test": "node --conditions=marquee-src --test test/*.test.ts",
+    "check": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build",
+    "demo": "node --conditions=marquee-src scripts/demo.ts"
+  },
+  "dependencies": {
+    "@cube-drone/marquee-parser": "^0.3.0",
+    "@cube-drone/marquee-html-renderer": "^0.3.0"
+  },
+  "peerDependencies": {
+    "@codemirror/state": "^6",
+    "@codemirror/view": "^6"
+  },
+  "devDependencies": {
+    "@codemirror/commands": "^6",
+    "@codemirror/state": "^6",
+    "@codemirror/view": "^6",
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.9.0"
+  }
+}

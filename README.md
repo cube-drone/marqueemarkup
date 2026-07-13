@@ -230,6 +230,10 @@ Rust docs are [here](./rust/markup/README.md)
   string of HTML can't - effects that start when scrolled into view, one-click skip, and
   source-position scroll sync in both directions (for side-by-side editors). Same stylesheet,
   same `Profile` socket, zero animation libraries: JS controls the CSS clock, it never animates
+- `ts/marquee-codemirror/` - a **CodeMirror 6 editor** extension: Obsidian-style live preview,
+  where the source stays plain text and the element under the cursor opens to show its syntax.
+  Driven by the real parser + source positions, so it's exact, not heuristic; the decoration
+  policy is a pure, tested function
 - `ts/marquee-turbolink/` - pluggable turbolink rendering: link expanders as plugins (YouTube, Spotify, media,
   OpenGraph-fetch-ahead), composed by the embedder into `Profile.turbolink`; each plugin declares the
   CSS for the markup it emits, and `turbolinkStyles()` collects the composed chain's skins into one artifact
