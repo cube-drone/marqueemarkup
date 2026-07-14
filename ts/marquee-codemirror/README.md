@@ -81,6 +81,39 @@ Pair with `@cube-drone/marquee-css` if you want `[font=…]` spans to show their
 the editor's own look (marker dimming, heading sizes, widget styling) ships inside the
 extension as a theme.
 
+## Vim (or any keymap)
+
+`marquee()` defines **no keybindings**, so it composes with whatever keymap you bolt on. To
+make vim mode a runtime toggle, put it in a [`Compartment`](https://codemirror.net/docs/ref/#state.Compartment)
+and reconfigure it on demand — no rebuild, state preserved:
+
+```ts
+import { Compartment } from "@codemirror/state";
+import { vim } from "@replit/codemirror-vim";      // a separate dependency
+
+const vimMode = new Compartment();
+
+const view = new EditorView({
+  state: EditorState.create({
+    doc,
+    extensions: [
+      vimMode.of([]),           // FIRST, so vim wins key precedence; [] = off
+      keymap.of([...defaultKeymap, ...historyKeymap]),
+      marquee({ profile }),
+    ],
+  }),
+});
+
+// flip it whenever (a checkbox, a setting, a command):
+const setVim = (on: boolean) =>
+  view.dispatch({ effects: vimMode.reconfigure(on ? vim() : []) });
+```
+
+Two gotchas: keep the compartment **before** the other keymaps (vim needs precedence), and
+vim draws its own block cursor and `:` status line, so its cursor supersedes this extension's
+caret styling. The same pattern works for `@replit/codemirror-emacs` or any other keymap. The
+demo in this package has a working `vim` checkbox — steal it.
+
 ## The demo
 
 ```

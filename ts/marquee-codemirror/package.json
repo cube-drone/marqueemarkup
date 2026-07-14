@@ -34,8 +34,8 @@
     "demo": "node --conditions=marquee-src scripts/demo.ts"
   },
   "dependencies": {
-    "@cube-drone/marquee-parser": "^0.3.0",
-    "@cube-drone/marquee-html-renderer": "^0.3.0"
+    "@cube-drone/marquee-html-renderer": "^0.3.0",
+    "@cube-drone/marquee-parser": "^0.3.0"
   },
   "peerDependencies": {
     "@codemirror/state": "^6",
@@ -45,6 +45,7 @@
     "@codemirror/commands": "^6",
     "@codemirror/state": "^6",
     "@codemirror/view": "^6",
+    "@replit/codemirror-vim": "^6.3.0",
     "@types/node": "^24.0.0",
     "esbuild": "^0.24.0",
     "typescript": "^5.9.0"

@@ -16,6 +16,12 @@
   }
   header h1 { font-size: 1rem; margin: 0; font-weight: 600; }
   header .hint { font-size: 0.78rem; opacity: 0.65; }
+  header .vim-toggle {
+    margin-left: auto; font-size: 0.8rem; opacity: 0.8;
+    display: flex; align-items: center; gap: 0.3rem; cursor: pointer; user-select: none;
+  }
+  /* vim mode draws its own block cursor and a status line; give the latter room. */
+  .cm-vim-panel { font-family: ui-monospace, monospace; font-size: 0.85rem; }
   main { flex: 1; min-height: 0; overflow: hidden; }
   .cm-editor { height: 100%; }
   .cm-scroller { font-size: 16px; line-height: 1.6; padding: 1rem clamp(1rem, 4vw, 3rem); }
