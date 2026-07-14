@@ -2,21 +2,24 @@
 // cursor shows its syntax; move away and it renders clean. Click an image or
 // emoji to edit its source.
 
-import { EditorView, keymap, lineNumbers } from "@codemirror/view";
+import { EditorView, keymap } from "@codemirror/view";
 import { EditorState } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { standardEmoji } from "@cube-drone/marquee-emoji";
+import { composeTurbolinks, defaultPlugins } from "@cube-drone/marquee-turbolink";
 import { marquee, type Profile } from "../src/index.ts";
 import WRITING from "../../../WRITING.mq";
 
 /** The demo host's policy - the same Profile the renderers take. Resolves
- * the standard emoji table (so `:sparkles:` becomes a glyph in the editor)
- * and the house `:angry-burger:`, matching what WRITING.mq describes. */
+ * the standard emoji table, the house `:angry-burger:`, relative media, and
+ * the fetchless turbolink chain (YouTube/Spotify embeds, media by kind) so
+ * rendered blocks in the editor look like they will on the page. */
 const profile: Partial<Profile> = {
   emoji: (slug) =>
     slug === "angry-burger"
       ? { image: "example-media/angry-burger-emoji.png", alt: ":angry-burger:" }
       : (standardEmoji[slug] ?? null),
+  turbolink: composeTurbolinks(defaultPlugins),
 };
 
 const root = document.getElementById("root");
@@ -32,12 +35,11 @@ if (root !== null) {
   const main = document.createElement("main");
   root.append(header, main);
 
-  new EditorView({
+  const view = new EditorView({
     parent: main,
     state: EditorState.create({
       doc: WRITING,
       extensions: [
-        lineNumbers(),
         history(),
         keymap.of([...defaultKeymap, ...historyKeymap]),
         EditorView.lineWrapping,
@@ -45,4 +47,5 @@ if (root !== null) {
       ],
     }),
   });
+  void view;
 }

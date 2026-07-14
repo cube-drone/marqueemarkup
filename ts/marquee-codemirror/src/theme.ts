@@ -7,6 +7,11 @@
 import { EditorView } from "@codemirror/view";
 
 export const marqueeTheme = EditorView.theme({
+  // The caret shows in both themes. Without CM's drawSelection the NATIVE
+  // caret is used (caret-color); style both it and CM's drawn cursor so it's
+  // visible either way - a black caret on a dark background is invisible.
+  "& .cm-content": { caretColor: "#3b82f6" },
+  "& .cm-cursor, & .cm-dropCursor": { borderLeftColor: "#3b82f6", borderLeftWidth: "2px" },
   "& .cm-mq-marker": { opacity: "0.35" },
   "& .cm-mq-strong": { fontWeight: "bold" },
   "& .cm-mq-em": { fontStyle: "italic" },
@@ -43,4 +48,10 @@ export const marqueeTheme = EditorView.theme({
     borderTop: "2px solid rgba(127,127,127,0.4)",
     verticalAlign: "middle",
   },
+  // A rendered block sits in the text flow. PADDING, never margin: CodeMirror
+  // measures a widget's offsetHeight (which excludes margin), so a margin
+  // would drift every position below it by ~a line - breaking click accuracy
+  // and vertical cursor motion. Padding is inside offsetHeight, so it's safe.
+  "& .cm-mq-block": { padding: "0.2em 0", cursor: "text" },
+  "& .cm-mq-block img, & .cm-mq-block video": { maxWidth: "100%" },
 });

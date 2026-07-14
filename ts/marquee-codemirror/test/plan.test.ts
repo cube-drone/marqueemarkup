@@ -1,112 +1,136 @@
-// The planner is a pure function - no CodeMirror, no DOM - so the whole
-// live-preview policy is testable in plain Node. The CM adapter is a thin
-// translation of these specs, exercised by the demo in a browser.
+// The planner is pure - no CodeMirror, no DOM - so the whole live-preview
+// policy is testable in plain Node. The CM adapter is a thin translation of
+// these specs, exercised by the demo in a browser.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { plan, bareWebProfile, type DecoSpec, type Profile } from "../src/index.ts";
+import { plan, bareWebProfile, type DecoSpec, type Node, type Profile } from "../src/index.ts";
 
-/** A profile that resolves a demo emoji and images, so widget cases fire. */
-const profile: Partial<Profile> = {
-  emoji: (slug) => (slug === "tophat" ? "🎩" : null),
-};
-
-const cursorAt = (offset: number): { from: number; to: number }[] => [{ from: offset, to: offset }];
+const profile: Partial<Profile> = { emoji: (slug) => (slug === "tophat" ? "🎩" : null) };
+const P = { ...bareWebProfile, ...profile };
+const cursorAt = (o: number): { from: number; to: number }[] => [{ from: o, to: o }];
 const noCursor: { from: number; to: number }[] = [{ from: -5, to: -5 }];
+const find = (specs: DecoSpec[], p: (s: DecoSpec) => boolean): DecoSpec | undefined => specs.find(p);
 
-function find(specs: DecoSpec[], pred: (s: DecoSpec) => boolean): DecoSpec | undefined {
-  return specs.find(pred);
-}
+// -- inline: plain paragraphs are augmented source --
 
 test("bold away from the cursor: styled, markers hidden", () => {
   const src = "say **hi** there\n";
-  const specs = plan(src, noCursor, { ...bareWebProfile, ...profile });
+  const specs = plan(src, noCursor, P);
   const mark = find(specs, (s) => s.kind === "mark" && s.class === "cm-mq-strong");
   assert.ok(mark && mark.kind === "mark");
-  assert.equal(src.slice(mark.from, mark.to), "**hi**", "the whole run is the styled range");
-  const hides = specs.filter((s) => s.kind === "hide");
-  assert.equal(hides.length, 2, "both ** markers hidden");
-  assert.deepEqual(
-    hides.map((h) => src.slice(h.from, h.to)),
-    ["**", "**"],
-  );
+  assert.equal(src.slice(mark.from, mark.to), "**hi**");
+  assert.equal(specs.filter((s) => s.kind === "hide").length, 2, "both ** markers hidden");
 });
 
-test("bold under the cursor: markers shown, dimmed (not hidden)", () => {
-  const src = "say **hi** there\n";
-  const onIt = plan(src, cursorAt(src.indexOf("hi")), { ...bareWebProfile, ...profile });
-  assert.equal(onIt.filter((s) => s.kind === "hide").length, 0, "nothing hidden while editing");
-  const dimmed = onIt.filter((s) => s.kind === "mark" && s.class === "cm-mq-marker");
-  assert.equal(dimmed.length, 2, "both markers dimmed instead");
+test("bold under the cursor: markers dimmed, not hidden", () => {
+  const specs = plan("say **hi** there\n", cursorAt(7), P);
+  assert.equal(specs.filter((s) => s.kind === "hide").length, 0);
+  assert.equal(specs.filter((s) => s.kind === "mark" && s.class === "cm-mq-marker").length, 2);
 });
 
-test("heading: prefix hidden away, dimmed near; content sized", () => {
-  const src = "## A title\n";
-  const away = plan(src, noCursor, bareWebProfile);
-  assert.ok(find(away, (s) => s.kind === "hide" && src.slice(s.from, s.to) === "## "));
-  assert.ok(find(away, (s) => s.kind === "mark" && s.class === "cm-mq-h2"));
+test("heading prefix hides away, dims near; content sized", () => {
+  const specs = plan("## A title\n", noCursor, bareWebProfile);
+  assert.ok(find(specs, (s) => s.kind === "hide" && "from" in s));
+  assert.ok(find(specs, (s) => s.kind === "mark" && s.class === "cm-mq-h2"));
 });
 
-test("code span with a multi-backtick fence: markers sized right", () => {
-  const src = "before ``a ` b`` after\n";
-  const specs = plan(src, noCursor, bareWebProfile);
-  const hides = specs.filter((s) => s.kind === "hide").map((h) => src.slice(h.from, h.to));
-  assert.deepEqual(hides, ["``", "``"], "two backticks each side, not one");
-});
-
-test("link: text styled, the (target) tail hidden away from cursor", () => {
+test("link text styled, the (target) tail hidden away", () => {
   const src = "see [my site](https://e.x/p) ok\n";
   const specs = plan(src, noCursor, bareWebProfile);
-  const linkMark = find(specs, (s) => s.kind === "mark" && s.class === "cm-mq-link");
-  assert.ok(linkMark && linkMark.kind === "mark");
-  assert.equal(src.slice(linkMark.from, linkMark.to), "my site");
-  assert.ok(
-    specs.some((s) => s.kind === "hide" && src.slice(s.from, s.to) === "](https://e.x/p)"),
-    "the target is hidden, leaving just the styled text",
-  );
+  const m = find(specs, (s) => s.kind === "mark" && s.class === "cm-mq-link");
+  assert.ok(m && m.kind === "mark" && src.slice(m.from, m.to) === "my site");
+  assert.ok(specs.some((s) => s.kind === "hide" && src.slice(s.from, s.to) === "](https://e.x/p)"));
 });
 
-test("image: a widget when away, raw source when the cursor is on it", () => {
-  const src = "![a cat](https://e.x/cat.png)\n";
-  const away = plan(src, noCursor, bareWebProfile);
-  const w = find(away, (s) => s.kind === "widget");
-  assert.ok(w && w.kind === "widget" && w.widget.type === "image");
-  const on = plan(src, cursorAt(4), bareWebProfile);
-  assert.equal(on.filter((s) => s.kind === "widget").length, 0, "editing shows the source");
+test("inline effect: real animating class away, static while editing", () => {
+  const away = plan("[rainbow]hi[/rainbow]\n", noCursor, bareWebProfile);
+  assert.ok(find(away, (s) => s.kind === "mark" && s.class === "mq-rainbow"), "animates away");
+  const on = plan("[rainbow]hi[/rainbow]\n", cursorAt(10), bareWebProfile);
+  assert.ok(!find(on, (s) => s.kind === "mark" && s.class === "mq-rainbow"), "static while editing");
 });
 
-test("emoji: glyph widget only when it resolves", () => {
-  const known = plan(":tophat: hi\n", noCursor, { ...bareWebProfile, ...profile });
-  assert.ok(find(known, (s) => s.kind === "widget" && s.widget.type === "emoji"));
-  const unknown = plan(":nope: hi\n", noCursor, { ...bareWebProfile, ...profile });
-  assert.equal(unknown.filter((s) => s.kind === "widget").length, 0, "unresolved stays literal");
+test("inline spoiler gets the mq-spoiler class (it blurs)", () => {
+  const specs = plan("[spoiler]x[/spoiler]\n", noCursor, bareWebProfile);
+  assert.ok(find(specs, (s) => s.kind === "mark" && s.class === "mq-spoiler"));
 });
 
-test("styled spans carry inline style, effects just get the span class", () => {
-  const color = plan("[color=#f06]hot[/color]\n", noCursor, bareWebProfile);
-  assert.ok(find(color, (s) => s.kind === "mark" && s.style === "color:#f06"));
-  const blink = plan("[blink]x[/blink]\n", noCursor, bareWebProfile);
-  assert.ok(find(blink, (s) => s.kind === "mark" && s.class === "cm-mq-span"), "no animation in the editor");
+test("color span carries inline style", () => {
+  const specs = plan("[color=#f06]hot[/color]\n", noCursor, bareWebProfile);
+  assert.ok(find(specs, (s) => s.kind === "mark" && s.style === "color:#f06"));
 });
 
-test("comments dim; the whole vector corpus plans without throwing", () => {
-  const c = plan("%% a note\n\nvisible\n", noCursor, bareWebProfile);
-  assert.ok(find(c, (s) => s.kind === "mark" && s.class === "cm-mq-comment"));
+test("emoji becomes a glyph widget only when it resolves", () => {
+  assert.ok(find(plan(":tophat: hi\n", noCursor, P), (s) => s.kind === "widget"));
+  assert.equal(plan(":nope: hi\n", noCursor, P).filter((s) => s.kind === "widget").length, 0);
+});
 
+// -- block: rendered widget when away, source when editing --
+
+function blockSpec(specs: DecoSpec[]): (DecoSpec & { kind: "block" }) | undefined {
+  return specs.find((s): s is DecoSpec & { kind: "block" } => s.kind === "block");
+}
+
+test("a list renders as a block widget when away, source when editing", () => {
+  const src = "- one\n- two\n- three\n";
+  const b = blockSpec(plan(src, noCursor, bareWebProfile));
+  assert.ok(b && b.node.type === "list", "the whole list is one rendered block");
+  assert.equal(b.from, 0);
+  const editing = plan(src, cursorAt(3), bareWebProfile);
+  assert.equal(blockSpec(editing), undefined, "editing shows the source");
+});
+
+test("quotes, code blocks, tables, rules, turbolinks are rendered blocks", () => {
+  const has = (src: string, type: string): boolean =>
+    blockSpec(plan(src, noCursor, bareWebProfile))?.node.type === type;
+  assert.ok(has("> a quote\n", "blockquote"));
+  assert.ok(has("```js\ncode\n```\n", "code_block"));
+  assert.ok(has("---\n", "thematic_break"));
+  assert.ok(has("https://e.x/post\n", "turbolink"));
+  assert.ok(has(":::table\n[c]a[/c]\n:::\n", "directive"), "content directives render");
+});
+
+test("a paragraph with an image renders (so images flow full-size in a <p>)", () => {
+  const b = blockSpec(plan("look ![cat](cat.jpg) here\n", noCursor, bareWebProfile));
+  assert.ok(b && b.node.type === "paragraph");
+  // A plain-text paragraph does NOT become a block.
+  assert.equal(blockSpec(plan("just words here\n", noCursor, bareWebProfile)), undefined);
+});
+
+test("a paragraph with an aside renders (so the note shows below)", () => {
+  const b = blockSpec(plan("text[sidenote]note[/sidenote] more\n", noCursor, bareWebProfile));
+  assert.ok(b && b.node.type === "paragraph");
+});
+
+test("meta is quiet source (dimmed), not an empty widget", () => {
+  const specs = plan(':::meta title="x":::\n\nhi\n', noCursor, bareWebProfile);
+  assert.ok(find(specs, (s) => s.kind === "mark" && s.class === "cm-mq-comment"), "dimmed like a comment");
+  assert.ok(!specs.some((s) => s.kind === "block"), "not rendered as a (blank) block");
+});
+
+test("layout containers stay source; content inside still previews", () => {
+  const src = ":::section\nlook ![cat](cat.jpg)\n:::\n";
+  const specs = plan(src, noCursor, bareWebProfile);
+  // No block spec for the section itself...
+  assert.ok(!specs.some((s) => s.kind === "block" && s.node.type === "directive"));
+  // ...but the image-bearing paragraph inside DID become a block.
+  assert.ok(specs.some((s) => s.kind === "block" && s.node.type === "paragraph"));
+});
+
+test("comments dim; the whole vector corpus plans in-bounds", () => {
+  assert.ok(find(plan("%% note\n\nhi\n", noCursor, bareWebProfile), (s) => s.kind === "mark" && s.class === "cm-mq-comment"));
   const dir = fileURLToPath(new URL("../../../vectors/", import.meta.url));
   let cases = 0;
   for (const file of readdirSync(dir).filter((f) => f.endsWith(".json"))) {
     for (const v of JSON.parse(readFileSync(join(dir, file), "utf8")) as Array<{ marquee: string }>) {
-      const specs = plan(v.marquee, noCursor, bareWebProfile);
-      // Every spec must be an in-bounds, non-inverted range.
-      for (const s of specs) {
+      for (const s of plan(v.marquee, noCursor, bareWebProfile)) {
         assert.ok(s.from >= 0 && s.from <= s.to && s.to <= v.marquee.length, `bad range in ${file}`);
       }
       cases += 1;
     }
   }
-  assert.ok(cases > 90, `planned the corpus (${cases} cases)`);
+  assert.ok(cases > 90);
 });

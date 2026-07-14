@@ -30,21 +30,27 @@ The document never stops being **plain Marquee source** — there is no rich-tex
 contenteditable, nothing to fall out of sync. Rendering is *projected onto* the source as
 CodeMirror decorations:
 
-- Inline formatting is **styled in place**: `**bold**` is drawn bold while its `**` stays
-  visible (and dimmed). Headings get their size, colored spans get their color, links get
-  their underline.
-- The element **under the cursor shows its syntax**; move the cursor away and the syntax
-  hides. So a line you're editing shows `## A Title`, and a line you're not shows a clean
-  bold title. Arrow toward it and the syntax reveals as you approach.
-- A few things become **rendered widgets** when the cursor is away — an image shows the
-  picture, `:sparkles:` shows ✨, `---` shows a rule. Click the widget (or arrow into it) to
-  edit its source.
+- **Inline formatting** inside a plain paragraph is *styled in place*: `**bold**` is drawn
+  bold while its `**` stays visible (and dimmed) under the cursor, then hides when the cursor
+  leaves. Effects animate (their real `mq-*` classes) when you're not editing them, spoilers
+  blur, colored spans take their color, `:sparkles:` shows ✨.
+- **Every block the cursor isn't in becomes fully rendered** — by the actual Marquee HTML
+  renderer. A list looks like a list, a code block like code, a table like a table; images
+  flow full-size, `:::media` rows lay out, quotes get their spine, asides drop below their
+  paragraph, turbolinks expand, spoilers hide, unknown widgets show their placeholder. Move
+  the cursor into a block and it opens to source; click a rendered block (off any link) to
+  put the cursor there.
+- **Layout containers** (`:::page`, `:::section`) stay as source with their contents previewed
+  inside — accurately previewing a page layout is the job of a separate window, not the inline
+  editor.
 
-This is exact rather than heuristic, because Marquee has exactly one parse: the extension
-drives every decision from the real parser's AST and source positions
-(`parseWithPositions`), not from a guess about whether a given `*` is an opener. The whole
-policy is a **pure function** — `plan(source, cursors, profile) → decoration specs` — exported
-for testing or for building your own editor surface on the same decisions.
+Two things make this work. **Exactness:** Marquee has one parse, so every decision comes from
+the real AST and source positions (`parseWithPositions`), never a guess about whether a `*` is
+an opener. **Leverage:** rendered blocks *are* the HTML renderer's output — the editor doesn't
+reimplement lists or tables, it calls `render(node, profile)` and shows the result, so the
+preview and the page can't disagree. The decision layer is a **pure function** —
+`plan(source, cursors, profile) → decoration specs` — exported for testing or for building your
+own surface on the same policy.
 
 ## Options
 
@@ -60,14 +66,6 @@ bare-web profile.
 Pair with `@cube-drone/marquee-css` if you want `[font=…]` spans to show their actual faces;
 the editor's own look (marker dimming, heading sizes, widget styling) ships inside the
 extension as a theme.
-
-## What's in v1
-
-Inline: headings, emphasis/strong/strikethrough, code spans, links, colored/font/size/`sup`/
-`sub` spans (styled), other spans (bracket-hidden), comments (dimmed). Widgets: images,
-resolved emoji, thematic breaks. Directives (`:::section`, tables, turbolinks) render as
-source for now — seeing that structure while editing is arguably correct, and richer block
-widgets are the natural next step.
 
 ## The demo
 

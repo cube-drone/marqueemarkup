@@ -1,12 +1,16 @@
-// CodeMirror widgets for the ranges the planner chose to replace. Each is
-// clickable: a click drops the cursor into the source it replaced, which
-// makes the planner re-open that range on the next update - the "click the
-// rendered thing to edit its source" half of the live-preview gesture.
+// CodeMirror widgets. Two kinds:
+//   - EmojiWidget: an inline resolved emoji glyph inside augmented source.
+//   - BlockWidget: a whole block rendered by the REAL HTML renderer - the
+//     leverage move that makes lists look like lists, code like code, and
+//     turbolinks/media/tables/asides/spoilers all render correctly, because
+//     it IS the renderer's output (safe: the renderer escapes author bytes
+//     and allowlists targets, exactly as for a static page fragment).
+// Both click-to-edit: a click drops the cursor into the source they replaced.
 
 import { EditorSelection } from "@codemirror/state";
 import { WidgetType, type EditorView } from "@codemirror/view";
+import type { Node } from "@cube-drone/marquee-parser";
 import type { Profile } from "@cube-drone/marquee-html-renderer";
-import type { WidgetSpec } from "./plan.ts";
 
 abstract class ClickToEditWidget extends WidgetType {
   readonly from: number;
@@ -15,7 +19,6 @@ abstract class ClickToEditWidget extends WidgetType {
     this.from = from;
   }
   protected clickable(el: HTMLElement, view: EditorView): HTMLElement {
-    el.style.cursor = "pointer";
     el.addEventListener("mousedown", (e) => {
       e.preventDefault();
       view.dispatch({ selection: EditorSelection.cursor(this.from) });
@@ -23,38 +26,7 @@ abstract class ClickToEditWidget extends WidgetType {
     return el;
   }
   ignoreEvent(): boolean {
-    return true; // let the DOM event reach our mousedown handler
-  }
-}
-
-export class ImageWidget extends ClickToEditWidget {
-  readonly target: string;
-  readonly alt: string;
-  readonly profile: Profile;
-  constructor(from: number, target: string, alt: string, profile: Profile) {
-    super(from);
-    this.target = target;
-    this.alt = alt;
-    this.profile = profile;
-  }
-  eq(o: ImageWidget): boolean {
-    return o.target === this.target && o.alt === this.alt && o.from === this.from;
-  }
-  toDOM(view: EditorView): HTMLElement {
-    const media = this.profile.media(this.target);
-    let el: HTMLElement;
-    if (media !== null && media.kind === "image") {
-      const img = document.createElement("img");
-      img.src = media.url;
-      img.alt = this.alt;
-      img.className = "cm-mq-image";
-      el = img;
-    } else {
-      el = document.createElement("span");
-      el.className = "cm-mq-placeholder";
-      el.textContent = this.alt === "" ? this.target : this.alt;
-    }
-    return this.clickable(el, view);
+    return true;
   }
 }
 
@@ -82,29 +54,47 @@ export class EmojiWidget extends ClickToEditWidget {
       el = document.createElement("span");
       el.className = "cm-mq-emoji-text";
       el.textContent = resolved ?? `:${this.slug}:`;
+      el.style.cursor = "pointer";
     }
     return this.clickable(el, view);
   }
 }
 
-export class RuleWidget extends ClickToEditWidget {
-  eq(o: RuleWidget): boolean {
-    return o.from === this.from;
+export class BlockWidget extends ClickToEditWidget {
+  readonly node: Node;
+  readonly html: string;
+  constructor(from: number, node: Node, html: string) {
+    super(from);
+    this.node = node;
+    this.html = html;
+  }
+  eq(o: BlockWidget): boolean {
+    // node identity is stable across cursor moves (parse is cached), so an
+    // unchanged block is not re-rendered and its effects don't restart.
+    return o.node === this.node && o.from === this.from;
   }
   toDOM(view: EditorView): HTMLElement {
-    const el = document.createElement("span");
-    el.className = "cm-mq-rule";
-    return this.clickable(el, view);
+    const el = document.createElement("div");
+    el.className = "cm-mq-block mq-doc";
+    el.innerHTML = this.html;
+    // Images/videos load late and change the block's height; CM measured it
+    // before the load, so re-measure when they arrive or the coordinate map
+    // (clicks, vertical motion) drifts below this block.
+    el.querySelectorAll("img, video").forEach((media) => {
+      media.addEventListener("load", () => view.requestMeasure(), { once: true });
+      media.addEventListener("loadedmetadata", () => view.requestMeasure(), { once: true });
+    });
+    // Click the rendered block (but not a link/control inside it) to edit.
+    el.addEventListener("mousedown", (e) => {
+      const t = e.target as HTMLElement;
+      if (t.closest("a, audio, video, button, iframe, input") === null) {
+        e.preventDefault();
+        view.dispatch({ selection: EditorSelection.cursor(this.from) });
+      }
+    });
+    return el;
   }
-}
-
-export function makeWidget(spec: WidgetSpec, from: number, profile: Profile): WidgetType {
-  switch (spec.type) {
-    case "image":
-      return new ImageWidget(from, spec.target, spec.alt, profile);
-    case "emoji":
-      return new EmojiWidget(from, spec.slug, profile);
-    case "rule":
-      return new RuleWidget(from);
+  ignoreEvent(): boolean {
+    return true;
   }
 }

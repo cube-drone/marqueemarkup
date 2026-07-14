@@ -3,48 +3,61 @@
 // No CodeMirror, no DOM: it is the testable core, and the CM adapter
 // (marquee.ts) is a thin translation of these specs into CM decorations.
 //
-// The model (SPEC.md, "Source positions" is what makes it possible): the
-// source never stops being plain text. Rendering is projected onto it -
-// text is *styled in place* (bold text that still shows its `**`), and some
-// ranges are *replaced* by rendered widgets (an image, an emoji glyph).
-// The cursor rule: an element whose source the cursor is touching stays
-// "open" - its syntax is shown, dimmed; move away and the syntax hides (or
-// the element becomes its rendered widget). Marquee's determinism is what
-// lets this be exact instead of heuristic: there is one parse, and it says
-// precisely where every construct begins and ends.
+// Two regimes, split on block vs inline - because Marquee's grammar is:
+//
+//   - INLINE formatting (bold, links, effects, color, emoji) inside a plain
+//     paragraph or heading is *styled in place*: the run is drawn styled
+//     while its markers stay visible (dimmed) under the cursor and hide when
+//     the cursor leaves. Effects get their real animating classes. This is
+//     the "augmented source" view you edit in.
+//
+//   - Every BLOCK the cursor isn't inside (a list, a quote, a code block, a
+//     table, a media row, a turbolink, an image-bearing or aside-bearing
+//     paragraph, any content directive) is *replaced by a widget rendered by
+//     the real HTML renderer*. Move the cursor into it and it opens to
+//     source. This is why lists look like lists and code looks like code:
+//     it IS the renderer's output.
+//
+// Layout containers (`:::page`, `:::section`) are left as source and their
+// children previewed inside - accurately previewing a page layout is the
+// job of a separate window, not the inline editor.
+//
+// Exact, not heuristic: every decision comes from the one true parse and its
+// source positions (SPEC.md, "Source positions").
 
 import { parseWithPositions, type Node, type Span } from "@cube-drone/marquee-parser";
 import { FONTS, type Profile } from "@cube-drone/marquee-html-renderer";
 
-/** A cursor or selection, as CodeMirror offsets (UTF-16, same space as the
- * parser's spans over the normalized source). */
 export interface Sel {
   from: number;
   to: number;
 }
 
 export type DecoSpec =
-  /** Style raw text in place (bold, a heading size, a color). */
+  /** Style raw text in place (bold, a heading size, a color, an effect). */
   | { kind: "mark"; from: number; to: number; class?: string; style?: string }
   /** Hide a range entirely - a marker the cursor isn't near. */
   | { kind: "hide"; from: number; to: number }
-  /** Replace a range with a rendered widget. */
-  | { kind: "widget"; from: number; to: number; widget: WidgetSpec };
+  /** Replace an inline range with a small widget (a resolved emoji glyph). */
+  | { kind: "widget"; from: number; to: number; widget: WidgetSpec }
+  /** Replace a whole block's source with the renderer's output for it. */
+  | { kind: "block"; from: number; to: number; node: Node };
 
-export type WidgetSpec =
-  | { type: "image"; target: string; alt: string }
-  | { type: "emoji"; slug: string }
-  | { type: "rule" };
+export type WidgetSpec = { type: "emoji"; slug: string };
 
-/** <font size=1..7>-ish em scale, for the size dial in the editor. */
+/** Inline effect spans - animated in the editor when the cursor is away
+ * (their real mq-* classes), static when you're editing them. */
+const EFFECTS = new Set([
+  "blink", "rainbow", "bounce", "jitter", "wave", "rubber", "typewriter", "fadein", "marquee",
+]);
+
 const SIZE_EM: Record<string, string> = {
   "1": "0.65em", "2": "0.82em", "3": "1em", "4": "1.15em",
   "5": "1.35em", "6": "1.7em", "7": "2.4em",
 };
 const NAMED_SIZE: Record<string, string> = { teeny: "1", tiny: "2", huge: "6", enormous: "7" };
+const HEX_OR_TOKEN = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$|^[a-z][a-z0-9-]{0,31}$/;
 
-/** Parse and plan in one step (used by tests; the CM adapter caches the
- * parse and calls planFromAst on every cursor move). */
 export function plan(source: string, sels: Sel[], profile: Profile): DecoSpec[] {
   const { doc, spans } = parseWithPositions(source);
   return planFromAst(doc, spans, source, sels, profile);
@@ -60,9 +73,6 @@ export function planFromAst(
   const out: DecoSpec[] = [];
   const touched = (s: Span): boolean => sels.some((r) => r.from <= s.end && r.to >= s.start);
 
-  /** Emit the markers of an element: dimmed-but-visible when the cursor is
-   * on the element, hidden when it isn't. This is the whole live-preview
-   * gesture, in one helper. */
   const markers = (open: [number, number], close: [number, number], active: boolean): void => {
     for (const [a, b] of [open, close]) {
       if (b > a) {
@@ -71,17 +81,17 @@ export function planFromAst(
     }
   };
 
-  const walk = (node: Node): void => {
+  // -- inline: styled source with cursor-gated markers (plain paragraphs) --
+
+  const inline = (node: Node): void => {
     const span = spans.get(node);
     switch (node.type) {
       case "heading": {
         if (span) {
-          const active = touched(span);
-          const prefix = node.level + 1; // the #s and their space
-          markers([span.start, span.start + prefix], [span.start, span.start], active);
-          out.push({ kind: "mark", from: span.start + prefix, to: span.end, class: `cm-mq-h${node.level}` });
+          markers([span.start, span.start + node.level + 1], [span.start, span.start], touched(span));
+          out.push({ kind: "mark", from: span.start + node.level + 1, to: span.end, class: `cm-mq-h${node.level}` });
         }
-        node.children.forEach(walk);
+        node.children.forEach(inline);
         return;
       }
       case "emphasis":
@@ -93,7 +103,7 @@ export function planFromAst(
           out.push({ kind: "mark", from: span.start, to: span.end, class: cls });
           markers([span.start, span.start + n], [span.end - n, span.end], touched(span));
         }
-        node.children.forEach(walk);
+        node.children.forEach(inline);
         return;
       }
       case "code_span": {
@@ -107,20 +117,12 @@ export function planFromAst(
       }
       case "link": {
         if (span) {
-          const active = touched(span);
           const tail = source.indexOf("](", span.start);
           const textEnd = tail === -1 || tail >= span.end ? span.end : tail;
           out.push({ kind: "mark", from: span.start + 1, to: textEnd, class: "cm-mq-link" });
-          markers([span.start, span.start + 1], [textEnd, span.end], active);
+          markers([span.start, span.start + 1], [textEnd, span.end], touched(span));
         }
-        node.children.forEach(walk);
-        return;
-      }
-      case "embed": {
-        // The image itself when the cursor is away; raw source when editing.
-        if (span && !touched(span) && profile.media(node.target)?.kind === "image") {
-          out.push({ kind: "widget", from: span.start, to: span.end, widget: { type: "image", target: node.target, alt: node.alt } });
-        }
+        node.children.forEach(inline);
         return;
       }
       case "emoji": {
@@ -129,18 +131,8 @@ export function planFromAst(
         }
         return;
       }
-      case "thematic_break": {
-        if (span && !touched(span)) {
-          out.push({ kind: "widget", from: span.start, to: span.end, widget: { type: "rule" } });
-        }
-        return;
-      }
       case "comment": {
         if (span) out.push({ kind: "mark", from: span.start, to: span.end, class: "cm-mq-comment" });
-        return;
-      }
-      case "code_block": {
-        if (span) out.push({ kind: "mark", from: span.start, to: span.end, class: "cm-mq-codeblock" });
         return;
       }
       case "span": {
@@ -149,31 +141,109 @@ export function planFromAst(
           const openEnd = source.indexOf("]", span.start);
           const open: [number, number] = [span.start, openEnd === -1 ? span.start : openEnd + 1];
           const close: [number, number] = [span.end - (node.name.length + 3), span.end];
-          const style = spanStyle(node.name, node.attrs);
-          if (style !== null) {
-            out.push({ kind: "mark", from: open[1], to: close[0], style });
-          } else {
-            out.push({ kind: "mark", from: open[1], to: close[0], class: "cm-mq-span" });
-          }
+          out.push(spanContentSpec(node, open[1], close[0], active));
           markers(open, close, active);
         }
-        node.children.forEach(walk);
+        node.children.forEach(inline);
         return;
       }
       default:
-        if ("children" in node) node.children.forEach(walk);
+        if ("children" in node) node.children.forEach(inline);
     }
   };
 
-  walk(doc);
+  // -- block: rendered-widget-when-away, source-when-editing --
+
+  const block = (node: Node): void => {
+    const span = spans.get(node);
+    if (node.type === "directive" && (node.name === "page" || node.name === "section")) {
+      // Layout containers stay as source; preview their contents inside.
+      node.children.forEach(block);
+      return;
+    }
+    if (node.type === "comment") {
+      // A comment renders to nothing, so don't widget it - show it as dimmed
+      // source (it's invisible to readers but the author is editing it).
+      inline(node);
+      return;
+    }
+    if (node.type === "directive" && node.name === "meta") {
+      // `:::meta` also renders to nothing (it carries document metadata);
+      // like a comment, show it as quiet dimmed source rather than an empty
+      // widget that makes the line vanish.
+      if (span !== undefined) out.push({ kind: "mark", from: span.start, to: span.end, class: "cm-mq-comment" });
+      return;
+    }
+    const renderworthy =
+      node.type === "list" ||
+      node.type === "blockquote" ||
+      node.type === "code_block" ||
+      node.type === "thematic_break" ||
+      node.type === "turbolink" ||
+      node.type === "directive" ||
+      node.type === "invalid_directive" ||
+      ((node.type === "paragraph" || node.type === "heading") && containsRenderworthy(node));
+
+    if (!renderworthy && (node.type === "paragraph" || node.type === "heading")) {
+      inline(node); // a plain text block: augmented source
+      return;
+    }
+    if (renderworthy && span !== undefined) {
+      if (!touched(span)) {
+        out.push({ kind: "block", from: span.start, to: span.end, node });
+      }
+      // when editing it, show plain source (no decoration)
+    }
+  };
+
+  if (doc.type === "document") {
+    doc.children.forEach(block);
+  }
   return out;
 }
 
-/** The static, in-editor-friendly styling for a styled span - color, font,
- * size, sup/sub. Effects (blink, spoiler, ...) return null: we don't animate
- * or hide inside the editor, just mark the run as a span. */
+/** A paragraph/heading needs full rendering (not just inline marks) when it
+ * carries something inline styling can't fake: an embed (so images flow in a
+ * real <p>) or an aside (which renders below the block). */
+function containsRenderworthy(node: Node): boolean {
+  let found = false;
+  const walk = (n: Node): void => {
+    if (found) return;
+    if (n.type === "embed") {
+      found = true;
+      return;
+    }
+    if (n.type === "span" && (n.name === "sidenote" || n.name === "aside" || n.name === "footnote")) {
+      found = true;
+      return;
+    }
+    if ("children" in n) n.children.forEach(walk);
+  };
+  walk(node);
+  return found;
+}
+
+/** The content styling for an inline span. Effects animate (their real mq-*
+ * class) when the cursor is away and go static when you edit them; spoilers
+ * blur; color/font/size get inline style; unknown spans get a subtle mark. */
+function spanContentSpec(
+  node: Node & { type: "span" },
+  from: number,
+  to: number,
+  active: boolean,
+): DecoSpec {
+  const name = node.name;
+  if (name === "spoiler") {
+    return { kind: "mark", from, to, class: "mq-spoiler" };
+  }
+  if (EFFECTS.has(name)) {
+    return active ? { kind: "mark", from, to, class: "cm-mq-span" } : { kind: "mark", from, to, class: `mq-${name}` };
+  }
+  const style = spanStyle(name, node.attrs);
+  return style !== null ? { kind: "mark", from, to, style } : { kind: "mark", from, to, class: "cm-mq-span" };
+}
+
 function spanStyle(name: string, attrs: Record<string, string>): string | null {
-  const HEX_OR_TOKEN = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$|^[a-z][a-z0-9-]{0,31}$/;
   switch (name) {
     case "color": {
       const v = attrs["color"];
