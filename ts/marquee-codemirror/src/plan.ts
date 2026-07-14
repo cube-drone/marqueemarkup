@@ -241,7 +241,10 @@ function spanContentSpec(
 ): DecoSpec {
   const name = node.name;
   if (name === "spoiler") {
-    return { kind: "mark", from, to, class: "mq-spoiler" };
+    // Blurred when the cursor is away, but readable while you edit it - a
+    // spoiler you can't read is uniquely useless to type into (unlike an
+    // effect, which is merely animated).
+    return active ? { kind: "mark", from, to, class: "cm-mq-span" } : { kind: "mark", from, to, class: "mq-spoiler" };
   }
   if (EFFECTS.has(name)) {
     return active ? { kind: "mark", from, to, class: "cm-mq-span" } : { kind: "mark", from, to, class: `mq-${name}` };

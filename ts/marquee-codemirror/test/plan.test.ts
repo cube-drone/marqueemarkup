@@ -53,9 +53,11 @@ test("inline effect: real animating class away, static while editing", () => {
   assert.ok(!find(on, (s) => s.kind === "mark" && s.class === "mq-rainbow"), "static while editing");
 });
 
-test("inline spoiler gets the mq-spoiler class (it blurs)", () => {
-  const specs = plan("[spoiler]x[/spoiler]\n", noCursor, bareWebProfile);
-  assert.ok(find(specs, (s) => s.kind === "mark" && s.class === "mq-spoiler"));
+test("inline spoiler blurs away, but is readable while you edit it", () => {
+  const away = plan("[spoiler]x[/spoiler]\n", noCursor, bareWebProfile);
+  assert.ok(find(away, (s) => s.kind === "mark" && s.class === "mq-spoiler"), "blurs away");
+  const on = plan("[spoiler]x[/spoiler]\n", cursorAt(9), bareWebProfile);
+  assert.ok(!find(on, (s) => s.kind === "mark" && s.class === "mq-spoiler"), "not blurred while editing");
 });
 
 test("color span carries inline style", () => {

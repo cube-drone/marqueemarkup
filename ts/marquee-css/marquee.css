@@ -124,11 +124,14 @@
 }
 
 /* ---- spoilers: content present, visually withheld. Zero-JS: blurred,
-   revealed on hover or keyboard focus (the best a static page can do).
-   An interactive renderer wraps the document in .mq-root and click-gates
-   it instead - hover no longer reveals, a deliberate click does (and sets
-   data-mq-revealed). Degrades to plain visible text without the sheet,
-   because a hidden spoiler is worse than a shown one. ---- */
+   revealed on hover or focus. The element is focusable (tabindex=0), so a
+   tap focuses and reveals it on phones too, where there is no hover - :focus
+   (not :focus-visible) because touch focus matches the former, not the
+   latter. That's the best a static page can do. An interactive renderer
+   wraps the document in .mq-root and click-gates it instead - hover/focus no
+   longer reveal, a deliberate click does (and sets data-mq-revealed).
+   Degrades to plain visible text without the sheet, because a hidden spoiler
+   is worse than a shown one. ---- */
 
 .mq-spoiler {
   filter: blur(0.35em);
@@ -139,14 +142,16 @@
 }
 
 .mq-spoiler:hover,
-.mq-spoiler:focus-visible {
+.mq-spoiler:focus {
   filter: none;
 }
 
-/* Under an interactive renderer: hover must NOT reveal (a spoiler takes a
-   deliberate click); the click sets data-mq-revealed, which does. */
+/* Under an interactive renderer: hover/focus must NOT reveal (a spoiler takes
+   a deliberate click); the click sets data-mq-revealed, which does. The
+   [data-mq-revealed] rule below is equal specificity but later, so a clicked
+   spoiler stays revealed even while it holds focus. */
 .mq-root .mq-spoiler:hover,
-.mq-root .mq-spoiler:focus-visible {
+.mq-root .mq-spoiler:focus {
   filter: blur(0.35em);
 }
 
