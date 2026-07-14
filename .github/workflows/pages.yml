@@ -1,6 +1,10 @@
-# The live demo: every push to main renders WRITING.mq with the omnibus
-# (fetch mode - real turbolink cards) and deploys it to GitHub Pages, so
-# https://cube-drone.github.io/marqueemarkup/ always shows the tip of main.
+# The live demos: every push to main builds the three demo surfaces - all
+# rendering WRITING.mq - and deploys them to GitHub Pages, so the tip of main
+# is always live at https://cube-drone.github.io/marqueemarkup/ :
+#   /         the plain HTML the omnibus renders (fetch mode, real cards)
+#   /react/   the side-by-side React editor
+#   /editor/  the Obsidian-style live-preview editor
+# build-pages.ts builds all three into _site/ (see that script).
 #
 # One-time setup: repo Settings -> Pages -> Source: "GitHub Actions".
 

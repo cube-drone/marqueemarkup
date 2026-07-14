@@ -11,6 +11,16 @@ If you get syntax wrong, the worst outcome is that your characters show up liter
 This guide has a live twin: [WRITING.mq](WRITING.mq) demos everything described below in one
 previewable document — including a deliberate mistake, so you can see what "wrong" looks like.
 
+**See it running.** Three demos, all rendering that same `WRITING.mq`, redeployed on every push
+— so you're comparing the three surfaces, not three documents:
+
+- [**Rendered page**](https://cube-drone.github.io/marqueemarkup/) — the plain static HTML the
+  shipped renderer produces. This is the output; the other two are ways of authoring it.
+- [**Side-by-side editor**](https://cube-drone.github.io/marqueemarkup/react/) — source on one
+  side, the live React render on the other.
+- [**Live-preview editor**](https://cube-drone.github.io/marqueemarkup/editor/) — Obsidian-style:
+  the element under your cursor shows its syntax; move away and it renders in place.
+
 ## Paragraphs and line breaks
 
 Text separated by blank lines forms paragraphs. Single line breaks *inside* a paragraph don't

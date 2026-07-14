@@ -1,11 +1,23 @@
-// Build the GitHub Pages demo: WRITING.mq rendered by the shipped omnibus
-// (fetch mode - real OpenGraph cards, real turbolinks), plus the media it
-// references, into _site/. The page IS the product's output: what
-// https://cube-drone.github.io/marqueemarkup/ serves is what
-// `npx marquee --envelope WRITING.mq` makes, dogfooded on every push.
+// Build the whole GitHub Pages demo site into _site/, three demos deep - all
+// of them rendering the same WRITING.mq, so what you're comparing is the
+// three surfaces, not three documents. One command builds the deployable
+// site; the pages.yml workflow just runs it.
+//
+//   /         the plain HTML: WRITING.mq rendered by the shipped omnibus
+//             (fetch mode - real OpenGraph cards, real turbolinks). The page
+//             IS the product's output, what `npx marquee --envelope` makes.
+//   /react/   the side-by-side React demo: source on the left, live render
+//             on the right (@cube-drone/marquee-react-renderer).
+//   /editor/  the Obsidian-style live-preview editor
+//             (@cube-drone/marquee-codemirror).
+//
+// The two React demos are built by their own esbuild scripts and their dist
+// dirs (self-contained: each carries its own styles, fonts, and media) are
+// copied under _site/. GitHub Pages serves /react/ -> /react/index.html.
 //
 //     node --conditions=marquee-src scripts/build-pages.ts
 
+import { execFileSync } from "node:child_process";
 import { cpSync, copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -35,4 +47,16 @@ writeFileSync(join(out, "index.html"), page);
 cpSync(join(root, "example-media"), join(out, "example-media"), { recursive: true });
 copyFileSync(join(root, "marquee-logo.png"), join(out, "marquee-logo.png"));
 
-console.log("built _site/ (index.html + example-media + logo)");
+// The two React demos, each built by its package's own demo script, then
+// dropped in at a subpath. Their dist dirs use relative asset paths and carry
+// their own media, so they need no rewriting to live under _site/<sub>/.
+const reactDemos = [
+  { script: "demo:react", dist: "ts/marquee-react-renderer/demo/dist", sub: "react" },
+  { script: "demo:cm", dist: "ts/marquee-codemirror/demo/dist", sub: "editor" },
+];
+for (const demo of reactDemos) {
+  execFileSync("npm", ["run", demo.script], { cwd: root, stdio: "inherit" });
+  cpSync(join(root, demo.dist), join(out, demo.sub), { recursive: true });
+}
+
+console.log(`built _site/ (index.html + ${reactDemos.map((d) => `${d.sub}/`).join(" + ")} + example-media + logo)`);
