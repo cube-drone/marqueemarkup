@@ -13,6 +13,7 @@ import { parse } from "@cube-drone/marquee-parser";
 import { bareWebProfile, render, usedFontTokens } from "@cube-drone/marquee-html-renderer";
 import { marqueeCss } from "@cube-drone/marquee-css";
 import { externalFontFaces, fontFilePath } from "@cube-drone/marquee-fonts";
+import { defaultPlugins, turbolinkStyles } from "@cube-drone/marquee-turbolink";
 
 const here = fileURLToPath(new URL("..", import.meta.url));
 const repo = join(here, "../..");
@@ -44,7 +45,13 @@ for (const token of tokens) {
     shipped.push(token);
   }
 }
-writeFileSync(join(out, "styles.css"), `${marqueeCss}\n\n${externalFontFaces(shipped, "fonts/")}`);
+// marquee.css + the composed plugins' skins (which size the turbolink embeds
+// the demo profile renders - without them a loaded video/iframe takes its
+// natural width and overflows a phone) + the fonts the tour wears.
+writeFileSync(
+  join(out, "styles.css"),
+  [marqueeCss, turbolinkStyles(defaultPlugins), externalFontFaces(shipped, "fonts/")].join("\n\n"),
+);
 
 cpSync(join(repo, "example-media"), join(out, "example-media"), { recursive: true });
 cpSync(join(repo, "marquee-logo.png"), join(out, "marquee-logo.png"));

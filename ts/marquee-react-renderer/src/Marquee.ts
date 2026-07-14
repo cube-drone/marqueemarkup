@@ -202,14 +202,20 @@ export const Marquee = forwardRef<MarqueeHandle, MarqueeProps>(function Marquee(
    * blocks is contained only by their parent, and scrolling to the parent
    * means scrolling to the middle of the whole group (or, on a blank line
    * between top-level paragraphs, the middle of the whole document). Then
-   * walk out until something has an element: text nodes render as strings. */
+   * walk out until something has an element: text nodes render as strings.
+   *
+   * But STOP below the document node. The document is registered too (it is
+   * the <div class="mq-doc">), so a cursor whose nearest node renders to
+   * nothing - the meta line, a comment, an invalid directive - would walk all
+   * the way up and "scroll to" the whole page. Better to not scroll at all
+   * (return null): leave the preview where the reader left it. */
   const elementNear = useCallback(
     (offset: number): HTMLElement | null => {
       if (parsed.doc === null || parsed.spans === null) {
         return null;
       }
       let node = locateNear(parsed.doc, parsed.spans, offset);
-      while (node !== null) {
+      while (node !== null && node !== parsed.doc) {
         const el = elements.get(node);
         if (el !== undefined) {
           return el;
