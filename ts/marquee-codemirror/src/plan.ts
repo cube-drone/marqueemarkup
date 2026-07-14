@@ -41,7 +41,11 @@ export type DecoSpec =
   /** Replace an inline range with a small widget (a resolved emoji glyph). */
   | { kind: "widget"; from: number; to: number; widget: WidgetSpec }
   /** Replace a whole block's source with the renderer's output for it. */
-  | { kind: "block"; from: number; to: number; node: Node };
+  | { kind: "block"; from: number; to: number; node: Node }
+  /** Keep a block's source editable, with a dimmed rendered preview below
+   * it - shown for the block you're currently editing so its rendered form
+   * doesn't jarringly vanish (and the layout stays put). */
+  | { kind: "preview"; at: number; node: Node };
 
 export type WidgetSpec = { type: "emoji"; slug: string };
 
@@ -191,8 +195,11 @@ export function planFromAst(
     if (renderworthy && span !== undefined) {
       if (!touched(span)) {
         out.push({ kind: "block", from: span.start, to: span.end, node });
+      } else {
+        // Editing it: keep the source, but hold the rendered form below as a
+        // dimmed preview so it doesn't vanish and the layout doesn't jump.
+        out.push({ kind: "preview", at: span.end, node });
       }
-      // when editing it, show plain source (no decoration)
     }
   };
 

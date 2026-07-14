@@ -52,6 +52,20 @@ preview and the page can't disagree. The decision layer is a **pure function** �
 `plan(source, cursors, profile) → decoration specs` — exported for testing or for building your
 own surface on the same policy.
 
+## Editing a block
+
+Click any rendered block to drop the cursor into it and edit its source — except a control
+*inside* it (a link, a `<video>`, a play button) still does its own thing, so a media embed
+plays rather than opening to source. While you edit a block, its rendered form doesn't vanish:
+a **dimmed preview** is held just below the source (set off with a left rule) so you can see
+what you're shaping, and so the surrounding layout stays put instead of reflowing on every
+click. Rendered HTML is cached by a block's *source text*, so typing only re-renders the block
+you're touching — the rest of the document keeps its DOM (no re-render, no image reload, no
+height churn, no scroll jumping).
+
+Up/down arrows step *over* a rendered block (treating it as one unit, which is what you want
+while skimming); to keyboard-edit a block, arrow into it from the side or click it.
+
 ## Options
 
 ```ts

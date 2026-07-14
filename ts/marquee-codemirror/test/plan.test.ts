@@ -81,6 +81,10 @@ test("a list renders as a block widget when away, source when editing", () => {
   assert.equal(b.from, 0);
   const editing = plan(src, cursorAt(3), bareWebProfile);
   assert.equal(blockSpec(editing), undefined, "editing shows the source");
+  // ...but a dimmed rendered preview is held below it (doesn't just vanish).
+  const preview = editing.find((s) => s.kind === "preview");
+  assert.ok(preview && preview.kind === "preview" && preview.node.type === "list");
+  assert.ok(preview.at > 0 && preview.at <= src.length, "preview anchored at the block's end");
 });
 
 test("quotes, code blocks, tables, rules, turbolinks are rendered blocks", () => {
@@ -127,7 +131,11 @@ test("comments dim; the whole vector corpus plans in-bounds", () => {
   for (const file of readdirSync(dir).filter((f) => f.endsWith(".json"))) {
     for (const v of JSON.parse(readFileSync(join(dir, file), "utf8")) as Array<{ marquee: string }>) {
       for (const s of plan(v.marquee, noCursor, bareWebProfile)) {
-        assert.ok(s.from >= 0 && s.from <= s.to && s.to <= v.marquee.length, `bad range in ${file}`);
+        if (s.kind === "preview") {
+          assert.ok(s.at >= 0 && s.at <= v.marquee.length, `bad anchor in ${file}`);
+        } else {
+          assert.ok(s.from >= 0 && s.from <= s.to && s.to <= v.marquee.length, `bad range in ${file}`);
+        }
       }
       cases += 1;
     }

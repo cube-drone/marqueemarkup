@@ -1,8 +1,15 @@
 // The CodeMirror 6 extension. Decorations come from a StateField (not a
 // ViewPlugin) because block-level widgets - a whole rendered list, a code
-// block - are only allowed from the state, not from plugins. The field
-// value carries its own parse and per-block render caches, so scrubbing the
-// cursor around re-plans (cheap) without re-parsing or re-rendering.
+// block - are only allowed from the state, not from plugins.
+//
+// The flail-killer: rendered HTML is cached by the block's SOURCE TEXT, not
+// by AST-node identity. Every keystroke re-parses, minting fresh nodes, so a
+// node-keyed cache would miss on every block and re-render (and re-load every
+// image, and re-measure every height) the whole document each keystroke -
+// which is exactly the "page flails around between keystrokes" symptom. Keyed
+// by source text, an unedited block hits the cache, and because BlockWidget's
+// `eq` compares HTML, CodeMirror keeps its existing DOM: no re-render, no
+// image reload, no height change. Only the block you're actually editing moves.
 
 import { StateField, type EditorState, type Extension } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
@@ -23,7 +30,6 @@ interface State {
   source: string;
   doc: Node | null;
   spans: WeakMap<Node, Span>;
-  html: WeakMap<Node, string>;
 }
 
 function selectionsOf(state: EditorState): Sel[] {
@@ -33,16 +39,24 @@ function selectionsOf(state: EditorState): Sel[] {
 export function marquee(options: MarqueeEditorOptions = {}): Extension {
   const profile: Profile = { ...bareWebProfile, ...options.profile };
 
-  const renderBlock = (node: Node, html: WeakMap<Node, string>): string => {
-    let cached = html.get(node);
+  // Persistent across parses, keyed by a block's source text. Bounded so a
+  // long editing session (each keystroke on a block mints a new key) can't
+  // grow it without limit; clearing just costs a one-frame re-render.
+  const htmlCache = new Map<string, string>();
+  const renderBlock = (node: Node, spans: WeakMap<Node, Span>, source: string): string => {
+    const span = spans.get(node);
+    if (span === undefined) return render(node, profile);
+    const key = `${span.start}:${source.slice(span.start, span.end)}`;
+    let cached = htmlCache.get(key);
     if (cached === undefined) {
       cached = render(node, profile);
-      html.set(node, cached);
+      if (htmlCache.size > 2000) htmlCache.clear();
+      htmlCache.set(key, cached);
     }
     return cached;
   };
 
-  const toDecorations = (specs: DecoSpec[], html: WeakMap<Node, string>): DecorationSet => {
+  const toDecorations = (specs: DecoSpec[], spans: WeakMap<Node, Span>, source: string): DecorationSet => {
     const ranges = specs.map((spec) => {
       if (spec.kind === "mark") {
         return Decoration.mark({
@@ -54,10 +68,18 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
         return Decoration.replace({}).range(spec.from, spec.to);
       }
       if (spec.kind === "widget") {
-        return Decoration.replace({ widget: new EmojiWidget(spec.from, spec.widget.slug, profile) }).range(spec.from, spec.to);
+        return Decoration.replace({ widget: new EmojiWidget(spec.widget.slug, profile) }).range(spec.from, spec.to);
+      }
+      if (spec.kind === "preview") {
+        // A dimmed rendered copy just below the block you're editing.
+        return Decoration.widget({
+          widget: new BlockWidget(renderBlock(spec.node, spans, source), true),
+          block: true,
+          side: 1,
+        }).range(spec.at);
       }
       return Decoration.replace({
-        widget: new BlockWidget(spec.from, spec.node, renderBlock(spec.node, html)),
+        widget: new BlockWidget(renderBlock(spec.node, spans, source), false),
         block: true,
       }).range(spec.from, spec.to);
     });
@@ -67,7 +89,6 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
   /** Parse afresh (a new document) and plan. */
   const fromDoc = (state: EditorState): State => {
     const source = state.doc.toString();
-    const html = new WeakMap<Node, string>();
     let doc: Node | null;
     let spans: WeakMap<Node, Span> = new WeakMap();
     try {
@@ -80,7 +101,7 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
       doc = null;
     }
     const specs = doc === null ? [] : planFromAst(doc, spans, source, selectionsOf(state), profile);
-    return { deco: toDecorations(specs, html), source, doc, spans, html };
+    return { deco: toDecorations(specs, spans, source), source, doc, spans };
   };
 
   /** Re-plan for a moved cursor, reusing the cached parse and renders. */
@@ -89,7 +110,7 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
       return prev;
     }
     const specs = planFromAst(prev.doc, prev.spans, prev.source, selectionsOf(state), profile);
-    return { ...prev, deco: toDecorations(specs, prev.html) };
+    return { ...prev, deco: toDecorations(specs, prev.spans, prev.source) };
   };
 
   const field = StateField.define<State>({

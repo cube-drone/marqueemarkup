@@ -54,4 +54,12 @@ export const marqueeTheme = EditorView.theme({
   // and vertical cursor motion. Padding is inside offsetHeight, so it's safe.
   "& .cm-mq-block": { padding: "0.2em 0", cursor: "text" },
   "& .cm-mq-block img, & .cm-mq-block video": { maxWidth: "100%" },
+  // The rendered preview held below the block you're editing: dimmed, and
+  // set off with a left rule so it reads as "the result", not more source.
+  "& .cm-mq-preview": {
+    opacity: "0.55",
+    borderLeft: "2px solid rgba(127,127,127,0.35)",
+    paddingLeft: "0.6em",
+    marginLeft: "-0.1em",
+  },
 });
