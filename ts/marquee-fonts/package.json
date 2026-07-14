@@ -1,6 +1,6 @@
 {
   "name": "@cube-drone/marquee-fonts",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "The Marquee grab bag: 31 self-hosted display faces (SIL OFL + one Apache-2.0), with external and inline-base64 @font-face helpers",
   "license": "MPL-2.0",
   "repository": {
@@ -39,7 +39,7 @@
     "prepack": "npm run build"
   },
   "devDependencies": {
-    "@cube-drone/marquee-html-renderer": "^0.3.0",
+    "@cube-drone/marquee-html-renderer": "^0.4.0",
     "@types/node": "^24.0.0",
     "typescript": "^5.9.0"
   }

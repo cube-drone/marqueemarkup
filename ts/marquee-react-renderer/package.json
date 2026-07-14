@@ -1,6 +1,6 @@
 {
   "name": "@cube-drone/marquee-react-renderer",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Interactive React renderer for the Marquee markup language: the JS halves of the animation contract (start-on-visible, tap-to-skip) plus source-position scroll sync for side-by-side editors",
   "license": "MPL-2.0",
   "repository": {
@@ -34,8 +34,8 @@
     "demo": "node --conditions=marquee-src scripts/demo.ts"
   },
   "dependencies": {
-    "@cube-drone/marquee-html-renderer": "^0.3.0",
-    "@cube-drone/marquee-parser": "^0.3.0"
+    "@cube-drone/marquee-html-renderer": "^0.4.0",
+    "@cube-drone/marquee-parser": "^0.4.0"
   },
   "peerDependencies": {
     "react": ">=18"
@@ -48,9 +48,9 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "^5.9.0",
-    "@cube-drone/marquee-css": "^0.3.0",
-    "@cube-drone/marquee-fonts": "^0.3.0",
-    "@cube-drone/marquee-emoji": "^0.3.0",
-    "@cube-drone/marquee-turbolink": "^0.3.0"
+    "@cube-drone/marquee-css": "^0.4.0",
+    "@cube-drone/marquee-fonts": "^0.4.0",
+    "@cube-drone/marquee-emoji": "^0.4.0",
+    "@cube-drone/marquee-turbolink": "^0.4.0"
   }
 }
