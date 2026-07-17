@@ -465,6 +465,33 @@ cell. The blank line between rows is just the ordinary paragraph break:
   or don't; it renders the same.
 - There is deliberately no way to put a table inside a table.
 
+## Conflicts
+
+This is the one block you'll almost never *type* — your app writes it for you. When you and
+another device (or another person) edit the same lines at once, a versioning app can hand you the
+disagreement right inside the document, as two alternatives to choose between by ordinary editing,
+instead of a wall of `<<<<<<<` markers:
+
+```
+:::conflict
+:::variant label="your phone" when="2026-07-15T21:04"
+Meet at the **north** entrance.
+::: variant
+:::variant label="your laptop" when="2026-07-15T17:22"
+Meet at the **north** entrance, by the fountain.
+::: variant
+::: conflict
+```
+
+- `:::conflict` wraps two or more `:::variant` blocks, each shown in full.
+- `label` names a side and `when` timestamps it — both are just labels for your eyes (quote the
+  timestamp; its colons need the quotes). `role=base` on a variant marks the common ancestor both
+  sides started from, which readers dim.
+- Resolve it by editing: delete the version you don't want, keep the one you do (or splice them),
+  and save. Nothing is parsed back out — whatever you leave *is* the document.
+- It degrades like everything else: a reader too old to know `:::conflict` shows both variants
+  stacked, in full, rather than hiding either. A conflict never loses your words.
+
 ## Coming from markdown?
 
 Most of your habits transfer. The deliberate differences:

@@ -544,6 +544,36 @@ association, not just the bold):
 Line the source up into columns or don't — spacing between cells is yours, and it renders
 the same either way. There is deliberately no way to put a table inside a table.
 
+## Conflicts
+
+The one block you'll almost never type — your app writes it for you. When two devices edit the
+same lines at once, a versioning app can drop the disagreement straight into the document: two
+alternatives to pick between by ordinary editing, instead of a screenful of `<<<<<<<`.
+
+```marquee
+:::conflict
+:::variant label="your phone" when="2026-07-15T21:04"
+Meet at the **north** entrance.
+::: variant
+:::variant label="your laptop" when="2026-07-15T17:22"
+Meet at the **north** entrance, by the fountain.
+::: variant
+::: conflict
+```
+
+:::conflict
+:::variant label="your phone" when="2026-07-15T21:04"
+Meet at the **north** entrance.
+::: variant
+:::variant label="your laptop" when="2026-07-15T17:22"
+Meet at the **north** entrance, by the fountain.
+::: variant
+::: conflict
+
+Resolve it by editing: delete the version you don't want, keep (or splice) the one you do, and
+save — whatever you leave *is* the document, nothing is parsed back out. A reader too old to know
+`:::conflict` shows both variants stacked, in full: the words never vanish.
+
 ## Quotes
 
 ```marquee
