@@ -1,6 +1,6 @@
 {
   "name": "@cube-drone/marquee-codemirror",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "A CodeMirror 6 extension for editing Marquee: Obsidian-style live preview - the source stays plain text, rendering is projected onto it as decorations, and the element under the cursor opens to show its syntax",
   "license": "MPL-2.0",
   "repository": {
@@ -34,8 +34,8 @@
     "demo": "node --conditions=marquee-src scripts/demo.ts"
   },
   "dependencies": {
-    "@cube-drone/marquee-html-renderer": "^0.4.0",
-    "@cube-drone/marquee-parser": "^0.4.0"
+    "@cube-drone/marquee-html-renderer": "^0.5.0",
+    "@cube-drone/marquee-parser": "^0.5.0"
   },
   "peerDependencies": {
     "@codemirror/state": "^6",
@@ -49,9 +49,9 @@
     "@types/node": "^24.0.0",
     "esbuild": "^0.24.0",
     "typescript": "^5.9.0",
-    "@cube-drone/marquee-css": "^0.4.0",
-    "@cube-drone/marquee-emoji": "^0.4.0",
-    "@cube-drone/marquee-fonts": "^0.4.0",
-    "@cube-drone/marquee-turbolink": "^0.4.0"
+    "@cube-drone/marquee-css": "^0.5.0",
+    "@cube-drone/marquee-emoji": "^0.5.0",
+    "@cube-drone/marquee-fonts": "^0.5.0",
+    "@cube-drone/marquee-turbolink": "^0.5.0"
   }
 }
