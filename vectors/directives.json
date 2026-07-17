@@ -275,5 +275,200 @@
         }
       ]
     }
+  },
+  {
+    "name": "directives/conflict",
+    "marquee": ":::conflict\n:::variant label=\"your phone\" when=\"2026-07-15T21:04:00Z\"\nstart!\n::: variant\n:::variant label=\"your PC\" when=\"2026-07-15T17:22:00Z\"\nstart, then a whole afternoon\n::: variant\n::: conflict\n",
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "directive",
+          "name": "conflict",
+          "attrs": {},
+          "children": [
+            {
+              "type": "directive",
+              "name": "variant",
+              "attrs": {
+                "label": "your phone",
+                "when": "2026-07-15T21:04:00Z"
+              },
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "start!"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "directive",
+              "name": "variant",
+              "attrs": {
+                "label": "your PC",
+                "when": "2026-07-15T17:22:00Z"
+              },
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "start, then a whole afternoon"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "directives/conflict-base",
+    "marquee": ":::conflict\n:::variant role=base\nstart\n::: variant\n:::variant label=\"mine\"\nstart now\n::: variant\n::: conflict\n",
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "directive",
+          "name": "conflict",
+          "attrs": {},
+          "children": [
+            {
+              "type": "directive",
+              "name": "variant",
+              "attrs": {
+                "role": "base"
+              },
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "start"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "directive",
+              "name": "variant",
+              "attrs": {
+                "label": "mine"
+              },
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "start now"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "directives/conflict-nested",
+    "marquee": ":::conflict\n:::variant label=\"a\"\n:::conflict\n:::variant label=\"a1\"\none\n::: variant\n:::variant label=\"a2\"\ntwo\n::: variant\n::: conflict\n::: variant\n:::variant label=\"b\"\nthree\n::: variant\n::: conflict\n",
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "directive",
+          "name": "conflict",
+          "attrs": {},
+          "children": [
+            {
+              "type": "directive",
+              "name": "variant",
+              "attrs": {
+                "label": "a"
+              },
+              "children": [
+                {
+                  "type": "directive",
+                  "name": "conflict",
+                  "attrs": {},
+                  "children": [
+                    {
+                      "type": "directive",
+                      "name": "variant",
+                      "attrs": {
+                        "label": "a1"
+                      },
+                      "children": [
+                        {
+                          "type": "paragraph",
+                          "children": [
+                            {
+                              "type": "text",
+                              "value": "one"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "directive",
+                      "name": "variant",
+                      "attrs": {
+                        "label": "a2"
+                      },
+                      "children": [
+                        {
+                          "type": "paragraph",
+                          "children": [
+                            {
+                              "type": "text",
+                              "value": "two"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "directive",
+              "name": "variant",
+              "attrs": {
+                "label": "b"
+              },
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "three"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   }
 ]

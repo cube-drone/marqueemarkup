@@ -433,6 +433,34 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
         "spoiler" => {
             format!("<div class=\"mq-spoiler mq-spoiler-block\" tabindex=\"0\">{inner}</div>")
         }
+        // Versioned-document conflict: a container of :::variant alternatives,
+        // synthesized by an embedder at read time. The unknown-container shrug
+        // keeps it lossless on a renderer that predates it (variants' words
+        // survive, stacked); this rendering is presentation over that.
+        "conflict" => format!("<div class=\"mq-conflict\">{inner}</div>"),
+        // One alternative. label/when are advisory display text, shown VERBATIM
+        // (reformatting a timestamp would make renderers disagree); role=base
+        // marks the common ancestor.
+        "variant" => {
+            let mut head: Vec<String> = Vec::new();
+            if let Some(label) = attrs.get("label") {
+                head.push(format!("<span class=\"mq-variant-label\">{}</span>", escape_text(label)));
+            }
+            if let Some(when) = attrs.get("when") {
+                head.push(format!("<span class=\"mq-variant-when\">{}</span>", escape_text(when)));
+            }
+            let cls = if attrs.get("role").map(String::as_str) == Some("base") {
+                "mq-variant mq-variant-base"
+            } else {
+                "mq-variant"
+            };
+            let head_html = if head.is_empty() {
+                String::new()
+            } else {
+                format!("<div class=\"mq-variant-head\">{}</div>", head.join(" "))
+            };
+            format!("<div class=\"{cls}\">{head_html}{inner}</div>")
+        }
         // Unknown vocabulary: a container renders its children with an
         // affordance that something wrapped them; a leaf renders the inert
         // placeholder. Never eat authored content.

@@ -272,9 +272,12 @@ two things that make front matter a wart.
 - Attribute grammar is strict; directive *names* and attribute *values* are vocabulary resolved
   downstream: the parser accepts any well-formed name and emits the node, and the
   validator/embedder decides which names and values are real.
-- **Unknown directive names render as an inert placeholder** ("this page uses a widget your
-  client doesn't know") - the additive-evolution mechanism: new vocabulary degrades gracefully on
-  old renderers, and the document version tag says which dialect to expect.
+- **Unknown directive names degrade, never eat content.** A *leaf* directive (no body) renders an
+  inert placeholder ("this page uses a widget your client doesn't know"); a *container* (a body of
+  blocks) renders its **children** as ordinary content, wrapped in a marker that something scoped
+  them - the effect is lost, never the words. This is the additive-evolution mechanism: new
+  vocabulary degrades gracefully on old renderers - a known renderer gets the styling, an old one
+  still gets every word - and the document version tag says which dialect to expect.
 
 ### The attribute grammar
 
@@ -585,6 +588,44 @@ stacks) and its strong point is inline nesting (explicit BBCode closers, legible
   future *attrs* (additive, corpus-driven), not future grammar.
 - Depth arithmetic: page > section > table is three directive levels - comfortable under the
   cap even before v0's raise, by design.
+
+### Conflicts: versioned-document alternatives
+
+```
+:::conflict
+:::variant label="your phone" when="2026-07-15T21:04:00Z"
+start!
+::: variant
+:::variant label="your PC" when="2026-07-15T17:22:00Z"
+start, then a whole afternoon
+::: variant
+::: conflict
+```
+
+Presentation vocabulary for an embedder with document versioning: when two edits collide, the
+conflict is shown *inside the body* - the editor is the merge tool - rather than behind a modal
+or in `<<<<<<<` marker soup. The block is **synthesized by the embedder at read time**: never
+hand-authored, never parsed back out (the resolution is whatever the user saves). So there are no
+ids, hashes, or merge semantics here - only display.
+
+- **`:::conflict`** wraps two or more **`:::variant`** children, each an alternative rendered in
+  full. Everything load-bearing lives in children; attributes are advisory only. That split is
+  *forced* by the degradation contract: the unknown-container shrug keeps a variant's **words**
+  but drops its **attributes**, so a design that put content in an attribute would lose words on a
+  renderer that predates the vocabulary. A conflict that degrades is still a lossless conflict.
+- **`:::variant` attributes, all optional, all advisory:** `label` (free text naming the side - a
+  device name, "yours"/"theirs"); `when` (a display timestamp); `role=base` (marks the
+  common-ancestor version of a diff3-style fold, which renderers may de-emphasize). None is
+  load-bearing; the reference renderer de-emphasizes `base` but never hides it.
+- **`when` is shown verbatim - never reparsed or reformatted.** A renderer that localized it or
+  rewrote it "2 days ago" would make two conformant renderers disagree on the same document, the
+  differential-rendering hazard the language exists to forbid. Embedders emit RFC 3339 by
+  convention (quote it - a timestamp's colons are not token-safe unquoted); the renderer prints it.
+- **Block-level only.** Conflicts come from line-oriented three-way merges; there is no inline
+  `[conflict]` form. Folds nest (`:::conflict` inside a `:::variant`) for multi-way merges, under
+  the ordinary directive depth cap.
+- Class contract: `mq-conflict`; `mq-variant` (plus `mq-variant-base` when `role=base`); and
+  `mq-variant-head` / `mq-variant-label` / `mq-variant-when` for the advisory line.
 
 ### Emoji resolution
 

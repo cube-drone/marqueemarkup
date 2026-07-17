@@ -362,6 +362,28 @@ function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string 
       // a paragraph) behind the same blur, same reveal-on-hover. Reuses the
       // mq-spoiler class - the CSS is element-agnostic.
       return `<div class="mq-spoiler mq-spoiler-block" tabindex="0">${inner}</div>`;
+    case "conflict":
+      // Versioned-document conflict: a container of two-or-more :::variant
+      // alternatives, synthesized by an embedder at read time (never authored
+      // by hand, never parsed back). The unknown-container shrug keeps it
+      // lossless on a renderer that predates it - the variants' words survive,
+      // stacked - so this rendering is pure presentation over that guarantee.
+      return `<div class="mq-conflict">${inner}</div>`;
+    case "variant": {
+      // One alternative. label/when are advisory display text, shown VERBATIM
+      // (reformatting a timestamp would make two renderers disagree - the
+      // differential-rendering hazard); role=base marks the common ancestor.
+      const head: string[] = [];
+      if (attrs["label"] !== undefined) {
+        head.push(`<span class="mq-variant-label">${escapeText(attrs["label"])}</span>`);
+      }
+      if (attrs["when"] !== undefined) {
+        head.push(`<span class="mq-variant-when">${escapeText(attrs["when"])}</span>`);
+      }
+      const cls = attrs["role"] === "base" ? "mq-variant mq-variant-base" : "mq-variant";
+      const headHtml = head.length === 0 ? "" : `<div class="mq-variant-head">${head.join(" ")}</div>`;
+      return `<div class="${cls}">${headHtml}${inner}</div>`;
+    }
   }
   // Unknown vocabulary: a container renders its children with an affordance
   // that something wrapped them; a leaf renders the inert placeholder.

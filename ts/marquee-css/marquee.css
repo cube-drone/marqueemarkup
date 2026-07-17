@@ -168,6 +168,47 @@
   padding: 0.5rem;
 }
 
+/* ---- conflict / variant: a versioned-document merge conflict, shown inside
+   the body (the editor is the merge tool). Synthesized by the embedder at read
+   time, never authored. Stacked variants, each with an advisory label/when
+   line; the common ancestor (role=base) is de-emphasized, never hidden -
+   losing words is the one thing a conflict must not do. ---- */
+.mq-conflict {
+  border: 1px solid rgba(127, 127, 127, 0.4);
+  border-radius: 0.375rem;
+  margin: 1rem 0;
+}
+
+.mq-variant {
+  padding: 0.5rem 0.75rem;
+}
+
+.mq-variant + .mq-variant {
+  border-top: 1px solid rgba(127, 127, 127, 0.4);
+}
+
+.mq-variant-head {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  margin-bottom: 0.25rem;
+  font-size: 0.85em;
+  opacity: 0.75;
+}
+
+.mq-variant-label {
+  font-weight: 600;
+}
+
+.mq-variant-when {
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+.mq-variant-base {
+  opacity: 0.6;
+}
+
 /* ---- the color slot: validated author values, property mapping ours ---- */
 
 .mq-color {

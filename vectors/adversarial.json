@@ -928,5 +928,19 @@
     },
     "marquee": "#!marquee 0\n\nShopping list:\n- interrupts the paragraph above\n - one-space floors to sibling\n   - three-space floors to nested\n- back to top level\n\n1. first\n1. all ones - the renderer numbers\n- kind switch splits the list\n\nplain column-0 text restarts everything\n\n1. numbering restarted here (visible, fixable)\n\n- item with\n\n  a second paragraph\n\n  ```\n  fenced code in a bullet\n  ```\n\n- -this second dash is content, not a marker\n\n> - a quoted list\n> - stays in the quote\n>   - nested inside both\n\n-not a list, \\- escaped dash, and three break-alikes:\n\n---\n\n ---\n\n--- x\n",
     "name": "adversarial/list-labyrinth"
+  },
+  {
+    "name": "adversarial/conflict-inert-in-code-fence",
+    "marquee": "```\n:::conflict\n:::variant label=\"not real\"\nthis is inside a code fence\n::: variant\n::: conflict\n```\n",
+    "ast": {
+      "type": "document",
+      "version": 0,
+      "children": [
+        {
+          "type": "code_block",
+          "text": ":::conflict\n:::variant label=\"not real\"\nthis is inside a code fence\n::: variant\n::: conflict"
+        }
+      ]
+    }
   }
 ]

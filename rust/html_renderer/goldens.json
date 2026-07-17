@@ -20,6 +20,10 @@
     "name": "adversarial/list-labyrinth"
   },
   {
+    "html": "<div class=\"mq-doc\"><pre class=\"mq-code\"><code>:::conflict\n:::variant label=\"not real\"\nthis is inside a code fence\n::: variant\n::: conflict\n</code></pre></div>",
+    "name": "adversarial/conflict-inert-in-code-fence"
+  },
+  {
     "html": "<div class=\"mq-doc\"><blockquote><p>a\nb</p></blockquote><p>after</p></div>",
     "name": "blocks/blockquote"
   },
@@ -162,6 +166,18 @@
   {
     "html": "<div class=\"mq-doc\"><div class=\"mq-placeholder\" data-directive=\"x\"></div></div>",
     "name": "directives/leaf-quoted-colons-are-safe"
+  },
+  {
+    "html": "<div class=\"mq-doc\"><div class=\"mq-conflict\"><div class=\"mq-variant\"><div class=\"mq-variant-head\"><span class=\"mq-variant-label\">your phone</span> <span class=\"mq-variant-when\">2026-07-15T21:04:00Z</span></div><p>start!</p></div><div class=\"mq-variant\"><div class=\"mq-variant-head\"><span class=\"mq-variant-label\">your PC</span> <span class=\"mq-variant-when\">2026-07-15T17:22:00Z</span></div><p>start, then a whole afternoon</p></div></div></div>",
+    "name": "directives/conflict"
+  },
+  {
+    "html": "<div class=\"mq-doc\"><div class=\"mq-conflict\"><div class=\"mq-variant mq-variant-base\"><p>start</p></div><div class=\"mq-variant\"><div class=\"mq-variant-head\"><span class=\"mq-variant-label\">mine</span></div><p>start now</p></div></div></div>",
+    "name": "directives/conflict-base"
+  },
+  {
+    "html": "<div class=\"mq-doc\"><div class=\"mq-conflict\"><div class=\"mq-variant\"><div class=\"mq-variant-head\"><span class=\"mq-variant-label\">a</span></div><div class=\"mq-conflict\"><div class=\"mq-variant\"><div class=\"mq-variant-head\"><span class=\"mq-variant-label\">a1</span></div><p>one</p></div><div class=\"mq-variant\"><div class=\"mq-variant-head\"><span class=\"mq-variant-label\">a2</span></div><p>two</p></div></div></div><div class=\"mq-variant\"><div class=\"mq-variant-head\"><span class=\"mq-variant-label\">b</span></div><p>three</p></div></div></div>",
+    "name": "directives/conflict-nested"
   },
   {
     "html": "<div class=\"mq-doc\"><p><em>hi</em></p></div>",

@@ -424,6 +424,25 @@ function directive(node: Node & { type: "directive" }, ctx: Ctx, key: string): R
         nodeProps(node, ctx, { key, tag: "div", className: "mq-spoiler mq-spoiler-block" }),
         ...kids,
       );
+    case "conflict":
+      // A read-time merge conflict, synthesized by the embedder. Mirrors the
+      // static renderer's mq-conflict/mq-variant contract.
+      return h("div", nodeProps(node, ctx, { key, className: "mq-conflict" }), ...kids);
+    case "variant": {
+      const head: ReactNode[] = [];
+      if (attrs["label"] !== undefined) {
+        head.push(h("span", { key: "l", className: "mq-variant-label" }, attrs["label"]));
+      }
+      if (attrs["when"] !== undefined) {
+        if (head.length > 0) {
+          head.push(" ");
+        }
+        head.push(h("span", { key: "w", className: "mq-variant-when" }, attrs["when"]));
+      }
+      const cls = attrs["role"] === "base" ? "mq-variant mq-variant-base" : "mq-variant";
+      const headEl = head.length === 0 ? null : h("div", { className: "mq-variant-head" }, ...head);
+      return h("div", nodeProps(node, ctx, { key, className: cls }), headEl, ...kids);
+    }
   }
   // Unknown vocabulary: a container renders its children with an affordance;
   // a leaf renders the inert placeholder. Never eat authored content.
