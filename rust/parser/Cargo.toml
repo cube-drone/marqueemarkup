@@ -3,7 +3,7 @@
 # one namespace we feel polite mucking up is our own). Code keeps the pretty
 # name via [lib] below.
 name = "cube-drone-marquee-parser"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2021"
 license = "MPL-2.0"
 description = "Reference parser for the Marquee markup language"
