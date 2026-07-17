@@ -174,9 +174,12 @@
    line; the common ancestor (role=base) is de-emphasized, never hidden -
    losing words is the one thing a conflict must not do. ---- */
 .mq-conflict {
-  border: 1px solid rgba(127, 127, 127, 0.4);
+  /* A light red wash: enough to say "resolve me", not enough to alarm. Low
+     alpha so it tints correctly over a light or a dark page. */
+  border: 1px solid rgba(200, 70, 70, 0.5);
   border-radius: 0.375rem;
   margin: 1rem 0;
+  background: rgba(200, 70, 70, 0.07);
 }
 
 .mq-variant {
@@ -184,7 +187,7 @@
 }
 
 .mq-variant + .mq-variant {
-  border-top: 1px solid rgba(127, 127, 127, 0.4);
+  border-top: 1px solid rgba(200, 70, 70, 0.25);
 }
 
 .mq-variant-head {
