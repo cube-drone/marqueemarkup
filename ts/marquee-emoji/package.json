@@ -1,6 +1,6 @@
 {
   "name": "@cube-drone/marquee-emoji",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "The standard emoji shortcode table (gemoji, repackaged) for Marquee's :shortcode: resolution",
   "license": "MPL-2.0",
   "repository": {

@@ -1,6 +1,6 @@
 {
   "name": "@cube-drone/marquee-turbolink-example-plugin",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "private": true,
   "description": "The worked example: a turbolink plugin with every part of the contract on display",
   "license": "MPL-2.0",
@@ -27,7 +27,7 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@cube-drone/marquee-turbolink": "^0.6.0"
+    "@cube-drone/marquee-turbolink": "^0.6.1"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

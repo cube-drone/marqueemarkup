@@ -3,7 +3,7 @@
   "displayName": "Marquee Markup",
   "description": "Syntax highlighting for the Marquee markup language (.mq) - a little bit of markdown, a little bit of RST, a whole lot of dumb old internet",
   "icon": "marquee-logo.png",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "publisher": "cube-drone",
   "license": "MPL-2.0",
   "private": true,

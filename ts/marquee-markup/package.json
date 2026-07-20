@@ -1,6 +1,6 @@
 {
   "name": "@cube-drone/marquee-markup",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Marquee, batteries included: parse + render to HTML in one motion, fonts and styles along for the ride, plus the `marquee` CLI",
   "license": "MPL-2.0",
   "repository": {
@@ -38,12 +38,12 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@cube-drone/marquee-css": "^0.6.0",
-    "@cube-drone/marquee-emoji": "^0.6.0",
-    "@cube-drone/marquee-fonts": "^0.6.0",
-    "@cube-drone/marquee-html-renderer": "^0.6.0",
-    "@cube-drone/marquee-parser": "^0.6.0",
-    "@cube-drone/marquee-turbolink": "^0.6.0"
+    "@cube-drone/marquee-css": "^0.6.1",
+    "@cube-drone/marquee-emoji": "^0.6.1",
+    "@cube-drone/marquee-fonts": "^0.6.1",
+    "@cube-drone/marquee-html-renderer": "^0.6.1",
+    "@cube-drone/marquee-parser": "^0.6.1",
+    "@cube-drone/marquee-turbolink": "^0.6.1"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

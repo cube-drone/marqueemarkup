@@ -50,7 +50,7 @@ dependencies = [
 
 [[package]]
 name = "cube-drone-marquee-html-renderer"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "cube-drone-marquee-parser",
  "serde_json",
@@ -59,7 +59,7 @@ dependencies = [
 
 [[package]]
 name = "cube-drone-marquee-markup"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "base64",
  "cube-drone-marquee-html-renderer",
@@ -72,7 +72,7 @@ dependencies = [
 
 [[package]]
 name = "cube-drone-marquee-parser"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "serde",
  "serde_json",

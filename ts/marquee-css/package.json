@@ -1,6 +1,6 @@
 {
   "name": "@cube-drone/marquee-css",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "The Marquee reference stylesheet: the mq-* class contract every renderer targets",
   "license": "MPL-2.0",
   "repository": {
