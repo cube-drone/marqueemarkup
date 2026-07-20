@@ -67,6 +67,7 @@ dependencies = [
  "regex",
  "serde_json",
  "ureq",
+ "url",
 ]
 
 [[package]]

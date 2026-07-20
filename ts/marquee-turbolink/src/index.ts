@@ -81,16 +81,24 @@ export function composeTurbolinks(
 
 /** The fetch-ahead pass: run every matching plugin's resolve() over a
  * target list, yielding the map composeTurbolinks() consumes. Targets
- * resolve concurrently (wall-clock is the slowest fetch, not the sum);
- * within one target, plugins still run in order - first resolver wins,
- * like first renderer. */
+ * resolve concurrently but BOUNDED (`concurrency`, default 8) - a link-heavy
+ * document shouldn't open hundreds of simultaneous sockets, exhaust file
+ * descriptors, or trip a host's rate limiter. Within one target, plugins
+ * still run in order - first resolver wins, like first renderer. */
 export async function resolveTargets(
   targets: string[],
   plugins: TurbolinkPlugin[],
+  opts: { concurrency?: number } = {},
 ): Promise<Map<string, unknown>> {
   const resolved = new Map<string, unknown>();
-  await Promise.all(
-    [...new Set(targets)].map(async (target) => {
+  const unique = [...new Set(targets)];
+  const limit = Math.max(1, opts.concurrency ?? 8);
+  let next = 0;
+  // A fixed pool of workers pulling from a shared cursor: JS is single-
+  // threaded, so `next++` between awaits can't race.
+  const worker = async (): Promise<void> => {
+    while (next < unique.length) {
+      const target = unique[next++]!;
       for (const plugin of plugins) {
         if (plugin.resolve === undefined || !plugin.match(target)) {
           continue;
@@ -105,8 +113,9 @@ export async function resolveTargets(
           // a failed fetch is a plain link, not a failed render
         }
       }
-    }),
-  );
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, unique.length) }, worker));
   return resolved;
 }
 

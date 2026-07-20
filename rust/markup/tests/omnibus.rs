@@ -149,6 +149,47 @@ fn marquee_fetch_runs_resolve_ahead_sync_marquee_never_does() {
     assert!(page.contains("plain words"));
 }
 
+#[test]
+fn resolve_targets_bounds_concurrency() {
+    use marquee_markup::turbolink::resolve_targets_with;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::Arc;
+
+    struct Slow {
+        active: Arc<AtomicUsize>,
+        max: Arc<AtomicUsize>,
+    }
+    impl TurbolinkPlugin for Slow {
+        fn name(&self) -> &'static str {
+            "slow"
+        }
+        fn matches(&self, _t: &str) -> bool {
+            true
+        }
+        fn resolve(&self, _t: &str) -> Option<Value> {
+            let now = self.active.fetch_add(1, Ordering::SeqCst) + 1;
+            self.max.fetch_max(now, Ordering::SeqCst);
+            std::thread::sleep(std::time::Duration::from_millis(15));
+            self.active.fetch_sub(1, Ordering::SeqCst);
+            Some(json!({ "ok": true }))
+        }
+        fn render(&self, _t: &str, _l: TurbolinkLevel, _d: Option<&Value>) -> Option<String> {
+            None
+        }
+    }
+
+    let active = Arc::new(AtomicUsize::new(0));
+    let max = Arc::new(AtomicUsize::new(0));
+    let slow = Slow { active, max: max.clone() };
+    let plugins: Vec<&dyn TurbolinkPlugin> = vec![&slow];
+    let targets: Vec<String> = ["a", "b", "c", "d", "e", "f"]
+        .iter()
+        .map(|t| format!("t://{t}"))
+        .collect();
+    resolve_targets_with(&targets, &plugins, 2);
+    assert_eq!(max.load(Ordering::SeqCst), 2, "never more than the limit in flight at once");
+}
+
 /// Like DemoPlugin but on an in-policy https target (bare-web link policy
 /// rightly blocks unregistered schemes inside the full pipeline).
 struct WebDemoPlugin;
@@ -201,6 +242,24 @@ fn build_site_the_whole_borsalino() {
     assert!(index.contains("href=\"menu.html\""), "doc-id links resolved");
     let fonts = std::fs::read_dir(out.join("fonts")).unwrap().count();
     assert_eq!(fonts, report.font_faces.len());
+    let _ = std::fs::remove_dir_all(&out);
+}
+
+#[test]
+fn build_site_confine_media_rejects_escapes() {
+    // Borsalino's media all lives at ../../example-media (a legitimate shared
+    // dir by default). confine_media - the untrusted mode - refuses those
+    // escapes, so nothing is copied out of the tree.
+    let site = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/borsalino");
+    if !site.exists() {
+        return;
+    }
+    let out = std::env::temp_dir().join(format!("marquee-rs-confine-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&out);
+    let opts = SiteOptions { confine_media: true, ..SiteOptions::default() };
+    let report = build_site(&site, &out, &opts).unwrap();
+    assert_eq!(report.media_files, 0, "outside-tree media refused");
+    assert!(!out.join("media").exists(), "no media dir created");
     let _ = std::fs::remove_dir_all(&out);
 }
 

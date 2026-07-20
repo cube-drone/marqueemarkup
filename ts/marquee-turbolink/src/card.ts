@@ -61,7 +61,7 @@ export function renderCard(
     card += `<span class="mq-turbolink-desc">${escapeText(summary.description)}</span>`;
   }
   if (level === "full" && summary.image !== undefined) {
-    card += `<img class="mq-turbolink-thumb" src="${escapeAttr(summary.image)}" alt="" loading="lazy">`;
+    card += `<img class="mq-turbolink-thumb" src="${escapeAttr(summary.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">`;
   }
   return `<span class="mq-turbolink-card">${card}</span>`;
 }

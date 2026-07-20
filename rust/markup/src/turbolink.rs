@@ -13,6 +13,8 @@ use marquee_html_renderer::{escape_attr, escape_text, TurbolinkLevel};
 use marquee_parser::Node;
 use regex::Regex;
 use serde_json::Value;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Mutex;
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
@@ -59,34 +61,52 @@ pub fn resolve_targets(
     targets: &[String],
     plugins: &[&dyn TurbolinkPlugin],
 ) -> HashMap<String, Value> {
+    resolve_targets_with(targets, plugins, DEFAULT_CONCURRENCY)
+}
+
+/// The default fetch-ahead concurrency: a link-heavy document shouldn't open
+/// hundreds of simultaneous sockets, exhaust file descriptors, or trip a
+/// host's rate limiter.
+pub const DEFAULT_CONCURRENCY: usize = 8;
+
+/// resolve_targets with an explicit concurrency bound.
+pub fn resolve_targets_with(
+    targets: &[String],
+    plugins: &[&dyn TurbolinkPlugin],
+    concurrency: usize,
+) -> HashMap<String, Value> {
     let mut unique: Vec<&str> = targets.iter().map(|s| s.as_str()).collect();
     unique.sort_unstable();
     unique.dedup();
-    let mut resolved = HashMap::new();
+    let workers = concurrency.max(1).min(unique.len().max(1));
+    // A fixed pool of worker threads pulling from a shared atomic cursor -
+    // bounded fan-out instead of one thread per target.
+    let cursor = AtomicUsize::new(0);
+    let resolved = Mutex::new(HashMap::new());
     std::thread::scope(|scope| {
-        let handles: Vec<_> = unique
-            .into_iter()
-            .map(|target| {
-                scope.spawn(move || {
-                    for plugin in plugins {
-                        if !plugin.matches(target) {
-                            continue;
-                        }
-                        if let Some(data) = plugin.resolve(target) {
-                            return Some((format!("{}\n{target}", plugin.name()), data));
-                        }
+        for _ in 0..workers {
+            scope.spawn(|| loop {
+                let i = cursor.fetch_add(1, Ordering::Relaxed);
+                if i >= unique.len() {
+                    break;
+                }
+                let target = unique[i];
+                for plugin in plugins {
+                    if !plugin.matches(target) {
+                        continue;
                     }
-                    None
-                })
-            })
-            .collect();
-        for handle in handles {
-            if let Some((key, data)) = handle.join().unwrap_or(None) {
-                resolved.insert(key, data);
-            }
+                    if let Some(data) = plugin.resolve(target) {
+                        resolved
+                            .lock()
+                            .unwrap()
+                            .insert(format!("{}\n{target}", plugin.name()), data);
+                        break; // first resolver wins, like first renderer
+                    }
+                }
+            });
         }
     });
-    resolved
+    resolved.into_inner().unwrap()
 }
 
 /// One composed lookup for Profile::turbolink: first plugin that matches
@@ -218,7 +238,7 @@ pub fn render_card(target: &str, summary: &TurbolinkSummary, level: TurbolinkLev
         }
         if let Some(image) = &summary.image {
             card.push_str(&format!(
-                "<img class=\"mq-turbolink-thumb\" src=\"{}\" alt=\"\" loading=\"lazy\">",
+                "<img class=\"mq-turbolink-thumb\" src=\"{}\" alt=\"\" loading=\"lazy\" referrerpolicy=\"no-referrer\">",
                 escape_attr(image)
             ));
         }

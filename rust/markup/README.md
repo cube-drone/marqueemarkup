@@ -141,7 +141,10 @@ A folder of `.mq` in, a static website out. The contract:
 | `plugins` | `Option<Vec<&dyn TurbolinkPlugin>>` | the fetchless default set | the turbolink chain, priority-ordered; fetch mode appends `OpengraphPlugin` unless present |
 
 `SiteOptions` carries the same fields (minus `title`/`fonts` — sites always use font files),
-applied per-page.
+applied per-page. It also takes **`confine_media`** (`bool`, default `false`): with it on, a
+relative media target that resolves *outside* the site tree — a `../` escape — is refused
+rather than copied. Off for trusted content (shared-asset dirs a level up are useful); on for
+documents you don't fully trust (see "Rendering untrusted content").
 
 There is deliberately no `Partial<Profile>` equivalent: overriding embedder policy in Rust
 means implementing the `Profile` trait (re-exported here; its default methods *are* the
@@ -177,6 +180,25 @@ re-exported), or hand facts to `render_card()` and let the standard card do it.
   packages by lockstep tests: same version number = same artifacts, across both ecosystems.
 - The only I/O surfaces are the `_fetch` functions' resolve phase and `build_site`'s
   filesystem writes.
+
+### Rendering untrusted content
+
+Built for **trusted** content — Hugo/mdBook-style generators, where the author is you.
+Rendering is always safe (pure, fetchless, zero-JS), but two boundaries reach outside, and both
+matter when the author is a stranger:
+
+- **Never call the `_fetch` functions on untrusted input.** Their resolve phase fetches the
+  document's link targets, so a hostile document is a request generator — SSRF against your
+  internal network, or thousands of links turning your server into a reflected-DDoS cannon (the
+  concurrency bound limits *your* load, not the victim's). The synchronous functions (`marquee`,
+  `build_site`) never fetch; known-provider embeds still render from the URL, and stranger-page
+  cards degrade to plain links.
+- **Set `confine_media` on untrusted `build_site` runs** — it copies referenced media from disk,
+  and without it a `../` target could reach outside the tree.
+- **Want link previews on untrusted content anyway?** Resolve out-of-band, in a service you
+  control: cache by URL (so resubmission can't re-attack), cap the count per document, deny
+  private/link-local addresses, rate-limit per host — then pass the results into the resolve
+  map, keeping render fetchless. `resolve_targets` is that seam.
 
 License: MPL-2.0. The font faces are SIL OFL (licenses embedded alongside); the emoji table
 derives from gemoji (MIT; `GEMOJI-LICENSE`).

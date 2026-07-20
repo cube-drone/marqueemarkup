@@ -7,11 +7,25 @@ use crate::turbolink::{render_card, TurbolinkPlugin, TurbolinkSummary};
 use marquee_html_renderer::TurbolinkLevel;
 use regex::Regex;
 use serde_json::{json, Value};
+use std::io::Read;
 use std::sync::OnceLock;
 use std::time::Duration;
 
 const UA: &str =
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
+
+const MAX_OG_BYTES: u64 = 128 * 1024;
+
+/// Resolve a possibly-relative URL against a base, keeping only http(s). An
+/// og:image is relative to the page it came from, not our output; and a
+/// javascript:/data: image src should never reach a reader's card.
+fn absolute_http(image: &str, base: &str) -> Option<String> {
+    let joined = url::Url::parse(base).ok()?.join(image).ok()?;
+    match joined.scheme() {
+        "http" | "https" => Some(joined.to_string()),
+        _ => None,
+    }
+}
 
 fn decode_entities(s: &str) -> String {
     s.replace("&lt;", "<")
@@ -100,8 +114,24 @@ impl TurbolinkPlugin for OpengraphPlugin {
             .timeout(Duration::from_secs(10))
             .user_agent(UA)
             .build();
-        let body = agent.get(target).call().ok()?.into_string().ok()?;
-        parse_open_graph(&body).map(|s| summary_to_value(&s))
+        let resp = agent.get(target).call().ok()?;
+        // A linked image/PDF/zip has no OpenGraph - don't stream a binary body
+        // to parse nothing. (Empty/absent type: allow, let the parse decide.)
+        let ct = resp.content_type().to_string();
+        if !ct.is_empty() && !ct.contains("html") && !ct.contains("text/plain") {
+            return None;
+        }
+        // get_url() is the post-redirect URL: the right base for a relative image.
+        let final_url = resp.get_url().to_string();
+        // Bound the DOWNLOAD, not just the parse: cap the body so a hostile or
+        // merely huge page can't blow up the build's memory before parse_open_graph
+        // caps the parse.
+        let mut buf = Vec::new();
+        resp.into_reader().take(MAX_OG_BYTES).read_to_end(&mut buf).ok()?;
+        let body = String::from_utf8_lossy(&buf);
+        let mut summary = parse_open_graph(&body)?;
+        summary.image = summary.image.take().and_then(|img| absolute_http(&img, &final_url));
+        Some(summary_to_value(&summary))
     }
     fn render(&self, target: &str, level: TurbolinkLevel, data: Option<&Value>) -> Option<String> {
         let data = data?;

@@ -143,7 +143,11 @@ contract as `marqueeFetch`.
 
 `SiteOptions` (for `buildSite`/`buildSiteFetch`) accepts `emoji`, `emojiDefaults`,
 `colorScheme`, `envelope`, `readable`, `plugins`, and `profile` with identical meanings,
-applied per-page.
+applied per-page. It also takes **`confineMedia`** (`boolean`, default `false`): with it on,
+a relative media target that resolves *outside* the site tree — a `../` escape like
+`![x](../../photos/private.jpg)` — is refused rather than copied into the output. Leave it off
+for trusted content (shared-asset dirs a level up are useful); turn it on when building from
+documents you don't fully trust (see "Rendering untrusted content").
 
 ## Safety, stated plainly
 
@@ -154,6 +158,26 @@ applied per-page.
   `prefers-reduced-motion`, and reveal effects cannot hide text where animations don't run.
 - The only code execution surface is plugin `resolve()` in the fetch functions, and only for
   plugins you composed.
+
+### Rendering untrusted content
+
+This package is built for **trusted** content — Hugo/mdBook-style blog and book generators,
+where the author is you. Rendering itself is always safe (pure, fetchless, zero-JS output). But
+two boundaries reach the outside world, and both matter the moment the *author* is a stranger:
+
+- **Never run the `*Fetch` functions on untrusted input.** Their resolve phase fetches the
+  document's link targets, so a hostile document is a request generator: it can aim fetches at
+  your internal network (`localhost`, cloud-metadata addresses — SSRF), or list thousands of
+  links to turn your server into a reflected-DDoS cannon against a third party. The concurrency
+  cap bounds *your* load, not the victim's. Use the synchronous functions (`marquee`,
+  `buildSite`), which never fetch — known-provider embeds (YouTube, Spotify, media-by-extension)
+  still render from the URL alone; stranger-page cards degrade to plain links.
+- **Set `confineMedia` on untrusted `buildSite` runs.** It copies referenced media from disk, so
+  without confinement a `../` target could pull a media file from outside the site tree.
+- **Want link previews on untrusted content anyway?** Resolve them out-of-band, in a service you
+  control: cache by URL (so resubmitting a document can't re-attack), cap the count per document,
+  deny private/link-local addresses, and rate-limit per host — then pass the results in via the
+  resolve map, keeping render fetchless. `resolveTargets` is that seam.
 
 ## Reaching deeper
 

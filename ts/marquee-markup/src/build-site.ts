@@ -13,8 +13,8 @@
 // Stylesheets and fonts are real cacheable files - this is a website, not a
 // single-file page (that's what marquee() is for).
 
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { basename, join, resolve } from "node:path";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
+import { basename, isAbsolute, join, relative, resolve } from "node:path";
 import { parse } from "@cube-drone/marquee-parser";
 import {
   bareWebProfile,
@@ -52,6 +52,11 @@ export interface SiteOptions {
   readable?: boolean;
   /** Turbolink expanders; defaults to the fetchless default set. */
   plugins?: TurbolinkPlugin[];
+  /** Keep relative media inside the site tree: reject `../` escapes that would
+   * copy files from outside it. Off by default - buildSite is a build tool
+   * over your own files, and shared-asset dirs a level up are useful - so turn
+   * it on when building from documents you don't fully trust. */
+  confineMedia?: boolean;
   /** Your emoji: slug -> replacement text or `{ image, alt? }`, layered
    * over the default table (profile.emoji wins over everything). */
   emoji?: Record<string, EmojiResolution>;
@@ -60,6 +65,18 @@ export interface SiteOptions {
   emojiDefaults?: boolean;
   /** Overrides layered on the assembled per-site profile. */
   profile?: Partial<Profile>;
+}
+
+/** True if `path` is at or below `root` - never a `../` escape. Resolves
+ * symlinks on both (so a link inside the tree can't point out), which needs
+ * the path to exist; callers pair it with `existsSync`. */
+function isInside(root: string, path: string): boolean {
+  try {
+    const rel = relative(realpathSync(root), realpathSync(path));
+    return rel !== "" && !rel.startsWith("..") && !isAbsolute(rel);
+  } catch {
+    return false;
+  }
 }
 
 export interface SiteReport {
@@ -141,7 +158,12 @@ function buildSiteCore(
       media(target) {
         if (!/^[A-Za-z][A-Za-z0-9+.-]*:/.test(target)) {
           const path = resolve(siteDir, target.split(/[?#]/, 1)[0]!);
-          if (existsSync(path)) {
+          // Containment (opt-in): buildSite is a trusted build tool by default,
+          // and pointing at shared assets a level up (`../../example-media/`,
+          // as the borsalino example does) is a legitimate convenience. But
+          // over less-than-trusted .mq a `../` escape is an info-disclosure
+          // foot-gun, so `confineMedia` keeps media inside the site tree.
+          if ((opts.confineMedia !== true || isInside(siteDir, path)) && existsSync(path)) {
             // Kind-by-extension via the default profile (dummy https host -
             // only the extension matters to it).
             const base = bareWebProfile.media(`https://local/${basename(path)}`);

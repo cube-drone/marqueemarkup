@@ -35,6 +35,11 @@ pub struct SiteOptions<'a> {
     /// Defaults ON for sites (the shell declares the color-scheme).
     pub readable: Option<bool>,
     pub plugins: Option<Vec<&'a dyn TurbolinkPlugin>>,
+    /// Keep relative media inside the site tree: reject `../` escapes that
+    /// would copy files from outside it. Off by default - buildSite is a build
+    /// tool over your own files, and shared-asset dirs a level up are useful -
+    /// so turn it on when building from documents you don't fully trust.
+    pub confine_media: bool,
 }
 
 pub struct SiteReport {
@@ -51,9 +56,20 @@ struct SiteProfile<'a> {
     emoji: HashMap<String, EmojiResolution>,
     plugins: &'a [&'a dyn TurbolinkPlugin],
     resolved: &'a HashMap<String, serde_json::Value>,
+    confine_media: bool,
     /// source path -> copied basename (interior mutability: Profile methods
     /// take &self, and media copying is per-site memoized state).
     copied: &'a RefCell<HashMap<PathBuf, String>>,
+}
+
+/// True if `path` is at or below `root` - never a `../` escape. Canonicalizes
+/// both (so `..` and symlinks resolve), so it needs the path to exist; callers
+/// pair it with `path.exists()`.
+fn is_inside(root: &Path, path: &Path) -> bool {
+    match (root.canonicalize(), path.canonicalize()) {
+        (Ok(r), Ok(p)) => p != r && p.starts_with(&r),
+        _ => false,
+    }
 }
 
 fn has_scheme(target: &str) -> bool {
@@ -110,7 +126,10 @@ impl Profile for SiteProfile<'_> {
         if !has_scheme(target) {
             let clean = target.split(['?', '#']).next().unwrap_or("");
             let path = self.site_dir.join(clean);
-            if path.exists() {
+            // Containment (opt-in): a `../` escape must not copy files out of
+            // the site tree when confine_media is set (the untrusted mode).
+            let contained = !self.confine_media || is_inside(self.site_dir, &path);
+            if contained && path.exists() {
                 // Kind-by-extension via the default profile (dummy https
                 // host - only the extension matters to it).
                 let name = path.file_name()?.to_string_lossy().to_string();
@@ -151,6 +170,7 @@ impl Profile for SiteProfile<'_> {
             emoji: self.emoji.clone(),
             plugins: self.plugins,
             resolved: self.resolved,
+            confine_media: self.confine_media,
             copied: self.copied,
         };
         Some(children.iter().map(|c| render(c, &inner)).collect())
@@ -271,6 +291,7 @@ fn build_site_core(
         emoji: emoji_table(&page_opts),
         plugins,
         resolved,
+        confine_media: opts.confine_media,
         copied: &copied,
     };
 

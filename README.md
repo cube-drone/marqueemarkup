@@ -268,7 +268,7 @@ The implementations publish piecemeal as public infrastructure —
   - `@cube-drone/marquee-turbolink` (link expansion), 
   - `@cube-drone/marquee-css` (the shiny bits), 
   - `@cube-drone/marquee-fonts` (it's just a bunch of SIL fonts), 
-  - `@cube-drone/maruqee-emoji`, (gemoji)
+  - `@cube-drone/marquee-emoji`, (gemoji)
 - crates.io:
   - `cube-drone-markup` (the user-facing one) 
   - `cube-drone-marquee-parser` (.mq -> AST), 

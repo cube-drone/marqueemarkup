@@ -150,6 +150,26 @@ test("resolveTargets: targets resolve concurrently, plugin order per target hold
   assert.equal(order.filter((o) => o.startsWith("second")).length, 0, "the winner short-circuits the chain");
 });
 
+test("resolveTargets: concurrency bounds simultaneous resolves", async () => {
+  let active = 0;
+  let maxActive = 0;
+  const slow: TurbolinkPlugin = {
+    name: "slow",
+    match: () => true,
+    resolve: async () => {
+      active += 1;
+      maxActive = Math.max(maxActive, active);
+      await new Promise((r) => setTimeout(r, 15));
+      active -= 1;
+      return { ok: true };
+    },
+    render: () => null,
+  };
+  const many = ["a", "b", "c", "d", "e", "f"].map((t) => `t://${t}`);
+  await resolveTargets(many, [slow], { concurrency: 2 });
+  assert.equal(maxActive, 2, "never more than the limit in flight at once");
+});
+
 test("turbolinkTargets: the fetch-ahead shopping list from a real document", () => {
   const doc = parse("https://e.x/one\n\n:::turbolink target=https://e.x/two level=title:::\n\nprose\n");
   assert.deepEqual(turbolinkTargets(doc), ["https://e.x/one", "https://e.x/two"]);

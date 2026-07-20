@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -190,6 +190,21 @@ test("buildSite(): the whole borsalino, one call", () => {
     assert.ok(index.includes("BORSALINO"), "shared nav included");
     assert.ok(index.includes('href="menu.html"'), "doc-id links resolved");
     assert.ok(readdirSync(join(out, "fonts")).length === report.fontFaces.length);
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+  }
+});
+
+test("buildSite(): confineMedia rejects `../` escapes out of the site tree", () => {
+  // Borsalino's media all lives at ../../example-media (a legitimate shared
+  // dir by default). With confineMedia on - the less-than-trusted setting -
+  // those escapes are refused, so nothing is copied out of the tree.
+  const site = fileURLToPath(new URL("../../../examples/borsalino", import.meta.url));
+  const out = mkdtempSync(join(tmpdir(), "marquee-confine-"));
+  try {
+    const report = buildSite(site, out, { confineMedia: true });
+    assert.equal(report.mediaFiles, 0, "outside-tree media refused");
+    assert.ok(!existsSync(join(out, "media")), "no media dir created");
   } finally {
     rmSync(out, { recursive: true, force: true });
   }
