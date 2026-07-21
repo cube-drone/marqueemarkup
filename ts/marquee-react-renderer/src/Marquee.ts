@@ -190,7 +190,12 @@ export const Marquee = forwardRef<MarqueeHandle, MarqueeProps>(function Marquee(
           }
         }
       },
-      { rootMargin: "0px 0px -10% 0px" },
+      // No negative margin: a shrunk root creates a dead zone at the bottom of
+      // the viewport, and an effect that renders permanently inside it - the
+      // last element on a page too short to scroll further - would never count
+      // as "in view", so it would hold, hidden, forever. Contract rule 1 is
+      // "animate when the text enters view"; entering view is any pixel of it.
+      { rootMargin: "0px" },
     );
     for (const el of targets) {
       observer.observe(el);
