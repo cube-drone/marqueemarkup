@@ -1,15 +1,13 @@
-//! Reference parser for the Marquee markup language.
-//!
-//! Parse is total: any byte sequence yields a document. The one refusal is
-//! an unknown dialect version (SPEC.md, "Conformance"), surfaced as an error
-//! rather than a guessed parse.
+#![doc = include_str!("../README.md")]
 
 mod ast;
 mod attrs;
 mod blocks;
 mod inlines;
+mod serialize;
 
 pub use ast::{Attrs, Node, Reason};
+pub use serialize::serialize;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ParseError {

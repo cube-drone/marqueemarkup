@@ -2,8 +2,14 @@
 
 # cube-drone-marquee-markup
 
-The [Marquee](https://github.com/cube-drone/marqueemarkup) Markup Language. 
+The [Marquee](https://github.com/cube-drone/marqueemarkup) Markup Language.
 Marquee source in, complete styled HTML out.
+
+This is the **batteries-included** crate. Where `cube-drone-marquee-parser` gives you a syntax
+tree and `cube-drone-marquee-html-renderer` gives you a bare fragment, this one bundles them
+with everything the fragment needs to be a real, self-contained web page: the stylesheet, the
+font faces, the emoji table, and turbolink (bare-URL) expansion — all embedded in the binary,
+so there's no npm step and no asset scavenger hunt. It's also the home of the `marquee` CLI.
 
 ```toml
 [dependencies]
@@ -13,20 +19,25 @@ marquee-markup = { package = "cube-drone-marquee-markup", version = "0.2" }
 ```rust
 use marquee_markup::{marquee, MarqueeOptions};
 
-let page = marquee("# hello *world*\n", &MarqueeOptions::default())?;
+// One call: parse, render, style, inline the fonts, wrap in a page shell.
+let page = marquee("# hello *world*\n", &MarqueeOptions::default())
+    .expect("a known dialect");
+assert!(page.starts_with("<!doctype html>"));
 ```
 
-The registry name wears the `cube-drone-` prefix (crates.io has no scopes); the dependency
-rename above keeps code reading `use marquee_markup::`. To learn the *language*, read
-[WRITING.md](https://github.com/cube-drone/marqueemarkup/blob/main/WRITING.md) or see it live
-at [marquee.cube-drone.com](https://marquee.cube-drone.com). 
+That `page` is a whole `.html` file you can write to disk and open — the stylesheet and the
+exact font faces it uses are inlined, so it depends on nothing.
 
-This document is the contract for the *tools*; full rustdoc lives on
+The registry name wears the `cube-drone-` prefix (crates.io has no scopes); the dependency
+rename above keeps code reading `use marquee_markup::`. To learn the *language* rather than the
+library, read [WRITING.md](https://github.com/cube-drone/marqueemarkup/blob/main/WRITING.md) or
+see it live at [marquee.cube-drone.com](https://marquee.cube-drone.com). The rest of this
+document is the contract for the *tools*; full rustdoc lives on
 [docs.rs](https://docs.rs/cube-drone-marquee-markup).
 
 ## The CLI
 
-```
+```sh
 cargo install cube-drone-marquee-markup    # installs the `marquee` binary
 marquee hello.mq > hello.html
 marquee hello.mq -o hello.html
@@ -154,7 +165,7 @@ bare-web policy) and calling the re-exported `render()` directly — the reach-d
 
 `marquee_markup::turbolink::TurbolinkPlugin` is a trait:
 
-```rust
+```rust,ignore
 pub trait TurbolinkPlugin: Sync {
     fn name(&self) -> &'static str;
     fn matches(&self, target: &str) -> bool;                    // cheap recognition

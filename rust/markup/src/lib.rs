@@ -1,18 +1,4 @@
-//! Marquee, batteries included (the Rust spelling of
-//! @cube-drone/marquee-markup):
-//!
-//! ```no_run
-//! use marquee_markup::{marquee, MarqueeOptions};
-//! let page = marquee("# hello *world*\n", &MarqueeOptions::default());
-//! ```
-//!
-//! One motion: parse, render, style, inline the fonts the page actually
-//! wears, wrap in a page shell. The stylesheet, the font grab bag, and the
-//! standard emoji table are EMBEDDED - a Rust consumer needs no npm and no
-//! asset scavenger hunt; lockstep tests pin the embedded copies to the npm
-//! packages' bytes, and lockstep versioning means "same number = same
-//! artifacts". Everything underneath is re-exported: the same
-//! parse/render/Profile machinery, the turbolink plugin system, the tables.
+#![doc = include_str!("../README.md")]
 
 mod build_site;
 mod css;
@@ -31,7 +17,7 @@ pub use marquee_html_renderer::{
     escape_attr, escape_text, render, render_marquee, used_font_tokens, BareWebProfile,
     EmojiResolution, MediaKind, MediaResolution, Profile, TurbolinkLevel, FONTS,
 };
-pub use marquee_parser::{parse, Attrs, Node, ParseError, Reason};
+pub use marquee_parser::{parse, serialize, Attrs, Node, ParseError, Reason};
 
 use opengraph::OpengraphPlugin;
 use std::collections::HashMap;
