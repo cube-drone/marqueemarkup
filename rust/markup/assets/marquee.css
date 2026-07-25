@@ -398,15 +398,21 @@ big {
    * resolves to 0). Full-bleed is what marquee means. */
   display: inline-block;
   width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
   vertical-align: bottom;
 }
 
 .mq-marquee-inner {
   display: inline-block;
-  padding-left: 100%;
 }
+
+/* The scroll VIEWPORT (clip + single-line) and the OFF-SCREEN start position
+ * (padding-left: 100%) are the marquee equivalent of a reveal's from-frame:
+ * they exist only to be animated away. So, exactly like a reveal's hiding
+ * (SPEC animation contract #5), they must NOT live in base styles - a marquee
+ * whose animation never runs (reduced motion, a skip, an element never scrolled
+ * into view) would otherwise rest with its text parked off-screen right and
+ * simply vanish. At rest the marquee is plain, whole, wrapped, visible text;
+ * the clip and the off-screen offset attach only where the animation does. */
 
 .mq-bounce,
 .mq-jitter,
@@ -493,7 +499,13 @@ big {
     animation-delay: calc(var(--mq-o, 0) * (-1.2s / max(var(--mq-rate, 1), 1)));
   }
 
+  .mq-marquee {
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
   .mq-marquee-inner {
+    padding-left: 100%;
     animation: mq-marquee calc(16s / max(var(--mq-speed, 1), 1)) linear infinite;
   }
 
@@ -628,6 +640,20 @@ big {
 [data-mq-skip] .mq-anim .mq-l,
 [data-mq-skip] .mq-anim .mq-marquee-inner {
   animation: none;
+}
+
+/* A skip stills motion AND shows the whole text plainly (contract #2). For a
+ * marquee that means undoing the scroll viewport too, not just the animation:
+ * without this the strip stops but stays parked off-screen right (padding-left:
+ * 100%, clipped by overflow), i.e. the words vanish. Drop the clip and the
+ * offset so the run rests as plain, whole, visible text. */
+[data-mq-skip] .mq-marquee {
+  overflow: visible;
+  white-space: normal;
+}
+
+[data-mq-skip] .mq-marquee-inner {
+  padding-left: 0;
 }
 
 /* ---- layouts: picked, not authored ---- */
