@@ -43,12 +43,45 @@ pub enum Dialect {
     Extended,
 }
 
-/// Conversion options. `Default` is [`Dialect::Extended`].
+/// What to do with the losses a conversion incurs — the effects with no home
+/// in the target format (a `blink` span flattened to text, a heading clamped
+/// from level 8 to 6, raw HTML kept as literal text). Orthogonal to [`Dialect`]:
+/// you can ask for strict CommonMark *and* a clean stderr log, or extended
+/// output with an inline breadcrumb.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum OnLoss {
+    /// Discard the loss record. The document still degrades visibly; you just
+    /// aren't told what changed.
+    #[default]
+    Silent,
+    /// A clean document; a deduplicated summary goes to stderr.
+    Stderr,
+    /// A deduplicated summary rides along in the document as a comment, invisible
+    /// to readers. The vehicle fits the target: a Marquee `%%` comment; an HTML
+    /// comment in Extended Markdown; the pure-CommonMark `[//]: #` idiom in
+    /// Strict Markdown.
+    Comment,
+    /// Both — the comment breadcrumb and the stderr log.
+    Both,
+}
+
+impl OnLoss {
+    fn to_stderr(self) -> bool {
+        matches!(self, OnLoss::Stderr | OnLoss::Both)
+    }
+    fn to_comment(self) -> bool {
+        matches!(self, OnLoss::Comment | OnLoss::Both)
+    }
+}
+
+/// Conversion options. `Default` is [`Dialect::Extended`] with [`OnLoss::Silent`].
 #[derive(Debug, Clone, Default)]
 pub struct Options {
     /// The Markdown vocabulary allowed in output (mq -> md) and recognized in
     /// input (md -> mq).
     pub dialect: Dialect,
+    /// How conversion losses are recorded.
+    pub on_loss: OnLoss,
 }
 
 // ===================================================================
@@ -72,6 +105,7 @@ pub fn to_markdown_with(source: &str, options: &Options) -> Result<String, Parse
         dialect: options.dialect,
         footnotes: RefCell::new(Vec::new()),
         next_note: Cell::new(1),
+        losses: RefCell::new(Vec::new()),
     };
     if let Node::Document { children, .. } = &doc {
         build.all(children, root);
@@ -80,22 +114,29 @@ pub fn to_markdown_with(source: &str, options: &Options) -> Result<String, Parse
     for def in build.footnotes.borrow().iter() {
         root.append(def);
     }
-    Ok(render(root, options.dialect))
+    let md = render(root, options.dialect);
+    let losses = std::mem::take(&mut *build.losses.borrow_mut());
+    Ok(record_into_markdown(md, &losses, options))
 }
 
-/// Builder state for mq -> md: the arena, the dialect, and the footnote
-/// accumulator (Marquee sidenotes become numbered footnotes whose definitions
-/// gather at the document end).
+/// Builder state for mq -> md: the arena, the dialect, the footnote accumulator
+/// (Marquee sidenotes become numbered footnotes whose definitions gather at the
+/// document end), and the loss log.
 struct Build<'a> {
     arena: &'a Arena<'a>,
     dialect: Dialect,
     footnotes: RefCell<Vec<&'a AstNode<'a>>>,
     next_note: Cell<usize>,
+    losses: RefCell<Vec<String>>,
 }
 
 impl<'a> Build<'a> {
     fn node(&self, value: NodeValue) -> &'a AstNode<'a> {
         self.arena.alloc(AstNode::from(value))
+    }
+
+    fn lose(&self, message: String) {
+        self.losses.borrow_mut().push(message);
     }
 
     fn all(&self, nodes: &[Node], parent: &'a AstNode<'a>) {
@@ -118,6 +159,9 @@ impl<'a> Build<'a> {
             }
             Node::Heading { level, children } => {
                 // Markdown headings stop at 6; Marquee allows 8. Clamp (lossy).
+                if *level > 6 {
+                    self.lose(format!("clamped heading level {level} to 6"));
+                }
                 let h = self
                     .node(NodeValue::Heading(NodeHeading { level: (*level).min(6), ..Default::default() }));
                 parent.append(h);
@@ -179,7 +223,10 @@ impl<'a> Build<'a> {
 
             // Directives (layout, containers) have no Markdown shape: unwrap,
             // keep the content.
-            Node::Directive { children, .. } => self.all(children, parent),
+            Node::Directive { name, children, .. } => {
+                self.lose(format!("unwrapped '{name}' directive"));
+                self.all(children, parent);
+            }
 
             // Spans: a sidenote bridges to a footnote in Extended; every other
             // span (and any span in Strict) unwraps to its text.
@@ -187,6 +234,11 @@ impl<'a> Build<'a> {
                 if self.dialect == Dialect::Extended && is_sidenote(name) {
                     self.sidenote(children, parent);
                 } else {
+                    if is_sidenote(name) {
+                        self.lose("flattened sidenote: strict has no footnote".into());
+                    } else {
+                        self.lose(format!("dropped '{name}' span"));
+                    }
                     self.all(children, parent);
                 }
             }
@@ -214,6 +266,7 @@ impl<'a> Build<'a> {
                     parent.append(s);
                     self.all(children, s);
                 } else {
+                    self.lose("dropped strikethrough: not in strict CommonMark".into());
                     self.all(children, parent);
                 }
             }
@@ -317,18 +370,39 @@ pub fn to_marquee_with(source: &str, options: &Options) -> String {
         opt.extension.footnotes = true;
     }
     let root = parse_document(&arena, source, &opt);
-    let lower = Lower { footnotes: collect_footnotes(root) };
-    let children = root.children().flat_map(|c| lower.one(c)).collect();
+    let lower = Lower { footnotes: collect_footnotes(root), losses: RefCell::new(Vec::new()) };
+    let mut children: Vec<Node> = root.children().flat_map(|c| lower.one(c)).collect();
+    let losses = std::mem::take(&mut *lower.losses.borrow_mut());
+    if !losses.is_empty() {
+        let summary = summarize(&losses);
+        if options.on_loss.to_stderr() {
+            for line in &summary {
+                eprintln!("marquee-markdown: {line}");
+            }
+        }
+        if options.on_loss.to_comment() {
+            let mut text = String::from("marquee-markdown — lost converting from Markdown:");
+            for line in &summary {
+                text.push_str(&format!("\n- {line}"));
+            }
+            children.push(Node::Comment { text });
+        }
+    }
     serialize(&Node::Document { version: 0, children })
 }
 
-/// Lowering state for md -> mq: the footnote definitions, so a reference can
-/// pull its note inline as a Marquee sidenote.
+/// Lowering state for md -> mq: the footnote definitions (so a reference can
+/// pull its note inline as a Marquee sidenote) and the loss log.
 struct Lower<'a> {
     footnotes: HashMap<String, &'a AstNode<'a>>,
+    losses: RefCell<Vec<String>>,
 }
 
 impl<'a> Lower<'a> {
+    fn lose(&self, message: String) {
+        self.losses.borrow_mut().push(message);
+    }
+
     fn all(&self, node: &'a AstNode<'a>) -> Vec<Node> {
         node.children().flat_map(|c| self.one(c)).collect()
     }
@@ -365,6 +439,7 @@ impl<'a> Lower<'a> {
             NodeValue::ThematicBreak => vec![Node::ThematicBreak],
             // Raw HTML never passes through: keep it as visible literal text.
             NodeValue::HtmlBlock(h) => {
+                self.lose("kept raw HTML block as literal text".into());
                 vec![Node::Paragraph { children: vec![Node::Text { value: strip_trailing_newline(&h.literal) }] }]
             }
             // Definitions render at their reference site; don't emit them here.
@@ -381,7 +456,10 @@ impl<'a> Lower<'a> {
             NodeValue::SoftBreak => vec![Node::Text { value: "\n".to_string() }],
             NodeValue::LineBreak => vec![Node::HardBreak],
             // Raw inline HTML, same refusal as blocks: literal text, never a tag.
-            NodeValue::HtmlInline(s) => vec![Node::Text { value: s.clone() }],
+            NodeValue::HtmlInline(s) => {
+                self.lose("kept raw inline HTML as literal text".into());
+                vec![Node::Text { value: s.clone() }]
+            }
             // A `:slug:` shortcode is exactly Marquee's emoji.
             NodeValue::ShortCode(sc) => vec![Node::Emoji { slug: sc.code.clone() }],
             // A footnote reference becomes a Marquee sidenote, its note pulled
@@ -432,6 +510,72 @@ fn is_sidenote(name: &str) -> bool {
     matches!(name, "sidenote" | "footnote" | "aside")
 }
 
+/// Deduplicate loss messages, prefixing repeats with a count (`3× …`), in
+/// first-seen order.
+fn summarize(losses: &[String]) -> Vec<String> {
+    let mut order: Vec<&str> = Vec::new();
+    let mut counts: HashMap<&str, usize> = HashMap::new();
+    for l in losses {
+        if !counts.contains_key(l.as_str()) {
+            order.push(l.as_str());
+        }
+        *counts.entry(l.as_str()).or_insert(0) += 1;
+    }
+    order
+        .into_iter()
+        .map(|k| {
+            let n = counts[k];
+            if n > 1 {
+                format!("{n}× {k}")
+            } else {
+                k.to_string()
+            }
+        })
+        .collect()
+}
+
+/// Apply the loss policy to Markdown output. The comment vehicle fits the
+/// dialect: an HTML comment in Extended, the pure-CommonMark never-referenced
+/// link definition (`[//]: # (…)`) in Strict.
+fn record_into_markdown(mut md: String, losses: &[String], options: &Options) -> String {
+    if losses.is_empty() {
+        return md;
+    }
+    let summary = summarize(losses);
+    if options.on_loss.to_stderr() {
+        for line in &summary {
+            eprintln!("marquee-markdown: {line}");
+        }
+    }
+    if options.on_loss.to_comment() {
+        if !md.ends_with('\n') {
+            md.push('\n');
+        }
+        match options.dialect {
+            Dialect::Extended => {
+                // Guard against a stray `--` closing the HTML comment early.
+                let body = summary
+                    .iter()
+                    .map(|s| format!("     {}", s.replace("--", "-")))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                md.push_str(&format!(
+                    "\n<!-- marquee-markdown — lost converting from Marquee:\n{body} -->\n"
+                ));
+            }
+            Dialect::Strict => {
+                // Strip parens so they can't close the link title early.
+                md.push('\n');
+                for s in &summary {
+                    let safe = s.replace(['(', ')'], "");
+                    md.push_str(&format!("[//]: # (marquee-markdown lost: {safe})\n"));
+                }
+            }
+        }
+    }
+    md
+}
+
 /// Flatten a node's descendant text — an image's alt is a plain Marquee string.
 fn text_of<'a>(node: &'a AstNode<'a>) -> String {
     let mut out = String::new();
@@ -466,13 +610,13 @@ fn longest_backtick_run(s: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use super::{to_markdown, to_markdown_with, to_marquee, Dialect, Options};
+    use super::{to_markdown, to_markdown_with, to_marquee, to_marquee_with, Dialect, OnLoss, Options};
 
     fn md(mq: &str) -> String {
         to_markdown(mq).expect("a known dialect")
     }
     fn strict() -> Options {
-        Options { dialect: Dialect::Strict }
+        Options { dialect: Dialect::Strict, ..Default::default() }
     }
 
     // ---- mq -> md ----
@@ -570,6 +714,52 @@ mod tests {
     fn strict_drops_strikethrough_to_plain_text() {
         let out = to_markdown_with("~~gone~~\n", &strict()).expect("known");
         assert_eq!(out, "gone\n");
+    }
+
+    // ---- OnLoss ----
+
+    #[test]
+    fn loss_is_silent_by_default() {
+        // The document still degrades; you just aren't told.
+        let out = md("[color=red]hi[/color]\n");
+        assert!(out.contains("hi") && !out.contains("<!--") && !out.contains("[//]:"), "{out}");
+    }
+
+    #[test]
+    fn loss_comment_rides_along_extended() {
+        let opt = Options { on_loss: OnLoss::Comment, ..Default::default() };
+        let out = to_markdown_with("######## deep\n\n[color=red]hi[/color]\n", &opt).expect("known");
+        assert!(out.contains("<!-- marquee-markdown"), "no HTML comment: {out}");
+        assert!(out.contains("dropped 'color' span"), "{out}");
+        assert!(out.contains("clamped heading level 8 to 6"), "{out}");
+    }
+
+    #[test]
+    fn loss_comment_stays_pure_commonmark_in_strict() {
+        let opt = Options { dialect: Dialect::Strict, on_loss: OnLoss::Comment };
+        let out = to_markdown_with("[color=red]hi[/color]\n", &opt).expect("known");
+        assert!(out.contains("[//]: # (marquee-markdown lost:"), "no link-ref comment: {out}");
+        assert!(out.contains("dropped 'color' span"), "{out}");
+        assert!(!out.contains("<!--"), "strict must not emit raw HTML: {out}");
+    }
+
+    #[test]
+    fn loss_summary_dedupes_with_counts() {
+        let opt = Options { on_loss: OnLoss::Comment, ..Default::default() };
+        let out = to_markdown_with(
+            "[color=red]a[/color] [color=red]b[/color] [color=red]c[/color]\n",
+            &opt,
+        )
+        .expect("known");
+        assert!(out.contains("3× dropped 'color' span"), "{out}");
+    }
+
+    #[test]
+    fn loss_records_raw_html_on_the_marquee_side() {
+        let opt = Options { on_loss: OnLoss::Comment, ..Default::default() };
+        let out = to_marquee_with("inline <b>x</b> here\n", &opt);
+        assert!(out.contains("%% marquee-markdown"), "no marquee comment: {out}");
+        assert!(out.contains("raw inline HTML"), "{out}");
     }
 
     // ---- md -> mq ----
