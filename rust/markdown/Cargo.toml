@@ -1,0 +1,21 @@
+[package]
+# Registry name wears the cube-drone prefix (see ../parser/Cargo.toml); the
+# code keeps the pretty name via [lib] below.
+name = "cube-drone-marquee-markdown"
+version = "0.6.1"
+edition = "2021"
+license = "MPL-2.0"
+description = "Lossy two-way conversion between Marquee and Markdown"
+repository = "https://github.com/cube-drone/marqueemarkup"
+keywords = ["markup", "markdown", "marquee", "convert"]
+categories = ["text-processing"]
+
+[lib]
+name = "marquee_markdown"
+
+[dependencies]
+comrak = "0.54.0"
+# Dependency-renamed so code says `use marquee_parser::` while the registry
+# says cube-drone-marquee-parser. We use both halves: `parse` (mq -> tree) and
+# `serialize` (tree -> mq).
+marquee-parser = { package = "cube-drone-marquee-parser", path = "../parser", version = "0.6.1" }
