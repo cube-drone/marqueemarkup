@@ -19,8 +19,8 @@ use comrak::nodes::{
     AstNode, ListDelimType, ListType, NodeCode, NodeCodeBlock, NodeHeading, NodeLink, NodeList,
     NodeValue,
 };
-use comrak::{format_commonmark, Arena, Options};
-use marquee_parser::{parse, Node, ParseError};
+use comrak::{format_commonmark, parse_document, Arena, Options};
+use marquee_parser::{parse, serialize, Node, ParseError};
 
 /// Convert Marquee source to Markdown (CommonMark + a few widely-supported
 /// extensions). Fails only when the Marquee source declares a dialect version
@@ -33,6 +33,105 @@ pub fn to_markdown(source: &str) -> Result<String, ParseError> {
         build_all(&arena, children, root);
     }
     Ok(render(root))
+}
+
+// ===================================================================
+// md -> mq :  comrak AST -> Marquee Node -> serialize
+// ===================================================================
+
+/// Convert Markdown (CommonMark + strikethrough, autolinks, and `:shortcode:`
+/// emoji) to Marquee source. Infallible: comrak parsing is total and the
+/// serializer never fails.
+///
+/// The one non-obvious rule is Marquee's whole reason to exist: **raw HTML is
+/// never passed through.** An HTML block or inline tag becomes visible literal
+/// text — the bytes survive, escaped, and can never execute.
+pub fn to_marquee(source: &str) -> String {
+    let arena = Arena::new();
+    let mut opt = Options::default();
+    opt.extension.strikethrough = true;
+    opt.extension.autolink = true;
+    opt.extension.shortcodes = true;
+    let root = parse_document(&arena, source, &opt);
+    let children = root.children().flat_map(map).collect();
+    serialize(&Node::Document { version: 0, children })
+}
+
+/// Map one comrak node to zero or more Marquee nodes. The catch-all recurses
+/// into children, so anything unmapped (tables, task items, footnotes when
+/// those extensions are on) still surfaces its text — content is never eaten.
+fn map<'a>(node: &'a AstNode<'a>) -> Vec<Node> {
+    use comrak::nodes::{ListType, NodeValue};
+    let value = &node.data.borrow().value;
+    let kids = || node.children().flat_map(map).collect::<Vec<Node>>();
+    match value {
+        // Never nested; the entry point handles the root.
+        NodeValue::Document => vec![],
+
+        // ---- blocks ----
+        NodeValue::Paragraph => {
+            let children = kids();
+            // A paragraph that is exactly one scheme'd autolink is a turbolink.
+            if let [Node::Link { target, children: text }] = children.as_slice() {
+                if target.contains("://") && text.as_slice() == [Node::Text { value: target.clone() }] {
+                    return vec![Node::Turbolink { target: target.clone() }];
+                }
+            }
+            vec![Node::Paragraph { children }]
+        }
+        NodeValue::Heading(h) => vec![Node::Heading { level: h.level, children: kids() }],
+        NodeValue::BlockQuote => vec![Node::Blockquote { children: kids() }],
+        NodeValue::List(l) => {
+            vec![Node::List { ordered: matches!(l.list_type, ListType::Ordered), children: kids() }]
+        }
+        NodeValue::Item(_) => vec![Node::ListItem { children: kids() }],
+        NodeValue::CodeBlock(cb) => vec![Node::CodeBlock {
+            info: (!cb.info.is_empty()).then(|| cb.info.clone()),
+            text: strip_trailing_newline(&cb.literal),
+        }],
+        NodeValue::ThematicBreak => vec![Node::ThematicBreak],
+        // Raw HTML never passes through: keep it as visible literal text.
+        NodeValue::HtmlBlock(h) => {
+            vec![Node::Paragraph { children: vec![Node::Text { value: strip_trailing_newline(&h.literal) }] }]
+        }
+
+        // ---- inlines ----
+        NodeValue::Text(t) => vec![Node::Text { value: t.to_string() }],
+        NodeValue::Emph => vec![Node::Emphasis { children: kids() }],
+        NodeValue::Strong => vec![Node::Strong { children: kids() }],
+        NodeValue::Strikethrough => vec![Node::Strikethrough { children: kids() }],
+        NodeValue::Code(c) => vec![Node::CodeSpan { text: c.literal.clone() }],
+        NodeValue::Link(l) => vec![Node::Link { target: l.url.clone(), children: kids() }],
+        NodeValue::Image(l) => vec![Node::Embed { target: l.url.clone(), alt: text_of(node) }],
+        NodeValue::SoftBreak => vec![Node::Text { value: "\n".to_string() }],
+        NodeValue::LineBreak => vec![Node::HardBreak],
+        // Raw inline HTML, same refusal as blocks: literal text, never a tag.
+        NodeValue::HtmlInline(s) => vec![Node::Text { value: s.clone() }],
+        // A `:slug:` shortcode is exactly Marquee's emoji.
+        NodeValue::ShortCode(sc) => vec![Node::Emoji { slug: sc.code.clone() }],
+
+        // Everything else (extension nodes we don't map yet): keep the content.
+        _ => kids(),
+    }
+}
+
+/// Flatten a node's descendant text — an image's alt is a plain Marquee string.
+fn text_of<'a>(node: &'a AstNode<'a>) -> String {
+    use comrak::nodes::NodeValue;
+    let mut out = String::new();
+    for c in node.children() {
+        match &c.data.borrow().value {
+            NodeValue::Text(t) => out.push_str(t),
+            NodeValue::Code(code) => out.push_str(&code.literal),
+            NodeValue::SoftBreak | NodeValue::LineBreak => out.push(' '),
+            _ => out.push_str(&text_of(c)),
+        }
+    }
+    out
+}
+
+fn strip_trailing_newline(s: &str) -> String {
+    s.strip_suffix('\n').unwrap_or(s).to_string()
 }
 
 fn render<'a>(root: &'a AstNode<'a>) -> String {
@@ -227,10 +326,94 @@ fn longest_backtick_run(s: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use super::to_markdown;
+    use super::{to_markdown, to_marquee};
 
     fn md(mq: &str) -> String {
         to_markdown(mq).expect("a known dialect")
+    }
+
+    // ---- md -> mq ----
+
+    #[test]
+    fn md_prose_core_maps_straight_across() {
+        assert_eq!(to_marquee("# hi\n"), "# hi\n");
+        assert_eq!(to_marquee("> quote\n"), "> quote\n");
+        let em = to_marquee("*a* **b** ~~c~~\n");
+        assert!(em.contains("*a*") && em.contains("**b**") && em.contains("~~c~~"), "{em}");
+        assert!(to_marquee("`x()`\n").contains("`x()`"));
+        assert!(to_marquee("[t](u)\n").contains("[t](u)"));
+        assert!(to_marquee("![alt](p.png)\n").contains("![alt](p.png)"));
+        let code = to_marquee("```rust\nfn x() {}\n```\n");
+        assert!(code.contains("```rust") && code.contains("fn x() {}"), "{code}");
+    }
+
+    #[test]
+    fn md_raw_html_never_passes_through() {
+        // The load-bearing refusal: HTML survives only as inert visible text.
+        // Re-parsing the emitted Marquee must find NO directive, span, or embed
+        // — just literal characters.
+        let out = to_marquee("<div onclick=\"x\">danger</div>\n\ninline <b>bold</b> too\n");
+        assert!(out.contains("<div") && out.contains("danger") && out.contains("<b>"), "{out}");
+        let tree = marquee_parser::parse(&out).expect("known");
+        assert!(!has_active_node(&tree), "raw HTML produced an active node: {out}");
+    }
+
+    #[test]
+    fn md_shortcode_becomes_emoji() {
+        // Must be a real Marquee emoji node, not escaped `:slug:` text.
+        let out = to_marquee(":sparkles:\n");
+        let tree = marquee_parser::parse(&out).expect("known");
+        assert!(contains_emoji(&tree, "sparkles"), "{out}");
+    }
+
+    #[test]
+    fn md_standalone_autolink_becomes_a_turbolink() {
+        let out = to_marquee("<https://example.org/>\n");
+        assert_eq!(out.trim_end(), "https://example.org/");
+        assert!(matches!(
+            &marquee_parser::parse(&out).expect("known"),
+            marquee_parser::Node::Document { children, .. }
+                if matches!(children.as_slice(), [marquee_parser::Node::Turbolink { .. }])
+        ));
+    }
+
+    #[test]
+    fn md_to_mq_to_md_keeps_the_core_subset() {
+        let src = "# Title\n\nSome *text* with `code` and a [link](https://e.x).\n\n- one\n- two\n";
+        let back = to_markdown(&to_marquee(src)).expect("known");
+        for needle in ["# Title", "*text*", "`code`", "[link](https://e.x)", "- one", "- two"] {
+            assert!(back.contains(needle), "lost {needle:?} in round trip:\n{back}");
+        }
+    }
+
+    // -- small AST probes for the assertions above --
+
+    fn has_active_node(n: &marquee_parser::Node) -> bool {
+        use marquee_parser::Node::*;
+        match n {
+            Directive { .. } | Span { .. } | Embed { .. } | Link { .. } => true,
+            Document { children, .. }
+            | Paragraph { children }
+            | Heading { children, .. }
+            | Blockquote { children }
+            | List { children, .. }
+            | ListItem { children }
+            | Emphasis { children }
+            | Strong { children }
+            | Strikethrough { children } => children.iter().any(has_active_node),
+            _ => false,
+        }
+    }
+
+    fn contains_emoji(n: &marquee_parser::Node, slug: &str) -> bool {
+        use marquee_parser::Node::*;
+        match n {
+            Emoji { slug: s } => s == slug,
+            Document { children, .. } | Paragraph { children } => {
+                children.iter().any(|c| contains_emoji(c, slug))
+            }
+            _ => false,
+        }
     }
 
     #[test]

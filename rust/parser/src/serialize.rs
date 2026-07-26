@@ -186,10 +186,11 @@ fn code_block(info: Option<&str>, text: &str) -> String {
         .unwrap_or(0);
     let fence = "`".repeat(longest.max(2) + 1);
     match info {
-        // A space between fence and info: the parser trims it, and it keeps an
-        // info that itself opens with a backtick (reachable when the source put
-        // spaces between fence and info) from lengthening the fence count.
-        Some(i) => format!("{fence} {i}\n{text}\n{fence}"),
+        // An info that itself opens with a backtick needs a separating space
+        // (the parser trims it) so those backticks don't lengthen the fence
+        // count. Every other info takes the idiomatic tight form.
+        Some(i) if i.starts_with('`') => format!("{fence} {i}\n{text}\n{fence}"),
+        Some(i) => format!("{fence}{i}\n{text}\n{fence}"),
         None => format!("{fence}\n{text}\n{fence}"),
     }
 }
