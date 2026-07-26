@@ -31,6 +31,7 @@ step("typescript: test all workspaces", "npm test --workspaces");
 step("rust: parser tests", "cargo test --quiet", `${root}/rust/parser`);
 step("rust: renderer tests", "cargo test --quiet", `${root}/rust/html_renderer`);
 step("rust: omnibus tests (incl. npm lockstep pins)", "cargo test --quiet", `${root}/rust/markup`);
+step("rust: markdown converter tests", "cargo test --quiet", `${root}/rust/markdown`);
 step(
   "rust: clippy (warnings are errors)",
   "cargo clippy --all-targets --quiet -- -D warnings",
@@ -45,6 +46,11 @@ step(
   "rust: clippy omnibus (warnings are errors)",
   "cargo clippy --all-targets --quiet -- -D warnings",
   `${root}/rust/markup`,
+);
+step(
+  "rust: clippy markdown (warnings are errors)",
+  "cargo clippy --all-targets --quiet -- -D warnings",
+  `${root}/rust/markdown`,
 );
 // The crate-side packaging check (the analog of the npm pack-smoke below).
 // PERMANENTLY only the parser, not "until first publish": under lockstep,

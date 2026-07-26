@@ -43,6 +43,8 @@ const CARGO_ORDER: Array<{ dir: string; name: string }> = [
   { dir: "rust/parser", name: "cube-drone-marquee-parser" },
   { dir: "rust/html_renderer", name: "cube-drone-marquee-html-renderer" },
   { dir: "rust/markup", name: "cube-drone-marquee-markup" },
+  // Depends only on the parser (published first), so it lands last cleanly.
+  { dir: "rust/markdown", name: "cube-drone-marquee-markdown" },
 ];
 
 const args = process.argv.slice(2);

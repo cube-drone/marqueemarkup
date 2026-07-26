@@ -1,33 +1,17 @@
-//! Lossy two-way conversion between Marquee and Markdown.
-//!
-//! Both directions pivot on the Marquee AST (`marquee_parser::Node`) and
-//! comrak's CommonMark AST:
-//!
-//! ```text
-//! md -> mq:  comrak AST --map--> Marquee Node --serialize--> .mq
-//! mq -> md:  Marquee Node --map--> comrak AST --format_commonmark--> .md
-//! ```
-//!
-//! Neither direction is lossless — that is the deal. Marquee has effects
-//! Markdown can't say (colors, animation, fonts, sizing), and Markdown has raw
-//! HTML and rich tables Marquee deliberately refuses. The guiding rule, borrowed
-//! from Marquee itself: **degrade visibly, never eat content.** An effect with
-//! no Markdown equivalent is unwrapped to the text it decorated; it is never
-//! dropped.
-//!
-//! The [`Dialect`] chooses how much Markdown vocabulary a conversion may use.
-//! In [`Dialect::Extended`] (the default) a Marquee **sidenote bridges to a
-//! footnote** and back; in [`Dialect::Strict`] — CommonMark core only — the
-//! sidenote flattens into the sentence, because core Markdown has no footnote.
+#![doc = include_str!("../README.md")]
 
 use comrak::nodes::{
     AstNode, ListDelimType, ListType, NodeCode, NodeCodeBlock, NodeFootnoteDefinition,
     NodeFootnoteReference, NodeHeading, NodeLink, NodeList, NodeValue,
 };
 use comrak::{format_commonmark, parse_document, Arena};
-use marquee_parser::{parse, serialize, Attrs, Node, ParseError};
+use marquee_parser::{parse, serialize, Attrs, Node};
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
+
+// The one error a conversion can surface (an unknown Marquee dialect version),
+// re-exported so consumers can name it without depending on the parser crate.
+pub use marquee_parser::ParseError;
 
 /// Which Markdown vocabulary a conversion may use.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]

@@ -45,6 +45,7 @@ jobs:
           (cd rust/parser && cargo clean -p cube-drone-marquee-parser) || true
           (cd rust/html_renderer && cargo clean -p cube-drone-marquee-parser -p cube-drone-marquee-html-renderer) || true
           (cd rust/markup && cargo clean -p cube-drone-marquee-parser -p cube-drone-marquee-html-renderer -p cube-drone-marquee-markup) || true
+          (cd rust/markdown && cargo clean -p cube-drone-marquee-parser -p cube-drone-marquee-markdown) || true
       - run: npm run release-check
 
       # crates.io trusted publishing: exchange this run's OIDC identity for

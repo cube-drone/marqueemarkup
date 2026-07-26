@@ -1,8 +1,9 @@
 # CI = release-check, verbatim. One source of truth: the same script that
 # gates a release gates every push, so the two can never drift apart.
 # It runs: build all workspaces -> typecheck -> test (7 packages) ->
-# cargo test (both crates) -> 10k-document differential fuzz -> consumer
-# pack-smoke (pack the parser, install the tarball, import from plain node).
+# cargo test + clippy (four crates) -> 10k-document differential fuzz ->
+# consumer pack-smoke (pack the parser, install the tarball, import from
+# plain node).
 
 name: ci
 
@@ -36,6 +37,7 @@ jobs:
             rust/parser/target
             rust/html_renderer/target
             rust/markup/target
+            rust/markdown/target
           key: cargo-${{ runner.os }}-${{ hashFiles('rust/**/Cargo.toml') }}
           restore-keys: cargo-${{ runner.os }}-
 
@@ -51,5 +53,6 @@ jobs:
           (cd rust/parser && cargo clean -p cube-drone-marquee-parser)
           (cd rust/html_renderer && cargo clean -p cube-drone-marquee-parser -p cube-drone-marquee-html-renderer)
           (cd rust/markup && cargo clean -p cube-drone-marquee-parser -p cube-drone-marquee-html-renderer -p cube-drone-marquee-markup)
+          (cd rust/markdown && cargo clean -p cube-drone-marquee-parser -p cube-drone-marquee-markdown)
 
       - run: npm run release-check
