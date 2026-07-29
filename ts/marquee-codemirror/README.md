@@ -56,12 +56,22 @@ own surface on the same policy.
 
 Click any rendered block to drop the cursor into it and edit its source — except a control
 *inside* it (a link, a `<video>`, a play button) still does its own thing, so a media embed
-plays rather than opening to source. While you edit a block, its rendered form doesn't vanish:
-a **dimmed preview** is held just below the source (set off with a left rule) so you can see
-what you're shaping, and so the surrounding layout stays put instead of reflowing on every
-click. Rendered HTML is cached by a block's *source text*, so typing only re-renders the block
-you're touching — the rest of the document keeps its DOM (no re-render, no image reload, no
-height churn, no scroll jumping).
+plays rather than opening to source. While you edit a **media block** (an embed-bearing
+paragraph, a `:::media` container), a **dimmed preview** is held just below the source (set
+off with a left rule) — alt text and a target say nothing about whether the media resolves,
+so the preview is the feedback. Text-shaped blocks (lists, quotes, code, tables) read fine as
+source, so while you edit them it's just the source — no duplicate copy below. Rendered HTML
+is cached by a block's *source text*, so typing only re-renders the block you're touching —
+the rest of the document keeps its DOM (no re-render, no image reload, no height churn, no
+scroll jumping).
+
+**Lists get a grace zone.** The in-between states of list editing — Enter on the last item, a
+bare `-` before you type the space that makes it an item, Enter splitting an item's text — all
+technically parse as "not part of the list," but you're still mid-thought, so an exact-span
+test would snatch the list away for rendering on those keystrokes. The list's touch zone
+extends over the adjacent blank and half-typed-marker lines (one line of real content directly
+against it, two lines total each way), and it re-renders once your cursor is genuinely
+elsewhere.
 
 Up/down arrows step *over* a rendered block (treating it as one unit, which is what you want
 while skimming); to keyboard-edit a block, arrow into it from the side or click it.

@@ -83,10 +83,36 @@ test("a list renders as a block widget when away, source when editing", () => {
   assert.equal(b.from, 0);
   const editing = plan(src, cursorAt(3), bareWebProfile);
   assert.equal(blockSpec(editing), undefined, "editing shows the source");
-  // ...but a dimmed rendered preview is held below it (doesn't just vanish).
-  const preview = editing.find((s) => s.kind === "preview");
-  assert.ok(preview && preview.kind === "preview" && preview.node.type === "list");
-  assert.ok(preview.at > 0 && preview.at <= src.length, "preview anchored at the block's end");
+  // Text-shaped blocks get NO duplicate preview while editing - only media does.
+  assert.ok(!editing.some((s) => s.kind === "preview"), "no dimmed preview for a list");
+});
+
+// -- the list editing grace zone: half-states don't snatch the list away --
+
+test("a list stays open on the fresh line after it (Enter on the last item)", () => {
+  const src = "- one\n- two\n\n"; // just pressed Enter; cursor on the new blank line
+  assert.equal(blockSpec(plan(src, cursorAt(12), bareWebProfile)), undefined, "still source");
+});
+
+test("a list stays open when Enter splits an item's text", () => {
+  const src = "- one\n- t\nwo\n"; // "wo" momentarily parses as its own paragraph
+  assert.equal(blockSpec(plan(src, cursorAt(10), bareWebProfile)), undefined);
+});
+
+test("a list stays open while a new marker is half-typed below it", () => {
+  const src = "- one\n- two\n\n-\n"; // bare "-": not an item until its space arrives
+  assert.equal(blockSpec(plan(src, cursorAt(14), bareWebProfile)), undefined);
+});
+
+test("a list stays open from the fresh line above it", () => {
+  const src = "\n- one\n- two\n"; // opened a line above the first item
+  assert.equal(blockSpec(plan(src, cursorAt(0), bareWebProfile)), undefined);
+});
+
+test("a paragraph past the blank line is not the list's edit zone", () => {
+  const src = "- one\n- two\n\ntext\n";
+  const b = blockSpec(plan(src, cursorAt(15), bareWebProfile)); // cursor in "text"
+  assert.ok(b && b.node.type === "list", "the list is rendered again");
 });
 
 test("quotes, code blocks, tables, rules, turbolinks are rendered blocks", () => {
@@ -104,6 +130,21 @@ test("a paragraph with an image renders (so images flow full-size in a <p>)", ()
   assert.ok(b && b.node.type === "paragraph");
   // A plain-text paragraph does NOT become a block.
   assert.equal(blockSpec(plan("just words here\n", noCursor, bareWebProfile)), undefined);
+});
+
+test("only media blocks hold a dimmed preview while being edited", () => {
+  // A paragraph carrying an embed: preview held below the source.
+  const img = "look ![cat](cat.jpg) here\n";
+  const p = plan(img, cursorAt(3), bareWebProfile).find((s) => s.kind === "preview");
+  assert.ok(p && p.kind === "preview" && p.node.type === "paragraph", "image paragraph previews");
+  assert.ok(p.at > 0 && p.at <= img.length, "preview anchored at the block's end");
+  // A :::media container: same.
+  const media = ":::media\n![cat](cat.jpg)\n:::\n";
+  assert.ok(plan(media, cursorAt(4), bareWebProfile).some((s) => s.kind === "preview"));
+  // Text-shaped blocks while editing: source only, no preview.
+  assert.ok(!plan("> a quote\n", cursorAt(3), bareWebProfile).some((s) => s.kind === "preview"));
+  assert.ok(!plan("```js\ncode\n```\n", cursorAt(7), bareWebProfile).some((s) => s.kind === "preview"));
+  assert.ok(!plan("https://e.x/post\n", cursorAt(3), bareWebProfile).some((s) => s.kind === "preview"), "a turbolink is a link, not media");
 });
 
 test("a paragraph with an aside renders (so the note shows below)", () => {

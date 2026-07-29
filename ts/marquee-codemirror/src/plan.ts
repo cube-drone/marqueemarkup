@@ -23,7 +23,10 @@
 // job of a separate window, not the inline editor.
 //
 // Exact, not heuristic: every decision comes from the one true parse and its
-// source positions (SPEC.md, "Source positions").
+// source positions (SPEC.md, "Source positions"). One deliberate softness:
+// a list's touch zone reaches past its parsed span, over the adjacent blank
+// and half-typed-marker lines, because the intermediate states of list
+// editing parse as "not the list" for a keystroke or two - see listTouched.
 
 import { parseWithPositions, type Node, type Span } from "@cube-drone/marquee-parser";
 import { FONTS, type Profile } from "@cube-drone/marquee-html-renderer";
@@ -43,8 +46,10 @@ export type DecoSpec =
   /** Replace a whole block's source with the renderer's output for it. */
   | { kind: "block"; from: number; to: number; node: Node }
   /** Keep a block's source editable, with a dimmed rendered preview below
-   * it - shown for the block you're currently editing so its rendered form
-   * doesn't jarringly vanish (and the layout stays put). */
+   * it - shown only for MEDIA blocks you're editing, because alt text and a
+   * target say nothing about whether the media actually resolves; the
+   * preview is the feedback. Text-shaped blocks (lists, quotes, code,
+   * tables) read fine as source, so they get no duplicate preview. */
   | { kind: "preview"; at: number; node: Node };
 
 export type WidgetSpec = { type: "emoji"; slug: string };
@@ -76,6 +81,31 @@ export function planFromAst(
 ): DecoSpec[] {
   const out: DecoSpec[] = [];
   const touched = (s: Span): boolean => sels.some((r) => r.from <= s.end && r.to >= s.start);
+
+  // A list's editing neighborhood is a little wider than its parsed span.
+  // The half-states of list editing - Enter on the last item (a fresh blank
+  // line), a bare "-" or "1" before the space that makes it an item, Enter
+  // splitting an item's text - all parse as *outside* the list, so an exact
+  // span test snatches the list away for rendering mid-thought. Extend the
+  // touch zone through the line directly after the list (the just-split-off
+  // text), plus adjacent blank or half-typed-marker lines on either side.
+  const nascent = /^\s*(?:[-*+]|\d+\.?)?\s*$/;
+  const listTouched = (s: Span): boolean => {
+    let end = s.end;
+    for (let hops = 0; hops < 2 && end < source.length && source[end] === "\n"; hops += 1) {
+      let lineEnd = source.indexOf("\n", end + 1);
+      if (lineEnd === -1) lineEnd = source.length;
+      if (hops > 0 && !nascent.test(source.slice(end + 1, lineEnd))) break;
+      end = lineEnd;
+    }
+    let start = s.start;
+    for (let hops = 0; hops < 2 && start > 0 && source[start - 1] === "\n"; hops += 1) {
+      const lineStart = start < 2 ? 0 : source.lastIndexOf("\n", start - 2) + 1;
+      if (!nascent.test(source.slice(lineStart, start - 1))) break;
+      start = lineStart;
+    }
+    return touched({ start, end });
+  };
 
   const markers = (open: [number, number], close: [number, number], active: boolean): void => {
     for (const [a, b] of [open, close]) {
@@ -193,11 +223,14 @@ export function planFromAst(
       return;
     }
     if (renderworthy && span !== undefined) {
-      if (!touched(span)) {
+      const editing = node.type === "list" ? listTouched(span) : touched(span);
+      if (!editing) {
         out.push({ kind: "block", from: span.start, to: span.end, node });
-      } else {
-        // Editing it: keep the source, but hold the rendered form below as a
-        // dimmed preview so it doesn't vanish and the layout doesn't jump.
+      } else if (isMediaBlock(node)) {
+        // Editing media: keep the source, and hold the rendered form below
+        // as a dimmed preview - the only feedback on whether it resolves.
+        // Every other block is plain source while you edit it; its rendered
+        // form is text-shaped anyway, so a copy below is just noise.
         out.push({ kind: "preview", at: span.end, node });
       }
     }
@@ -207,6 +240,24 @@ export function planFromAst(
     doc.children.forEach(block);
   }
   return out;
+}
+
+/** A media block - a `:::media` container or anything carrying an embed -
+ * keeps a live preview below its source while being edited. (A turbolink is
+ * a link, not media: no preview.) */
+function isMediaBlock(node: Node): boolean {
+  if (node.type === "directive" && node.name === "media") return true;
+  let found = false;
+  const walk = (n: Node): void => {
+    if (found) return;
+    if (n.type === "embed") {
+      found = true;
+      return;
+    }
+    if ("children" in n) n.children.forEach(walk);
+  };
+  walk(node);
+  return found;
 }
 
 /** A paragraph/heading needs full rendering (not just inline marks) when it

@@ -71,7 +71,7 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
         return Decoration.replace({ widget: new EmojiWidget(spec.widget.slug, profile) }).range(spec.from, spec.to);
       }
       if (spec.kind === "preview") {
-        // A dimmed rendered copy just below the block you're editing.
+        // A dimmed rendered copy just below the media block you're editing.
         return Decoration.widget({
           widget: new BlockWidget(renderBlock(spec.node, spans, source), true),
           block: true,
