@@ -235,7 +235,7 @@ dependencies = [
 
 [[package]]
 name = "cube-drone-marquee-markdown"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "comrak",
  "cube-drone-marquee-parser",
@@ -243,7 +243,7 @@ dependencies = [
 
 [[package]]
 name = "cube-drone-marquee-parser"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "serde",
  "serde_json",
