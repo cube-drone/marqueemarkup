@@ -45,8 +45,11 @@ CodeMirror decorations:
   the cursor into a block and it opens to source; click a rendered block (off any link) to
   put the cursor there.
 - **Layout containers** (`:::page`, `:::section`) stay as source with their contents previewed
-  inside — accurately previewing a page layout is the job of a separate window, not the inline
-  editor.
+  inside — accurately previewing a page *layout* is the job of a separate window, not the
+  inline editor. But their **visual identity paints through**: a scheme
+  (`scheme=hotdog-stand`), a background tile, a color, a font washes across every line the
+  container spans — fences included, rendered blocks inside too — so the colorway shows while
+  everything stays editable. Only the geometry waits for the preview window.
 
 Two things make this work. **Exactness:** Marquee has one parse, so every decision comes from
 the real AST and source positions (`parseWithPositions`), never a guess about whether a `*` is

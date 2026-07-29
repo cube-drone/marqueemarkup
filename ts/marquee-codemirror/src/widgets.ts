@@ -96,18 +96,32 @@ export class LinkWidget extends WidgetType {
 export class BlockWidget extends WidgetType {
   readonly html: string;
   readonly dimmed: boolean;
-  constructor(html: string, dimmed: boolean) {
+  readonly look: { class: string; style: string } | undefined;
+  constructor(html: string, dimmed: boolean, look?: { class: string; style: string }) {
     super();
     this.html = html;
     this.dimmed = dimmed;
+    this.look = look;
   }
   eq(o: BlockWidget): boolean {
     // Content-only: an unchanged block keeps its DOM across keystrokes.
-    return o.html === this.html && o.dimmed === this.dimmed;
+    return (
+      o.html === this.html &&
+      o.dimmed === this.dimmed &&
+      o.look?.class === this.look?.class &&
+      o.look?.style === this.look?.style
+    );
   }
   toDOM(view: EditorView): HTMLElement {
     const el = document.createElement("div");
     el.className = this.dimmed ? "cm-mq-block cm-mq-preview mq-doc" : "cm-mq-block mq-doc";
+    // Inside a layout container: wear its visual identity (scheme classes,
+    // style knobs), so a rendered block doesn't read as a hole punched in
+    // the painted zone around it.
+    if (this.look !== undefined) {
+      el.className += ` cm-mq-zone${this.look.class === "" ? "" : ` ${this.look.class}`}`;
+      if (this.look.style !== "") el.setAttribute("style", this.look.style);
+    }
     el.innerHTML = this.html;
     // Media loads late and changes the block's height; CM measured it before
     // the load, so re-measure when it arrives or the coordinate map drifts.

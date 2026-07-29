@@ -279,7 +279,7 @@ function cssUrl(url: string): string {
  * color, or `tile:<target>` - a tiled background image, resolved through
  * the embedder's media policy exactly as an embed (a background fetch is a
  * fetch): out-of-policy or non-image targets degrade to no background. */
-function styleVars(attrs: Attrs, profile: Profile): string {
+function styleVarList(attrs: Attrs, profile: Profile): string {
   const vars: string[] = [];
   if (isColorValue(attrs["color"])) {
     vars.push(`--mq-color:${attrs["color"]}`);
@@ -295,7 +295,25 @@ function styleVars(attrs: Attrs, profile: Profile): string {
   } else if (isColorValue(bg)) {
     vars.push(`--mq-bg:${bg}`);
   }
-  return vars.length === 0 ? "" : ` style="${vars.join(";")}"`;
+  return vars.join(";");
+}
+
+function styleVars(attrs: Attrs, profile: Profile): string {
+  const list = styleVarList(attrs, profile);
+  return list === "" ? "" : ` style="${list}"`;
+}
+
+/** The visual identity a layout container (:::page / :::section) wears -
+ * its scheme/font classes and validated style knobs - as bare class/style
+ * values. For surfaces that paint a container's look onto elements THEY
+ * own instead of rendering the container: the live editor washes it across
+ * the container's source lines. Same gates as rendering, so the two can't
+ * disagree. */
+export function containerLook(attrs: Attrs, profile: Profile = bareWebProfile): { classes: string; style: string } {
+  return {
+    classes: `${schemeClass(attrs)}${fontClass(attrs)}`.trim(),
+    style: styleVarList(attrs, profile),
+  };
 }
 
 function schemeClass(attrs: Attrs): string {

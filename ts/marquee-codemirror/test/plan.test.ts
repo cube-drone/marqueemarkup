@@ -179,6 +179,47 @@ test("layout containers stay source; content inside still previews", () => {
   assert.ok(specs.some((s) => s.kind === "block" && s.node.type === "paragraph"));
 });
 
+// -- zones: a layout container's visual identity paints its lines --
+
+test("a section's scheme paints its whole range as a zone", () => {
+  const src = ":::section scheme=hotdog-stand\n**WELCOME TO THE BURGER ZONE.**\n:::\n";
+  const z = plan(src, noCursor, bareWebProfile).find((s) => s.kind === "zone");
+  assert.ok(z && z.kind === "zone");
+  assert.equal(z.class, "mq-scheme-hotdog-stand");
+  assert.equal(z.from, 0);
+  assert.equal(src.slice(z.to - 3, z.to), ":::", "zone covers through the closing fence");
+});
+
+test("section background tiles and colors land as style vars on the zone", () => {
+  const src = ":::section background=tile:example-media/x.png color=#fff8dc\nhi\n:::\n";
+  const z = plan(src, noCursor, bareWebProfile).find((s) => s.kind === "zone");
+  assert.ok(z && z.kind === "zone" && z.style !== undefined);
+  assert.ok(z.style.includes("--mq-color:#fff8dc"), "color knob");
+  assert.ok(z.style.includes("--mq-bg-tile:url("), "tiled background");
+});
+
+test("a plain section paints no zone; editing inside doesn't unpaint it", () => {
+  assert.ok(!plan(":::section\nhi\n:::\n", noCursor, bareWebProfile).some((s) => s.kind === "zone"));
+  // The look is ambient, not cursor-gated: still painted while editing inside.
+  const src = ":::section scheme=noir\nwords\n:::\n";
+  assert.ok(plan(src, cursorAt(26), bareWebProfile).some((s) => s.kind === "zone"));
+});
+
+test("a rendered block inside a schemed section wears the look", () => {
+  const src = ":::section scheme=noir\n- a\n- b\n:::\n";
+  const b = blockSpec(plan(src, noCursor, bareWebProfile));
+  assert.ok(b && b.node.type === "list");
+  assert.equal(b.look?.class, "mq-scheme-noir");
+});
+
+test("nested container looks layer outer-first (inner wins)", () => {
+  const src = ":::page scheme=noir\n:::section color=#fff8dc\n- a\n:::\n:::\n";
+  const b = blockSpec(plan(src, noCursor, bareWebProfile));
+  assert.ok(b && b.look !== undefined);
+  assert.equal(b.look.class, "mq-scheme-noir");
+  assert.ok(b.look.style.includes("--mq-color:#fff8dc"));
+});
+
 test("comments dim; the whole vector corpus plans in-bounds", () => {
   assert.ok(find(plan("%% note\n\nhi\n", noCursor, bareWebProfile), (s) => s.kind === "mark" && s.class === "cm-mq-comment"));
   const dir = fileURLToPath(new URL("../../../vectors/", import.meta.url));

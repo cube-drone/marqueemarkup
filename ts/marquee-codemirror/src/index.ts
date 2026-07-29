@@ -17,7 +17,7 @@ export { marqueeTheme } from "./theme.ts";
 // The pure planner, exported for anyone building their own editor surface on
 // top of the same decisions (or testing them).
 export { plan, planFromAst } from "./plan.ts";
-export type { DecoSpec, WidgetSpec, Sel } from "./plan.ts";
+export type { DecoSpec, WidgetSpec, Sel, Look } from "./plan.ts";
 
 // The parser and Profile socket, re-exported: one policy object, honored by
 // the editor and both renderers.

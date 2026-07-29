@@ -15,7 +15,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Node } from "@cube-drone/marquee-parser";
-import { bareWebProfile, escapeText, render, renderMarquee } from "../src/index.ts";
+import { bareWebProfile, containerLook, escapeText, render, renderMarquee } from "../src/index.ts";
 
 interface Collected {
   visible: string[];
@@ -195,6 +195,18 @@ test("turbolink socket: rich plugins wrap, the floor is always reachable", () =>
   assert.ok(!bare.includes("mq-turbolink-rich"), "bare never consults plugins");
   const floor = renderMarquee("https://e.x/post\n");
   assert.ok(floor.includes('<p class="mq-turbolink"><a href="https://e.x/post">'), "no plugins: the floor");
+});
+
+test("containerLook: the container's visual identity, same gates as rendering", () => {
+  const schemed = containerLook({ scheme: "hotdog-stand" });
+  assert.equal(schemed.classes, "mq-scheme-hotdog-stand");
+  assert.equal(schemed.style, "");
+  const knobs = containerLook({ background: "tile:https://e.x/stars.gif", color: "#fff8dc" });
+  assert.ok(knobs.style.includes("--mq-bg-tile:url('https://e.x/stars.gif')"));
+  assert.ok(knobs.style.includes("--mq-color:#fff8dc"));
+  const invalid = containerLook({ scheme: "NOT a token!", background: "tile:weird://x.gif" });
+  assert.equal(invalid.classes, "", "invalid scheme degrades to nothing");
+  assert.equal(invalid.style, "", "out-of-policy tile degrades to nothing");
 });
 
 test("background tiles: media policy applies, URLs are CSS-sanitized", () => {

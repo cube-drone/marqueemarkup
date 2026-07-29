@@ -29,12 +29,16 @@
 // editing parse as "not the list" for a keystroke or two - see listTouched.
 
 import { parseWithPositions, type Node, type Span } from "@cube-drone/marquee-parser";
-import { FONTS, type Profile } from "@cube-drone/marquee-html-renderer";
+import { containerLook, FONTS, type Profile } from "@cube-drone/marquee-html-renderer";
 
 export interface Sel {
   from: number;
   to: number;
 }
+
+/** A layout container's visual identity, carried onto rendered blocks
+ * inside it so they wear the surrounding scheme. */
+export type Look = { class: string; style: string };
 
 export type DecoSpec =
   /** Style raw text in place (bold, a heading size, a color, an effect). */
@@ -45,13 +49,19 @@ export type DecoSpec =
    * or a real clickable link). */
   | { kind: "widget"; from: number; to: number; widget: WidgetSpec }
   /** Replace a whole block's source with the renderer's output for it. */
-  | { kind: "block"; from: number; to: number; node: Node }
+  | { kind: "block"; from: number; to: number; node: Node; look?: Look }
   /** Keep a block's source editable, with a dimmed rendered preview below
    * it - shown only for MEDIA blocks you're editing, because alt text and a
    * target say nothing about whether the media actually resolves; the
    * preview is the feedback. Text-shaped blocks (lists, quotes, code,
    * tables) read fine as source, so they get no duplicate preview. */
-  | { kind: "preview"; at: number; node: Node };
+  | { kind: "preview"; at: number; node: Node; look?: Look }
+  /** Paint a layout container's visual identity - scheme, background tile,
+   * color, font - across the editor lines it occupies. The fences and the
+   * source inside stay editable; they just wear the container's look. (The
+   * container's GEOMETRY still doesn't render here - that stays the job of
+   * a separate preview window.) */
+  | { kind: "zone"; from: number; to: number; class?: string; style?: string };
 
 export type WidgetSpec = { type: "emoji"; slug: string } | { type: "link"; node: Node };
 
@@ -198,11 +208,35 @@ export function planFromAst(
 
   // -- block: rendered-widget-when-away, source-when-editing --
 
-  const block = (node: Node): void => {
+  const block = (node: Node, look?: Look): void => {
     const span = spans.get(node);
     if (node.type === "directive" && (node.name === "page" || node.name === "section")) {
       // Layout containers stay as source; preview their contents inside.
-      node.children.forEach(block);
+      // But their VISUAL identity - scheme, background tile, color, font -
+      // paints across the container's lines as a zone, and rides along on
+      // rendered blocks inside it (the look), so the colorway shows while
+      // everything stays editable. Geometry is still the preview window's.
+      const worn = containerLook(node.attrs, profile);
+      let inherited = look;
+      if (span !== undefined && (worn.classes !== "" || worn.style !== "")) {
+        out.push({
+          kind: "zone",
+          from: span.start,
+          to: span.end,
+          ...(worn.classes === "" ? {} : { class: worn.classes }),
+          ...(worn.style === "" ? {} : { style: worn.style }),
+        });
+        // Nested containers layer outer-first, so the inner look wins where
+        // they disagree - the same cascade rendering would produce.
+        inherited =
+          look === undefined
+            ? { class: worn.classes, style: worn.style }
+            : {
+                class: `${look.class} ${worn.classes}`.trim(),
+                style: [look.style, worn.style].filter((s) => s !== "").join(";"),
+              };
+      }
+      node.children.forEach((child) => block(child, inherited));
       return;
     }
     if (node.type === "comment") {
@@ -235,19 +269,19 @@ export function planFromAst(
     if (renderworthy && span !== undefined) {
       const editing = node.type === "list" ? listTouched(span) : touched(span);
       if (!editing) {
-        out.push({ kind: "block", from: span.start, to: span.end, node });
+        out.push({ kind: "block", from: span.start, to: span.end, node, ...(look === undefined ? {} : { look }) });
       } else if (isMediaBlock(node)) {
         // Editing media: keep the source, and hold the rendered form below
         // as a dimmed preview - the only feedback on whether it resolves.
         // Every other block is plain source while you edit it; its rendered
         // form is text-shaped anyway, so a copy below is just noise.
-        out.push({ kind: "preview", at: span.end, node });
+        out.push({ kind: "preview", at: span.end, node, ...(look === undefined ? {} : { look }) });
       }
     }
   };
 
   if (doc.type === "document") {
-    doc.children.forEach(block);
+    doc.children.forEach((child) => block(child));
   }
   return out;
 }

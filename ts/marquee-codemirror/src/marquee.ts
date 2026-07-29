@@ -57,7 +57,27 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
   };
 
   const toDecorations = (specs: DecoSpec[], spans: WeakMap<Node, Span>, source: string): DecorationSet => {
-    const ranges = specs.map((spec) => {
+    const ranges = specs.flatMap((spec) => {
+      if (spec.kind === "zone") {
+        // One line decoration per line of the container: the scheme class
+        // sets the --mq-* slots (marquee.css) and the style knobs set them
+        // inline; the cm-mq-zone rule in the theme consumes them. Directive
+        // fences sit at column 0, so spec.from is already a line start.
+        const deco = Decoration.line({
+          attributes: {
+            class: `cm-mq-zone${spec.class === undefined ? "" : ` ${spec.class}`}`,
+            ...(spec.style === undefined ? {} : { style: spec.style }),
+          },
+        });
+        const lines = [];
+        for (let pos = spec.from; pos <= spec.to; ) {
+          lines.push(deco.range(pos));
+          const nl = source.indexOf("\n", pos);
+          if (nl === -1) break;
+          pos = nl + 1;
+        }
+        return lines;
+      }
       if (spec.kind === "mark") {
         return Decoration.mark({
           ...(spec.class === undefined ? {} : { class: spec.class }),
@@ -77,13 +97,13 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
       if (spec.kind === "preview") {
         // A dimmed rendered copy just below the media block you're editing.
         return Decoration.widget({
-          widget: new BlockWidget(renderBlock(spec.node, spans, source), true),
+          widget: new BlockWidget(renderBlock(spec.node, spans, source), true, spec.look),
           block: true,
           side: 1,
         }).range(spec.at);
       }
       return Decoration.replace({
-        widget: new BlockWidget(renderBlock(spec.node, spans, source), false),
+        widget: new BlockWidget(renderBlock(spec.node, spans, source), false, spec.look),
         block: true,
       }).range(spec.from, spec.to);
     });

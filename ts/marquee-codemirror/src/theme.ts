@@ -54,6 +54,15 @@ export const marqueeTheme = EditorView.theme({
     borderTop: "2px solid rgba(127,127,127,0.4)",
     verticalAlign: "middle",
   },
+  // A painted layout container: cm-mq-zone consumes the same --mq-* slots
+  // marquee.css gives .mq-page/.mq-section, so a section's scheme class
+  // (which sets the slots - load marquee.css for schemes), background tile,
+  // and color knobs land on the source lines they contain.
+  "& .cm-mq-zone": {
+    backgroundColor: "var(--mq-bg, transparent)",
+    backgroundImage: "var(--mq-bg-tile, none)",
+    color: "var(--mq-color, inherit)",
+  },
   // A rendered block sits in the text flow. PADDING, never margin: CodeMirror
   // measures a widget's offsetHeight (which excludes margin), so a margin
   // would drift every position below it by ~a line - breaking click accuracy
