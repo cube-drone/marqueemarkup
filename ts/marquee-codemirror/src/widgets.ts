@@ -1,5 +1,8 @@
-// CodeMirror widgets. Two kinds:
+// CodeMirror widgets. Three kinds:
 //   - EmojiWidget: an inline resolved emoji glyph inside augmented source.
+//   - LinkWidget: an inline link as a REAL, followable anchor (the
+//     renderer's output), with a small gutter either side to drop a cursor
+//     for editing - Obsidian's answer to "clickable or editable?": both.
 //   - BlockWidget: a whole block rendered by the REAL HTML renderer - the
 //     leverage move that makes lists look like lists and code like code,
 //     because it IS the renderer's output (safe: the renderer escapes author
@@ -50,6 +53,38 @@ export class EmojiWidget extends WidgetType {
     el.addEventListener("mousedown", (e) => {
       e.preventDefault();
       cursorInto(view, el);
+    });
+    return el;
+  }
+  ignoreEvent(): boolean {
+    return true;
+  }
+}
+
+export class LinkWidget extends WidgetType {
+  readonly html: string;
+  constructor(html: string) {
+    super();
+    this.html = html;
+  }
+  eq(o: LinkWidget): boolean {
+    return o.html === this.html;
+  }
+  toDOM(view: EditorView): HTMLElement {
+    const el = document.createElement("span");
+    el.className = "cm-mq-linkbox";
+    el.innerHTML = this.html;
+    // The gutters: a click on the box but off the anchor drops the cursor
+    // BESIDE the link - at whichever side is nearer the click - which
+    // touches its span and opens it to source. A click on the anchor itself
+    // is the browser's: the link actually follows. (CodeMirror marks widget
+    // DOM contenteditable=false, which is what re-arms anchor navigation.)
+    el.addEventListener("mousedown", (e) => {
+      if ((e.target as HTMLElement).closest("a") === null) {
+        e.preventDefault();
+        const pos = view.posAtCoords({ x: e.clientX, y: e.clientY });
+        if (pos !== null) view.dispatch({ selection: EditorSelection.cursor(pos) });
+      }
     });
     return el;
   }

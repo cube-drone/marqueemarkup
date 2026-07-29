@@ -33,7 +33,11 @@ CodeMirror decorations:
 - **Inline formatting** inside a plain paragraph is *styled in place*: `**bold**` is drawn
   bold while its `**` stays visible (and dimmed) under the cursor, then hides when the cursor
   leaves. Effects animate (their real `mq-*` classes) when you're not editing them, spoilers
-  blur, colored spans take their color, `:sparkles:` shows ✨.
+  blur, colored spans take their color, `:sparkles:` shows ✨. Links go one further: away
+  from the cursor, `[text](target)` is a **real, followable anchor** (the renderer's own
+  output, so link policy holds) with a thin click-gutter either side — click the link and it
+  follows; click the gutter (or arrow up against it) to drop the cursor beside it, which opens
+  it to source for editing. Obsidian's answer to "clickable or editable?": both.
 - **Every block the cursor isn't in becomes fully rendered** — by the actual Marquee HTML
   renderer. A list looks like a list, a code block like code, a table like a table; images
   flow full-size, `:::media` rows lay out, quotes get their spine, asides drop below their

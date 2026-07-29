@@ -38,12 +38,24 @@ test("heading prefix hides away, dims near; content sized", () => {
   assert.ok(find(specs, (s) => s.kind === "mark" && s.class === "cm-mq-h2"));
 });
 
-test("link text styled, the (target) tail hidden away", () => {
+test("a link away from the cursor is a real followable anchor widget", () => {
   const src = "see [my site](https://e.x/p) ok\n";
   const specs = plan(src, noCursor, bareWebProfile);
-  const m = find(specs, (s) => s.kind === "mark" && s.class === "cm-mq-link");
-  assert.ok(m && m.kind === "mark" && src.slice(m.from, m.to) === "my site");
-  assert.ok(specs.some((s) => s.kind === "hide" && src.slice(s.from, s.to) === "](https://e.x/p)"));
+  const w = specs.find((s) => s.kind === "widget" && s.widget.type === "link");
+  assert.ok(w && w.kind === "widget", "the whole link is one widget");
+  assert.equal(src.slice(w.from, w.to), "[my site](https://e.x/p)");
+});
+
+test("a link under (or beside) the cursor opens to source", () => {
+  const src = "see [my site](https://e.x/p) ok\n";
+  for (const at of [7, 4, 28]) {
+    // inside the text, and adjacent at either edge (the gutter click)
+    const specs = plan(src, cursorAt(at), bareWebProfile);
+    assert.ok(!specs.some((s) => s.kind === "widget"), `no widget at ${at}`);
+    const m = find(specs, (s) => s.kind === "mark" && s.class === "cm-mq-link");
+    assert.ok(m && m.kind === "mark" && src.slice(m.from, m.to) === "my site");
+    assert.ok(specs.some((s) => s.kind === "mark" && s.class === "cm-mq-marker"), "markers dimmed, not hidden");
+  }
 });
 
 test("inline effect: real animating class away, static while editing", () => {

@@ -16,7 +16,7 @@ import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
 import { parseWithPositions, type Node, type Span } from "@cube-drone/marquee-parser";
 import { bareWebProfile, render, type Profile } from "@cube-drone/marquee-html-renderer";
 import { planFromAst, type DecoSpec, type Sel } from "./plan.ts";
-import { BlockWidget, EmojiWidget } from "./widgets.ts";
+import { BlockWidget, EmojiWidget, LinkWidget } from "./widgets.ts";
 import { marqueeTheme } from "./theme.ts";
 
 export interface MarqueeEditorOptions {
@@ -68,7 +68,11 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
         return Decoration.replace({}).range(spec.from, spec.to);
       }
       if (spec.kind === "widget") {
-        return Decoration.replace({ widget: new EmojiWidget(spec.widget.slug, profile) }).range(spec.from, spec.to);
+        const widget =
+          spec.widget.type === "link"
+            ? new LinkWidget(render(spec.widget.node, profile))
+            : new EmojiWidget(spec.widget.slug, profile);
+        return Decoration.replace({ widget }).range(spec.from, spec.to);
       }
       if (spec.kind === "preview") {
         // A dimmed rendered copy just below the media block you're editing.

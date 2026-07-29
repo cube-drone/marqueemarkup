@@ -27,6 +27,12 @@ export const marqueeTheme = EditorView.theme({
     background: "rgba(127,127,127,0.1)",
   },
   "& .cm-mq-link": { color: "#3b82f6", textDecoration: "underline" },
+  // A followable link widget. The PADDING is load-bearing: it's the click
+  // gutter either side - on the box but off the anchor - that drops the
+  // cursor beside the link to open it for editing.
+  "& .cm-mq-linkbox": { padding: "0 0.3em", cursor: "text" },
+  "& .cm-mq-linkbox a": { color: "#3b82f6", textDecoration: "underline", cursor: "pointer" },
+  "& .cm-mq-linkbox .mq-blocked": { opacity: "0.6", textDecoration: "line-through" },
   "& .cm-mq-comment": { opacity: "0.5", fontStyle: "italic" },
   "& .cm-mq-span": { borderBottom: "1px dotted rgba(127,127,127,0.5)" },
   // Headings: bold + a restrained bump (editing, not display).

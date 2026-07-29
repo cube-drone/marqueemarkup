@@ -41,7 +41,8 @@ export type DecoSpec =
   | { kind: "mark"; from: number; to: number; class?: string; style?: string }
   /** Hide a range entirely - a marker the cursor isn't near. */
   | { kind: "hide"; from: number; to: number }
-  /** Replace an inline range with a small widget (a resolved emoji glyph). */
+  /** Replace an inline range with a small widget (a resolved emoji glyph,
+   * or a real clickable link). */
   | { kind: "widget"; from: number; to: number; widget: WidgetSpec }
   /** Replace a whole block's source with the renderer's output for it. */
   | { kind: "block"; from: number; to: number; node: Node }
@@ -52,7 +53,7 @@ export type DecoSpec =
    * tables) read fine as source, so they get no duplicate preview. */
   | { kind: "preview"; at: number; node: Node };
 
-export type WidgetSpec = { type: "emoji"; slug: string };
+export type WidgetSpec = { type: "emoji"; slug: string } | { type: "link"; node: Node };
 
 /** Inline effect spans - animated in the editor when the cursor is away
  * (their real mq-* classes), static when you're editing them. */
@@ -151,10 +152,19 @@ export function planFromAst(
       }
       case "link": {
         if (span) {
+          if (!touched(span)) {
+            // Away from the cursor: a REAL anchor (the renderer's own
+            // output), so the link can actually be followed. Its widget
+            // keeps a small gutter either side; clicking there (or arrowing
+            // up against it) drops the cursor beside the link, which counts
+            // as touching it - and it opens to source for editing.
+            out.push({ kind: "widget", from: span.start, to: span.end, widget: { type: "link", node } });
+            return;
+          }
           const tail = source.indexOf("](", span.start);
           const textEnd = tail === -1 || tail >= span.end ? span.end : tail;
           out.push({ kind: "mark", from: span.start + 1, to: textEnd, class: "cm-mq-link" });
-          markers([span.start, span.start + 1], [textEnd, span.end], touched(span));
+          markers([span.start, span.start + 1], [textEnd, span.end], true);
         }
         node.children.forEach(inline);
         return;
