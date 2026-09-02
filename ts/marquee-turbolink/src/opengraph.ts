@@ -8,13 +8,55 @@ import type { TurbolinkPlugin } from "./index.ts";
 const UA =
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
 
+/**
+ * The named entities a meta tag is realistically written with. Not the full
+ * HTML5 table (2,000+ names); an unknown name is left as-is rather than
+ * guessed. Mirror of the Rust crate's NAMED_ENTITIES.
+ */
+const NAMED_ENTITIES: Record<string, string> = {
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  amp: "&",
+  nbsp: "\u00a0",
+  ndash: "\u2013",
+  mdash: "\u2014",
+  lsquo: "\u2018",
+  rsquo: "\u2019",
+  ldquo: "\u201c",
+  rdquo: "\u201d",
+  hellip: "\u2026",
+  copy: "\u00a9",
+  reg: "\u00ae",
+  trade: "\u2122",
+  laquo: "\u00ab",
+  raquo: "\u00bb",
+  bull: "\u2022",
+  middot: "\u00b7",
+};
+
+const ENTITY_RE = /&(#[xX][0-9a-fA-F]{1,6}|#[0-9]{1,7}|[a-zA-Z][a-zA-Z0-9]{1,31});/g;
+
+/**
+ * Decode the character references a meta content= can carry: decimal
+ * (&#39;), hex (&#x27; - what React/Helmet-rendered heads like CBC's emit),
+ * and the common named set. One pass, so `&amp;#x27;` decodes to the literal
+ * text `&#x27;` rather than an apostrophe.
+ */
 function decodeEntities(s: string): string {
-  return s
-    .replaceAll("&lt;", "<")
-    .replaceAll("&gt;", ">")
-    .replaceAll("&quot;", '"')
-    .replaceAll("&#39;", "'")
-    .replaceAll("&amp;", "&");
+  return s.replace(ENTITY_RE, (whole: string, body: string): string => {
+    if (body.startsWith("#")) {
+      const isHex = body[1] === "x" || body[1] === "X";
+      const n = Number.parseInt(body.slice(isHex ? 2 : 1), isHex ? 16 : 10);
+      // NUL, a lone surrogate, or beyond U+10FFFF has no character to become.
+      if (n === 0 || n > 0x10ffff || (n >= 0xd800 && n <= 0xdfff)) {
+        return whole;
+      }
+      return String.fromCodePoint(n);
+    }
+    return NAMED_ENTITIES[body] ?? whole;
+  });
 }
 
 /** Pure and separately testable: html text in, summary out. */

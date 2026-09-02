@@ -278,3 +278,28 @@ fn opengraph_parse_is_pure_and_matches_the_npm_shape() {
     let title_only = marquee_markup::opengraph::parse_open_graph("<title>Just This</title>");
     assert_eq!(title_only.unwrap().title.as_deref(), Some("Just This"));
 }
+
+#[test]
+fn opengraph_decodes_numeric_and_named_entities_once() {
+    // The shape a React/Helmet-rendered head emits (cbc.ca, 2026): hex
+    // apostrophes, literal curly quotes, decimal refs, named refs.
+    let html = r#"<html><head>
+      <meta data-rh="true" property="og:title" content="&#x27;Lake Ontario&#x27; lyric moment was &#X27;very moving&#x27;: Blue Rodeo’s Jim Cuddy"/>
+      <meta property="og:description" content="Hasn&#39;t &amp;#x27;hit&amp;#39; me &ndash; yet&hellip; &bogus; &#0; &#1114112; &#xD800; &amp;amp;"/>
+      <meta property="og:site_name" content="CBC&nbsp;News"/>
+    </head></html>"#;
+    let summary = marquee_markup::opengraph::parse_open_graph(html).unwrap();
+    assert_eq!(
+        summary.title.as_deref(),
+        Some("'Lake Ontario' lyric moment was 'very moving': Blue Rodeo’s Jim Cuddy")
+    );
+    // One pass: an escaped ampersand never becomes a second-round entity;
+    // unknown names and unrepresentable code points stay as written.
+    assert_eq!(
+        summary.description.as_deref(),
+        Some("Hasn't &#x27;hit&#39; me \u{2013} yet\u{2026} &bogus; &#0; &#1114112; &#xD800; &amp;")
+    );
+    assert_eq!(summary.site.as_deref(), Some("CBC\u{a0}News"));
+    let title = marquee_markup::opengraph::parse_open_graph("<title>Tom &amp; Jerry&#x2019;s &lsquo;Show&rsquo;</title>");
+    assert_eq!(title.unwrap().title.as_deref(), Some("Tom & Jerry\u{2019}s \u{2018}Show\u{2019}"));
+}

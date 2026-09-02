@@ -27,12 +27,67 @@ fn absolute_http(image: &str, base: &str) -> Option<String> {
     }
 }
 
+/// The named entities a meta tag is realistically written with. Not the
+/// full HTML5 table (2,000+ names); an unknown name is left as-is rather
+/// than guessed. Mirror of the npm package's NAMED_ENTITIES.
+const NAMED_ENTITIES: &[(&str, &str)] = &[
+    ("lt", "<"),
+    ("gt", ">"),
+    ("quot", "\""),
+    ("apos", "'"),
+    ("amp", "&"),
+    ("nbsp", "\u{a0}"),
+    ("ndash", "\u{2013}"),
+    ("mdash", "\u{2014}"),
+    ("lsquo", "\u{2018}"),
+    ("rsquo", "\u{2019}"),
+    ("ldquo", "\u{201c}"),
+    ("rdquo", "\u{201d}"),
+    ("hellip", "\u{2026}"),
+    ("copy", "\u{a9}"),
+    ("reg", "\u{ae}"),
+    ("trade", "\u{2122}"),
+    ("laquo", "\u{ab}"),
+    ("raquo", "\u{bb}"),
+    ("bull", "\u{2022}"),
+    ("middot", "\u{b7}"),
+];
+
+/// Decode the character references a meta content= can carry: decimal
+/// (&#39;), hex (&#x27; - what React/Helmet-rendered heads like CBC's
+/// emit), and the common named set. One pass, so `&amp;#x27;` decodes to
+/// the literal text `&#x27;` rather than an apostrophe.
 fn decode_entities(s: &str) -> String {
-    s.replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace("&quot;", "\"")
-        .replace("&#39;", "'")
-        .replace("&amp;", "&")
+    static ENTITY: OnceLock<Regex> = OnceLock::new();
+    let re = ENTITY
+        .get_or_init(|| Regex::new(r"&(#[xX][0-9a-fA-F]{1,6}|#[0-9]{1,7}|[a-zA-Z][a-zA-Z0-9]{1,31});").unwrap());
+    re.replace_all(s, |caps: &regex::Captures| {
+        let body = &caps[1];
+        let decoded = if let Some(hex) = body.strip_prefix('#').and_then(|b| {
+            b.strip_prefix('x').or_else(|| b.strip_prefix('X'))
+        }) {
+            u32::from_str_radix(hex, 16).ok().and_then(decode_codepoint)
+        } else if let Some(dec) = body.strip_prefix('#') {
+            dec.parse::<u32>().ok().and_then(decode_codepoint)
+        } else {
+            NAMED_ENTITIES
+                .iter()
+                .find(|(name, _)| *name == body)
+                .map(|(_, text)| text.to_string())
+        };
+        // Unknown or unrepresentable: keep the source text untouched.
+        decoded.unwrap_or_else(|| caps[0].to_string())
+    })
+    .into_owned()
+}
+
+/// A numeric reference to NUL, a surrogate, or beyond U+10FFFF has no
+/// character to become; leave it alone.
+fn decode_codepoint(n: u32) -> Option<String> {
+    if n == 0 {
+        return None;
+    }
+    char::from_u32(n).map(|c| c.to_string())
 }
 
 fn meta(head: &str, prop: &str) -> Option<String> {

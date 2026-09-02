@@ -105,6 +105,26 @@ test("parseOpenGraph: og tags, entity decoding, title fallback, no-title null", 
   assert.equal(parseOpenGraph("<p>nothing here</p>"), null);
 });
 
+test("parseOpenGraph: numeric and named entities decode once", () => {
+  // The shape a React/Helmet-rendered head emits (cbc.ca, 2026): hex
+  // apostrophes, literal curly quotes, decimal refs, named refs.
+  const og = parseOpenGraph(`<html><head>
+    <meta data-rh="true" property="og:title" content="&#x27;Lake Ontario&#x27; lyric moment was &#X27;very moving&#x27;: Blue Rodeo’s Jim Cuddy"/>
+    <meta property="og:description" content="Hasn&#39;t &amp;#x27;hit&amp;#39; me &ndash; yet&hellip; &bogus; &#0; &#1114112; &#xD800; &amp;amp;"/>
+    <meta property="og:site_name" content="CBC&nbsp;News"/>
+  </head></html>`);
+  assert.equal(og!.title, "'Lake Ontario' lyric moment was 'very moving': Blue Rodeo’s Jim Cuddy");
+  // One pass: an escaped ampersand never becomes a second-round entity;
+  // unknown names and unrepresentable code points stay as written.
+  assert.equal(
+    og!.description,
+    "Hasn't &#x27;hit&#39; me \u2013 yet\u2026 &bogus; &#0; &#1114112; &#xD800; &amp;",
+  );
+  assert.equal(og!.site, "CBC\u00a0News");
+  const title = parseOpenGraph("<title>Tom &amp; Jerry&#x2019;s &lsquo;Show&rsquo;</title>");
+  assert.equal(title!.title, "Tom & Jerry\u2019s \u2018Show\u2019");
+});
+
 test("turbolinkStyles: skins collected once, shared chunks deduped", () => {
   const css = turbolinkStyles(defaultPlugins);
   assert.equal(css.split(".mq-turbolink-frame {").length - 1, 1, "youtube+spotify share one chunk");
