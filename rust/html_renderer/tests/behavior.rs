@@ -312,3 +312,16 @@ fn emoji_socket_text_image_and_literal() {
     assert!(!escaped.contains("<script"), "src and alt are attribute-escaped");
     assert!(escaped.contains("&lt;b&gt;"));
 }
+
+#[test]
+fn media_kinds_apng_is_a_picture_and_opus_is_audio() {
+    // The two spellings that fell to the placeholder until 2026-09-03.
+    let html = render_marquee(
+        "![a](https://e.x/anim.apng)\n\n![b](https://e.x/voice.opus)\n\n![c](https://e.x/page.html)",
+        &BareWebProfile,
+    )
+    .unwrap();
+    assert!(html.contains("<img class=\"mq-embed\" src=\"https://e.x/anim.apng\""), "apng renders as an image: {html}");
+    assert!(html.contains("<audio class=\"mq-embed\" controls src=\"https://e.x/voice.opus\""), "opus renders as audio: {html}");
+    assert!(html.contains("mq-embed-fallback"), "an unknown extension still degrades to the placeholder");
+}

@@ -11,8 +11,9 @@ function extension(target: string): string {
   return path.includes(".") ? path.slice(path.lastIndexOf(".") + 1).toLowerCase() : "";
 }
 
-const IMAGE_EXT = new Set(["png", "jpg", "jpeg", "gif", "webp", "avif", "svg"]);
-const AUDIO_EXT = new Set(["mp3", "ogg", "wav", "flac", "m4a"]);
+// Mirror of rust/markup/src/turbolink.rs; `apng` and `opus` joined 2026-09-03.
+const IMAGE_EXT = new Set(["png", "jpg", "jpeg", "gif", "webp", "avif", "apng", "svg"]);
+const AUDIO_EXT = new Set(["mp3", "ogg", "opus", "wav", "flac", "m4a"]);
 const VIDEO_EXT = new Set(["mp4", "webm"]);
 
 // Shared style chunks: plugins that emit the same classes reference the

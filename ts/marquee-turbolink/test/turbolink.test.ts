@@ -63,6 +63,10 @@ test("media plugins: extension recognition, medium boxes, controls", () => {
   const video = videoPlugin.render("https://e.x/clip.mp4", { level: "full", data: undefined });
   assert.ok(video!.includes("<video") && video!.includes("controls"));
   assert.ok(!imagePlugin.match("https://e.x/page.html"));
+  // The two spellings that fell through until 2026-09-03: an animated PNG is a picture, an
+  // Opus file is audio.
+  assert.ok(imagePlugin.match("https://e.x/anim.apng"));
+  assert.ok(audioPlugin.match("https://e.x/voice.opus"));
 });
 
 test("compose: first matching renderer wins; decliners fall through", () => {

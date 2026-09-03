@@ -37,3 +37,5 @@ _site/
 
 # demo builds (npm run demo)
 demo/dist/
+
+.DS_Store

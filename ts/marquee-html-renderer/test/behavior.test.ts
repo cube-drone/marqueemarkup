@@ -344,3 +344,13 @@ test("unknown span shrugs but children survive styled context", () => {
   assert.ok(html.includes("still here"));
   assert.ok(!html.includes("spiral"), "unknown span name should not reach output");
 });
+
+test("media kinds: apng is a picture and opus is audio, never the placeholder", () => {
+  const html = renderMarquee(
+    "![a](https://e.x/anim.apng)\n\n![b](https://e.x/voice.opus)\n\n![c](https://e.x/page.html)",
+    bareWebProfile,
+  );
+  assert.ok(html.includes('<img class="mq-embed" src="https://e.x/anim.apng"'), "apng renders as an image");
+  assert.ok(html.includes('<audio class="mq-embed" controls src="https://e.x/voice.opus"'), "opus renders as audio");
+  assert.ok(html.includes("mq-embed-fallback"), "an unknown extension still degrades to the placeholder");
+});

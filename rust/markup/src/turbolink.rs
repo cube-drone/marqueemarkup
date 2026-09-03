@@ -285,7 +285,7 @@ impl TurbolinkPlugin for ImagePlugin {
         "image"
     }
     fn matches(&self, t: &str) -> bool {
-        matches!(extension(t).as_str(), "png" | "jpg" | "jpeg" | "gif" | "webp" | "avif" | "svg")
+        matches!(extension(t).as_str(), "png" | "jpg" | "jpeg" | "gif" | "webp" | "avif" | "apng" | "svg")
     }
     fn render(&self, target: &str, level: TurbolinkLevel, _data: Option<&Value>) -> Option<String> {
         if level != TurbolinkLevel::Full {
@@ -307,7 +307,7 @@ impl TurbolinkPlugin for AudioPlugin {
         "audio"
     }
     fn matches(&self, t: &str) -> bool {
-        matches!(extension(t).as_str(), "mp3" | "ogg" | "wav" | "flac" | "m4a")
+        matches!(extension(t).as_str(), "mp3" | "ogg" | "opus" | "wav" | "flac" | "m4a")
     }
     fn render(&self, target: &str, level: TurbolinkLevel, _data: Option<&Value>) -> Option<String> {
         if level != TurbolinkLevel::Full {

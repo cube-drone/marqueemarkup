@@ -44,10 +44,12 @@ export interface Profile {
   span(name: string, attrs: Attrs, renderedChildren: string): string | null;
 }
 
+// Mirror of the Rust renderer's table (rust/html_renderer/src/profile.rs). `apng` and
+// `opus` joined 2026-09-03: ringtome mints both and they rendered as the placeholder.
 const MEDIA_KINDS: Record<string, MediaResolution["kind"]> = {
   png: "image", jpg: "image", jpeg: "image", gif: "image", webp: "image",
-  avif: "image", svg: "image",
-  mp3: "audio", ogg: "audio", wav: "audio", flac: "audio", m4a: "audio",
+  avif: "image", apng: "image", svg: "image",
+  mp3: "audio", ogg: "audio", opus: "audio", wav: "audio", flac: "audio", m4a: "audio",
   mp4: "video", webm: "video",
 };
 

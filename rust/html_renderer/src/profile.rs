@@ -75,8 +75,9 @@ pub trait Profile {
             return None;
         }
         let kind = match extension(target).to_ascii_lowercase().as_str() {
-            "png" | "jpg" | "jpeg" | "gif" | "webp" | "avif" | "svg" => MediaKind::Image,
-            "mp3" | "ogg" | "wav" | "flac" | "m4a" => MediaKind::Audio,
+            // Mirror of the npm renderer's MEDIA_KINDS; `apng` and `opus` joined 2026-09-03.
+            "png" | "jpg" | "jpeg" | "gif" | "webp" | "avif" | "apng" | "svg" => MediaKind::Image,
+            "mp3" | "ogg" | "opus" | "wav" | "flac" | "m4a" => MediaKind::Audio,
             "mp4" | "webm" => MediaKind::Video,
             _ => return None,
         };
