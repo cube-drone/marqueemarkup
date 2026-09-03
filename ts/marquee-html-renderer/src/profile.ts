@@ -8,6 +8,10 @@ import type { Attrs } from "@cube-drone/marquee-parser";
 export interface MediaResolution {
   kind: "image" | "audio" | "video";
   url: string;
+  /** A video that is really a silent animation (a gif that became a video):
+   * drawn looping, muted, autoplaying, with no controls. The embedder decides -
+   * the language only carries the choice. Ignored for images and audio. */
+  loop?: boolean;
 }
 
 export type TurbolinkLevel = "full" | "title" | "bare";

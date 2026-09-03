@@ -232,7 +232,9 @@ function embed(target: string, alt: string, profile: Profile): string {
       case "audio":
         return `<audio class="mq-embed" controls src="${url}" aria-label="${escapeAttr(alt)}"></audio>`;
       case "video":
-        return `<video class="mq-embed" controls src="${url}" aria-label="${escapeAttr(alt)}"></video>`;
+        return media.loop === true
+          ? `<video class="mq-embed" autoplay loop muted playsinline src="${url}" aria-label="${escapeAttr(alt)}"></video>`
+          : `<video class="mq-embed" controls src="${url}" aria-label="${escapeAttr(alt)}"></video>`;
     }
   }
   // The contractual shrug applied to media: degrade to a labeled link, or

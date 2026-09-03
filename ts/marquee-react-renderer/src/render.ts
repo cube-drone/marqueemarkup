@@ -312,6 +312,13 @@ function embed(node: Node & { type: "embed" }, ctx: Ctx, key: string): ReactNode
   if (media.kind === "audio") {
     return h("audio", nodeProps(node, ctx, { ...common, src: media.url, controls: true }));
   }
+  if (media.loop === true) {
+    // A silent animation: the gif's own manners - looping, muted, autoplaying, no controls.
+    return h(
+      "video",
+      nodeProps(node, ctx, { ...common, src: media.url, autoPlay: true, loop: true, muted: true, playsInline: true }),
+    );
+  }
   return h("video", nodeProps(node, ctx, { ...common, src: media.url, controls: true }));
 }
 

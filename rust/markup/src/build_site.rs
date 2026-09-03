@@ -137,6 +137,7 @@ impl Profile for SiteProfile<'_> {
                 return Some(MediaResolution {
                     kind: base.kind,
                     url: self.site_media_url(&path),
+                    looping: base.looping,
                 });
             }
             return None;

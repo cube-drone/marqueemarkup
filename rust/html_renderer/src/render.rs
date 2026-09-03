@@ -246,6 +246,9 @@ fn embed(target: &str, alt: &str, profile: &dyn Profile) -> String {
             MediaKind::Audio => format!(
                 "<audio class=\"mq-embed\" controls src=\"{url}\" aria-label=\"{alt_attr}\"></audio>"
             ),
+            MediaKind::Video if media.looping => format!(
+                "<video class=\"mq-embed\" autoplay loop muted playsinline src=\"{url}\" aria-label=\"{alt_attr}\"></video>"
+            ),
             MediaKind::Video => format!(
                 "<video class=\"mq-embed\" controls src=\"{url}\" aria-label=\"{alt_attr}\"></video>"
             ),

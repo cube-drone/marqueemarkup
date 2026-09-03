@@ -325,3 +325,29 @@ fn media_kinds_apng_is_a_picture_and_opus_is_audio() {
     assert!(html.contains("<audio class=\"mq-embed\" controls src=\"https://e.x/voice.opus\""), "opus renders as audio: {html}");
     assert!(html.contains("mq-embed-fallback"), "an unknown extension still degrades to the placeholder");
 }
+
+/// An embedder whose videos spelled `-loop` are silent animations.
+struct LoopingProfile;
+impl marquee_html_renderer::Profile for LoopingProfile {
+    fn media(&self, target: &str) -> Option<marquee_html_renderer::MediaResolution> {
+        let base = BareWebProfile.media(target)?;
+        Some(marquee_html_renderer::MediaResolution {
+            looping: target.ends_with("-loop.webm"),
+            ..base
+        })
+    }
+}
+
+#[test]
+fn a_looping_resolution_draws_a_silent_animation() {
+    let html = render_marquee(
+        "![a](https://e.x/cat-loop.webm)\n\n![b](https://e.x/talk.webm)",
+        &LoopingProfile,
+    )
+    .unwrap();
+    assert!(
+        html.contains("<video class=\"mq-embed\" autoplay loop muted playsinline src=\"https://e.x/cat-loop.webm\""),
+        "the loop has the gif's manners: {html}"
+    );
+    assert!(html.contains("<video class=\"mq-embed\" controls src=\"https://e.x/talk.webm\""), "a plain video keeps its player");
+}

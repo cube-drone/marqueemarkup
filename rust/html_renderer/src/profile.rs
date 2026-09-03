@@ -17,6 +17,10 @@ pub enum MediaKind {
 pub struct MediaResolution {
     pub kind: MediaKind,
     pub url: String,
+    /// A video that is really a silent animation (a gif that became a video): drawn looping,
+    /// muted, autoplaying, with no controls. The embedder decides; ignored for images and
+    /// audio. Mirrors the npm renderer's `loop`.
+    pub looping: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -81,7 +85,7 @@ pub trait Profile {
             "mp4" | "webm" => MediaKind::Video,
             _ => return None,
         };
-        Some(MediaResolution { kind, url: target.to_string() })
+        Some(MediaResolution { kind, url: target.to_string(), looping: false })
     }
 
     /// Resolve an emoji slug to replacement text or a custom-emoji image;

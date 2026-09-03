@@ -354,3 +354,20 @@ test("media kinds: apng is a picture and opus is audio, never the placeholder", 
   assert.ok(html.includes('<audio class="mq-embed" controls src="https://e.x/voice.opus"'), "opus renders as audio");
   assert.ok(html.includes("mq-embed-fallback"), "an unknown extension still degrades to the placeholder");
 });
+
+test("a looping resolution draws a silent animation: autoplay, loop, muted, no controls", () => {
+  const profile = {
+    ...bareWebProfile,
+    media(target: string) {
+      const base = bareWebProfile.media(target);
+      return base === null ? null : { ...base, loop: /-loop\.webm$/.test(target) };
+    },
+  };
+  const html = renderMarquee("![a](https://e.x/cat-loop.webm)\n\n![b](https://e.x/talk.webm)", profile);
+  assert.ok(
+    html.includes('<video class="mq-embed" autoplay loop muted playsinline src="https://e.x/cat-loop.webm"'),
+    "the loop has the gif's manners",
+  );
+  assert.ok(!/cat-loop\.webm[^>]*controls|controls[^>]*cat-loop\.webm/.test(html), "and no controls");
+  assert.ok(html.includes('<video class="mq-embed" controls src="https://e.x/talk.webm"'), "a plain video keeps its player");
+});
