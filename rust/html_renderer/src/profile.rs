@@ -123,6 +123,7 @@ pub trait Profile {
     /// - Place the children: a claiming answer MUST include `children_html`
     ///   (already-escaped) or a known substitute for them - the shrug's
     ///   never-eat-content rule binds embedder vocabulary too.
+    ///
     /// Embedder-first: a claim on a name the language defines wins.
     fn directive(&self, _name: &str, _attrs: &Attrs, _children_html: &str) -> Option<String> {
         None
