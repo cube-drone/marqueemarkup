@@ -42,9 +42,24 @@ export interface Profile {
    * policy); an explicit `level=` on `:::turbolink` wins over this. */
   turbolinkLevel(target: string): TurbolinkLevel;
   /** Embedder directive vocabulary (widgets, includes, computed). Return
-   * rendered HTML, or null to fall through to the built-in handling. */
+   * rendered HTML, or null to fall through to the built-in handling.
+   *
+   * The contract (spec: "The vocabulary hooks' contract"), because editors
+   * and the React renderer call this too, not just the page render:
+   * - Claim on `name` and `attrs` alone: whether this returns null MUST NOT
+   *   depend on `renderedChildren`. Callers may probe with "" to ask "is
+   *   this yours?" and render for real afterwards.
+   * - Pure, sync, fetchless, cheap: it may run per keystroke, and twice in
+   *   one render, and must answer the same each time.
+   * - Place the children: a claiming answer MUST include `renderedChildren`
+   *   (already-escaped HTML) or a known substitute for them - the shrug's
+   *   never-eat-content rule binds embedder vocabulary too.
+   * Embedder-first: a claim on a name the language defines wins. */
   directive(name: string, attrs: Attrs, renderedChildren: string): string | null;
-  /** Embedder span vocabulary. Same contract as `directive`. */
+  /** Embedder span vocabulary - the inline twin of `directive`
+   * (`[user id=x]Name[/user]` is to `:::user id=x:::` what `[spoiler]` is
+   * to `:::spoiler`). Same contract as `directive`, including the probe:
+   * the live editor asks with "" to decide whether to draw the span whole. */
   span(name: string, attrs: Attrs, renderedChildren: string): string | null;
 }
 

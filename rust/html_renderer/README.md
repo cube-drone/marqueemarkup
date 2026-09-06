@@ -65,6 +65,13 @@ let html = render_marquee("[safe](https://ok.example)\n", &HttpsOnly)
 assert!(html.contains(r#"href="https://ok.example""#));
 ```
 
+Custom vocabulary goes through `directive()` and `span()` — the span is the inline twin of the
+directive (`[user id=x]Name[/user]` beside `:::user id=x:::`). They are called by more than
+this renderer (an editor's live preview probes them to decide what to draw whole), so they
+carry a contract, spelled out on the trait and in the spec: claim on name and attrs alone
+(a probe with empty children must answer the same), stay pure and fetchless, and always place
+the rendered children in the output.
+
 ## What the renderer guarantees
 
 - **Safety is structural, not vigilance.** Author bytes reach the output only through escaping,

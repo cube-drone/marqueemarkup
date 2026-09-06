@@ -89,7 +89,7 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
       }
       if (spec.kind === "widget") {
         const widget =
-          spec.widget.type === "link"
+          spec.widget.type === "link" || spec.widget.type === "span"
             ? new LinkWidget(render(spec.widget.node, profile))
             : new EmojiWidget(spec.widget.slug, profile);
         return Decoration.replace({ widget }).range(spec.from, spec.to);

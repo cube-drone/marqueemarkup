@@ -137,3 +137,29 @@ test("the whole vector corpus renders without throwing, and never eats text", ()
   }
   assert.ok(cases > 90, `expected the full corpus, saw ${cases}`);
 });
+
+test("string-hook vocabulary places the children: a profile-only span or directive never eats its words", () => {
+  // The spec's vocabulary-hook contract: the React renderer probes with ""
+  // (a claim never depends on children), then hands the claiming hook the
+  // children as HTML so they land in its output.
+  const calls: string[] = [];
+  const out = html({
+    source: "hi [user id=/id/x]**Butt** Diamonds[/user] there\n\n:::user id=/id/y:::\n",
+    profile: {
+      span: (name, attrs, inner) => {
+        calls.push(`span:${JSON.stringify(inner)}`);
+        return name === "user" ? `<a class="u" data-id="${attrs["id"]}">${inner}</a>` : null;
+      },
+      directive: (name, attrs, inner) => {
+        calls.push(`directive:${JSON.stringify(inner)}`);
+        return name === "user" ? `<div class="card" data-id="${attrs["id"]}">${inner}</div>` : null;
+      },
+    },
+  });
+  assert.ok(out.includes('<a class="u" data-id="/id/x"><strong>Butt</strong> Diamonds</a>'), out);
+  assert.ok(out.includes('<div class="card" data-id="/id/y"></div>'), out);
+  assert.deepEqual(calls, ['span:""', 'span:"<strong>Butt</strong> Diamonds"', 'directive:""', 'directive:""']);
+  // A declining hook costs one probe and leaves the built-in vocabulary alone.
+  const plain = html({ source: "a [spoiler]secret[/spoiler] b\n", profile: { span: () => null } });
+  assert.ok(plain.includes("mq-spoiler") && plain.includes("secret"));
+});

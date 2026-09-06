@@ -697,6 +697,29 @@ An embedder (a hosted platform, a static-site generator, anything) declares:
 - **Turbolink default** (full / title / bare link) and its fetch rules (summaries are fetched
   render-side per care-modes: OpenGraph for web, native metadata for own schemes).
 
+**The vocabulary hooks' contract.** An embedder's directive and span vocabulary reaches a
+renderer through two hooks of one shape - `directive(name, attrs, children)` and
+`span(name, attrs, children)` - each answering *rendered output* (this is mine) or *nothing*
+(fall through to the built-in vocabulary, then to the shrug). A span is the inline twin of a
+directive: `[user id=…]Name[/user]` is to `:::user id=…:::` what `[spoiler]` is to
+`:::spoiler`. The hooks are called by more than the page renderer - an editor's live preview
+asks them to decide what to draw whole and what to leave as source - so the contract is
+stricter than "return some HTML":
+
+- **Claim on name and attrs alone.** Whether the hook answers must not depend on the
+  children. A caller MAY probe with empty children to ask "is this yours?" and render for real
+  afterwards.
+- **Pure, sync, fetchless, cheap.** A hook may be called repeatedly for the same node (per
+  keystroke in an editor, twice in one render) and must return the same answer. Gathering
+  happens ahead of rendering, as for turbolinks - never inside the hook.
+- **The children are always placed.** A claiming hook receives the rendered children and MUST
+  put them, or a known substitute for them (a person's name for the words that summoned them),
+  in its output. The shrug's rule - a vocabulary entry may fail to *do* its thing, never *eat*
+  your thing - binds the embedder's vocabulary exactly as it binds the language's.
+- **Precedence is embedder-first.** A hook that claims a name the language also defines wins
+  (the embedder is trusted code, and the override is the point); one that declines leaves the
+  built-in behavior untouched.
+
 **Messaging is Marquee under a restrictive profile**, not a separate format: a message is a
 short document (one renderer for pages, posts, notes, *and* messages - the old-internet norm
 where posting and chatting shared markup). The profile permits inline formatting, embeds, and

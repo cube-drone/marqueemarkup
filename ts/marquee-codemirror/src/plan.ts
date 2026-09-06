@@ -63,7 +63,11 @@ export type DecoSpec =
    * a separate preview window.) */
   | { kind: "zone"; from: number; to: number; class?: string; style?: string };
 
-export type WidgetSpec = { type: "emoji"; slug: string } | { type: "link"; node: Node };
+export type WidgetSpec =
+  | { type: "emoji"; slug: string }
+  | { type: "link"; node: Node }
+  // An embedder span - one the profile's `span` hook claims - rendered whole, like a link.
+  | { type: "span"; node: Node };
 
 /** Inline effect spans - animated in the editor when the cursor is away
  * (their real mq-* classes), static when you're editing them. */
@@ -190,6 +194,17 @@ export function planFromAst(
         return;
       }
       case "span": {
+        // An embedder span (the profile's own vocabulary - a user card, a widget) is a
+        // rendered inline widget when the cursor is away, exactly as a link is: the
+        // renderer already asks the profile for it, and a styled mark over its source
+        // would show brackets and attributes where the embedder meant a thing. Touch it
+        // and it opens to source. The probe passes empty children: per the spec's
+        // vocabulary-hook contract, the hook's answer to "is this yours?" never depends
+        // on the words inside, and the widget's real render hands them over.
+        if (span && !touched(span) && profile.span(node.name, node.attrs, "") !== null) {
+          out.push({ kind: "widget", from: span.start, to: span.end, widget: { type: "span", node } });
+          return;
+        }
         if (span) {
           const active = touched(span);
           const openEnd = source.indexOf("]", span.start);

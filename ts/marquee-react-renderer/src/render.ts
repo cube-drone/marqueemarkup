@@ -14,10 +14,28 @@ import { createElement as h, useState, type KeyboardEvent, type ReactNode } from
 import type { Attrs, Node, Span } from "@cube-drone/marquee-parser";
 import {
   FONTS,
+  render as renderHtml,
   type EmojiResolution,
   type Profile,
   type TurbolinkLevel,
 } from "@cube-drone/marquee-html-renderer";
+
+/** The string-hook path for embedder vocabulary (no React hook supplied):
+ * probe with empty children - the contract says a claim never depends on
+ * them - and only for a claim pay for the children as HTML, through the
+ * html renderer under the same profile, so the hook can place them. Without
+ * this the hook saw "" and the span's words vanished behind innerHTML. */
+function stringHook(
+  hook: (name: string, attrs: Attrs, renderedChildren: string) => string | null,
+  name: string,
+  attrs: Attrs,
+  children: Node[],
+  profile: Profile,
+): string | null {
+  if (hook(name, attrs, "") === null) return null;
+  const childrenHtml = children.map((child) => renderHtml(child, profile)).join("");
+  return hook(name, attrs, childrenHtml);
+}
 
 /** React-returning versions of the rendering hooks. When present these win
  * over the string-returning `Profile` hooks (no innerHTML at all). */
@@ -367,7 +385,10 @@ function directive(node: Node & { type: "directive" }, ctx: Ctx, key: string): R
   if (custom !== undefined && custom !== null) {
     return h("div", nodeProps(node, ctx, { key, style: { display: "contents" } }), custom);
   }
-  const customHtml = ctx.hooks.directive === undefined ? ctx.profile.directive(name, attrs, "") : null;
+  const customHtml =
+    ctx.hooks.directive === undefined
+      ? stringHook(ctx.profile.directive.bind(ctx.profile), name, attrs, node.children, ctx.profile)
+      : null;
   if (customHtml !== null) {
     return h(
       "div",
@@ -527,7 +548,10 @@ function span(node: Node & { type: "span" }, ctx: Ctx, key: string): ReactNode {
   if (custom !== undefined && custom !== null) {
     return h("span", nodeProps(node, ctx, { key, style: { display: "contents" } }), custom);
   }
-  const customHtml = ctx.hooks.span === undefined ? ctx.profile.span(name, attrs, "") : null;
+  const customHtml =
+    ctx.hooks.span === undefined
+      ? stringHook(ctx.profile.span.bind(ctx.profile), name, attrs, node.children, ctx.profile)
+      : null;
   if (customHtml !== null) {
     return h(
       "span",

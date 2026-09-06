@@ -13,7 +13,11 @@ const html = render(parse(source)); // a <div class="mq-doc"> fragment
 
 Embedder policy — which schemes link, how media resolves, what turbolinks become, custom
 directive/span vocabulary — is injected via the `Profile` interface; `bareWebProfile` is the
-conservative default. Pair the output with
+conservative default. The `directive`/`span` hooks (a span is the inline twin of a directive)
+are also called by the React renderer and the CodeMirror live preview, so they carry a
+contract, documented on the interface and in the spec: claim on name and attrs alone (a probe
+with empty children answers the same), stay pure and fetchless, and always place the rendered
+children. Pair the output with
 [`@cube-drone/marquee-css`](https://www.npmjs.com/package/@cube-drone/marquee-css) (the `mq-*`
 class contract this renderer targets) and optionally
 [`@cube-drone/marquee-fonts`](https://www.npmjs.com/package/@cube-drone/marquee-fonts).

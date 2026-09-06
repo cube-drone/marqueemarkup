@@ -46,6 +46,22 @@ test("a link away from the cursor is a real followable anchor widget", () => {
   assert.equal(src.slice(w.from, w.to), "[my site](https://e.x/p)");
 });
 
+test("an embedder span the profile claims is a rendered widget away from the cursor, and source beside it", () => {
+  const src = "hi [user id=/id/x]Butt Diamonds[/user] there\n";
+  const embedder: Profile = { ...bareWebProfile, span: (name, _attrs, inner) => (name === "user" ? `<a class="u">${inner}</a>` : null) };
+  const away = plan(src, noCursor, embedder);
+  const w = away.find((s) => s.kind === "widget" && s.widget.type === "span");
+  assert.ok(w && w.kind === "widget", "the whole span is one widget");
+  assert.equal(src.slice(w.from, w.to), "[user id=/id/x]Butt Diamonds[/user]");
+  for (const at of [3, 20, 38]) {
+    const specs = plan(src, cursorAt(at), embedder);
+    assert.ok(!specs.some((s) => s.kind === "widget"), `no widget at ${at}`);
+    assert.ok(specs.some((s) => s.kind === "mark" && s.class === "cm-mq-marker"), "brackets dimmed, source shown");
+  }
+  // A span the profile does not claim stays what it was: a styled mark, brackets dimmed.
+  assert.ok(!plan(src, noCursor, bareWebProfile).some((s) => s.kind === "widget"), "no widget without the hook");
+});
+
 test("a link under (or beside) the cursor opens to source", () => {
   const src = "see [my site](https://e.x/p) ok\n";
   for (const at of [7, 4, 28]) {

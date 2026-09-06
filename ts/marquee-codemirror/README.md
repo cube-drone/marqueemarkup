@@ -33,7 +33,9 @@ CodeMirror decorations:
 - **Inline formatting** inside a plain paragraph is *styled in place*: `**bold**` is drawn
   bold while its `**` stays visible (and dimmed) under the cursor, then hides when the cursor
   leaves. Effects animate (their real `mq-*` classes) when you're not editing them, spoilers
-  blur, colored spans take their color, `:sparkles:` shows ✨. Links go one further: away
+  blur, colored spans take their color, `:sparkles:` shows ✨. A span the profile's `span`
+hook claims (an embedder's own vocabulary - a user card, a widget) renders whole, like a
+link. Links go one further: away
   from the cursor, `[text](target)` is a **real, followable anchor** (the renderer's own
   output, so link policy holds) with a thin click-gutter either side — click the link and it
   follows; click the gutter (or arrow up against it) to drop the cursor beside it, which opens
