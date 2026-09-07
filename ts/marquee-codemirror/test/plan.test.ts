@@ -62,6 +62,16 @@ test("an embedder span the profile claims is a rendered widget away from the cur
   assert.ok(!plan(src, noCursor, bareWebProfile).some((s) => s.kind === "widget"), "no widget without the hook");
 });
 
+test("a leaf directive sharing its line with prose stays source, never a block widget", () => {
+  // The closer ends the directive mid-line; a block widget wants whole lines.
+  const src = ":::counter theme=retro::: the *count*\n\n:::counter theme=retro:::\n";
+  const specs = plan(src, noCursor, bareWebProfile);
+  const blocks = specs.filter((s) => s.kind === "block");
+  assert.equal(blocks.length, 1, "only the leaf on its own line is a widget");
+  assert.equal(src.slice(blocks[0]!.from, blocks[0]!.to), ":::counter theme=retro:::");
+  assert.ok(specs.some((s) => s.kind === "mark" && s.class === "cm-mq-em"), "the prose after the closer is styled source");
+});
+
 test("a link under (or beside) the cursor opens to source", () => {
   const src = "see [my site](https://e.x/p) ok\n";
   for (const at of [7, 4, 28]) {

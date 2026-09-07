@@ -52,8 +52,17 @@ fn parse_container(cur: &mut Cursor, ctx: Ctx, open_dir: Option<&str>) -> Vec<No
 
         // Directive open / close / error lines.
         if line.starts_with(":::") {
+            let li = cur.pos;
             cur.pos += 1;
-            match classify_directive(line) {
+            // A leaf's closer ends the directive line; whatever follows it is
+            // parsed as if it began on the next line (spec: Directives). The
+            // head is judged on its own, and the remainder is re-injected below.
+            let cut = leaf_cut(line);
+            let head = match cut {
+                Some((closer_end, _)) => &line[..closer_end],
+                None => line,
+            };
+            match classify_directive(head) {
                 DirLine::Close(name) => match (open_dir, name) {
                     (Some(_), None) => return out,
                     (Some(open), Some(n)) if n == open => return out,
@@ -63,23 +72,30 @@ fn parse_container(cur: &mut Cursor, ctx: Ctx, open_dir: Option<&str>) -> Vec<No
                 DirLine::Open { name, attrs_src, leaf } => {
                     if ctx.dir_depth >= MAX_DIRECTIVE_DEPTH {
                         out.push(invalid(Reason::DepthExceeded));
-                        continue;
-                    }
-                    match parse_attrs(&attrs_src) {
-                        Err(reason) => out.push(invalid(reason)),
-                        Ok(attrs) => {
-                            let children = if leaf {
-                                Vec::new()
-                            } else {
-                                let mut inner = ctx;
-                                inner.dir_depth += 1;
-                                parse_container(cur, inner, Some(&name))
-                            };
-                            out.push(Node::Directive { name, attrs, children });
+                    } else {
+                        match parse_attrs(&attrs_src) {
+                            Err(reason) => out.push(invalid(reason)),
+                            Ok(attrs) => {
+                                let children = if leaf {
+                                    Vec::new()
+                                } else {
+                                    let mut inner = ctx;
+                                    inner.dir_depth += 1;
+                                    parse_container(cur, inner, Some(&name))
+                                };
+                                out.push(Node::Directive { name, attrs, children });
+                            }
                         }
                     }
                 }
                 DirLine::Bad(reason) => out.push(invalid(reason)),
+            }
+            if let Some((_, Some(rest_start))) = cut {
+                // The words after the closer become the current line, and the
+                // cursor steps back onto it: a leaf never recurses, so nothing
+                // has advanced past li.
+                cur.lines[li] = &line[rest_start..];
+                cur.pos = li;
             }
             continue;
         }
@@ -312,6 +328,45 @@ enum DirLine {
     Open { name: String, attrs_src: String, leaf: bool },
     Close(Option<String>),
     Bad(Reason),
+}
+
+/// The leaf closer on a directive open line: the first `:::` after the
+/// name that sits outside a quoted value and is followed by end-of-line or
+/// whitespace (spec: Directives). Returns (index just past it, where
+/// non-blank text after it begins if any). None for a close line or a line
+/// with no delimited closer (a container open). The cut is lexical - it
+/// happens before the head is judged well-formed - so the words after a
+/// closer are never lost to a bad attribute.
+fn leaf_cut(line: &str) -> Option<(usize, Option<usize>)> {
+    let rest = &line[3..];
+    if rest.is_empty() || rest.starts_with(' ') || rest.starts_with('\t') {
+        return None; // a close line
+    }
+    let bytes = line.as_bytes();
+    let mut quoted = false;
+    let mut i = 3;
+    while i < bytes.len() {
+        let c = bytes[i];
+        if quoted {
+            match c {
+                b'\\' => i += 1,
+                b'"' => quoted = false,
+                _ => {}
+            }
+        } else if c == b'"' {
+            quoted = true;
+        } else if bytes[i..].starts_with(b":::") {
+            let after = bytes.get(i + 3);
+            if matches!(after, None | Some(b' ') | Some(b'\t')) {
+                let closer_end = i + 3;
+                let trimmed = line[closer_end..].trim_start_matches([' ', '\t']);
+                let rest_start = (!trimmed.is_empty()).then(|| line.len() - trimmed.len());
+                return Some((closer_end, rest_start));
+            }
+        }
+        i += 1;
+    }
+    None
 }
 
 fn classify_directive(line: &str) -> DirLine {

@@ -53,13 +53,14 @@
       }
     },
     "directive-open": {
-      "comment": ":::name attrs, optionally self-closing with a trailing ::: (leaf)",
-      "match": "^(:::)([a-z][a-z0-9_-]*)(.*?)(:::)?[ \\t]*$",
+      "comment": ":::name attrs, optionally self-closing with a delimited ::: (leaf); text after a leaf's closer is the next block, in plain inline scope",
+      "match": "^(:::)([a-z][a-z0-9_-]*)((?:\"(?:[^\"\\\\]|\\\\.)*\"|[^\"])*?)(?:(:::)(?=[ \\t]|$)[ \\t]*(.*)|[ \\t]*)$",
       "captures": {
         "1": { "name": "punctuation.definition.directive.begin.marquee" },
         "2": { "name": "entity.name.tag.directive.marquee" },
         "3": { "patterns": [{ "include": "#attributes" }] },
-        "4": { "name": "punctuation.definition.directive.end.marquee" }
+        "4": { "name": "punctuation.definition.directive.end.marquee" },
+        "5": { "patterns": [{ "include": "#inline" }] }
       }
     },
     "attributes": {

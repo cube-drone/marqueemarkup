@@ -352,7 +352,9 @@ Directives are Marquee's big-structure mechanism — metadata, page layout, widg
   closer doesn't match the innermost open block, you get a small "invalid markup" box *at
   that exact line*, instead of discovering three sections later that everything nested
   wrong. Bare `:::` closers never complain; named ones check their work.
-- A directive with no content closes itself on one line: `:::counter theme=retro:::`
+- A directive with no content closes itself on one line: `:::counter theme=retro:::`. Keep
+  typing after that closer if you like - `:::counter theme=retro::: visitors so far` is the
+  counter and then a paragraph, the same as if you'd pressed Enter.
 - Forgot a closer? Blocks auto-close at the end of the document — the effect may land wrong,
   but your words all render.
 

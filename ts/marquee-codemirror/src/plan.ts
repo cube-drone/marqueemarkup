@@ -282,8 +282,15 @@ export function planFromAst(
       return;
     }
     if (renderworthy && span !== undefined) {
+      // A leaf directive followed by prose on its own line ends mid-line
+      // (the closer ends the directive; the rest is the next block). A block
+      // widget wants whole lines, so such a leaf stays as source - the author
+      // is visibly mid-sentence there anyway.
+      const wholeLines = span.end === source.length || source[span.end] === "\n";
       const editing = node.type === "list" ? listTouched(span) : touched(span);
-      if (!editing) {
+      if (!wholeLines) {
+        inline(node);
+      } else if (!editing) {
         out.push({ kind: "block", from: span.start, to: span.end, node, ...(look === undefined ? {} : { look }) });
       } else if (isMediaBlock(node)) {
         // Editing media: keep the source, and hold the rendered form below

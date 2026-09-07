@@ -80,6 +80,54 @@ function mark(T: PosTracker | null, cur: Cursor, node: Node, startLine: number, 
   return node;
 }
 
+/** mark() for a node that ends mid-line: a leaf directive that shares its
+ * line with what follows its closer. */
+function markTo(T: PosTracker | null, cur: Cursor, node: Node, startLine: number, endOffset: number): Node {
+  if (T !== null && cur.starts !== null) {
+    T.spans.set(node, { start: lineStartOf(cur, startLine), end: endOffset });
+  }
+  return node;
+}
+
+/** The leaf closer on a directive open line: the first `:::` after the
+ * name that sits outside a quoted value and is followed by end-of-line or
+ * whitespace (spec: Directives). `closerEnd` is the index just past it;
+ * `restStart` is where non-blank text after it begins, or null. Null for a
+ * close line or a line with no delimited closer (a container open). The
+ * cut is lexical - it happens before the head is judged well-formed - so
+ * the words after a closer are never lost to a bad attribute. */
+function leafCut(line: string): { closerEnd: number; restStart: number | null } | null {
+  const rest = line.slice(3);
+  if (rest === "" || rest.startsWith(" ") || rest.startsWith("\t")) {
+    return null; // a close line
+  }
+  let quoted = false;
+  for (let i = 3; i < line.length; i += 1) {
+    const c = line[i]!;
+    if (quoted) {
+      if (c === "\\") {
+        i += 1;
+      } else if (c === '"') {
+        quoted = false;
+      }
+      continue;
+    }
+    if (c === '"') {
+      quoted = true;
+      continue;
+    }
+    if (c === ":" && line.startsWith(":::", i)) {
+      const after = line[i + 3];
+      if (after === undefined || after === " " || after === "\t") {
+        const closerEnd = i + 3;
+        const trimmed = line.slice(closerEnd).replace(/^[ \t]+/, "");
+        return { closerEnd, restStart: trimmed === "" ? null : line.length - trimmed.length };
+      }
+    }
+  }
+  return null;
+}
+
 /** Build the logical inline text (segments joined by real source newlines)
  * plus the code-point -> source-offset map the inline parser records from. */
 function inlineCtx(
@@ -129,7 +177,16 @@ function parseContainer(cur: Cursor, ctx: Ctx, openDir: string | null, T: PosTra
     if (line.startsWith(":::")) {
       const li = cur.pos;
       cur.pos += 1;
-      const dir = classifyDirective(line);
+      // A leaf's closer ends the directive line; whatever follows it is
+      // parsed as if it began on the next line (spec: Directives). The
+      // head is judged on its own, and the remainder is re-injected below.
+      const cut = leafCut(line);
+      const head = cut === null ? line : line.slice(0, cut.closerEnd);
+      const headEnd = (): number =>
+        cut === null ? lineEndOf(cur, li) : lineStartOf(cur, li) + cut.closerEnd;
+      const one = (node: Node): Node =>
+        T !== null && cur.starts !== null ? markTo(T, cur, node, li, headEnd()) : node;
+      const dir = classifyDirective(head);
       if (dir.kind === "close") {
         if (openDir !== null && dir.name === null) {
           return out;
@@ -137,28 +194,38 @@ function parseContainer(cur: Cursor, ctx: Ctx, openDir: string | null, T: PosTra
         if (openDir !== null && dir.name === openDir) {
           return out;
         }
-        out.push(mark(T, cur, invalid(openDir !== null ? "mismatched_close" : "stray_close"), li, li));
+        out.push(one(invalid(openDir !== null ? "mismatched_close" : "stray_close")));
       } else if (dir.kind === "open") {
         if (ctx.dirDepth >= MAX_DIRECTIVE_DEPTH) {
-          out.push(mark(T, cur, invalid("depth_exceeded"), li, li));
-          continue;
-        }
-        const attrs = parseAttrs(dir.attrsSrc);
-        if (!attrs.ok) {
-          out.push(mark(T, cur, invalid(attrs.reason), li, li));
+          out.push(one(invalid("depth_exceeded")));
         } else {
-          const children = dir.leaf
-            ? []
-            : parseContainer(cur, { ...ctx, dirDepth: ctx.dirDepth + 1 }, dir.name, T);
-          // A container's close line (or EOF auto-close) has been consumed
-          // by the child parse: the span runs to the last consumed line.
-          const endLi = dir.leaf ? li : Math.max(li, cur.pos - 1);
-          out.push(
-            mark(T, cur, { type: "directive", name: dir.name, attrs: attrs.attrs, children }, li, endLi),
-          );
+          const attrs = parseAttrs(dir.attrsSrc);
+          if (!attrs.ok) {
+            out.push(one(invalid(attrs.reason)));
+          } else if (dir.leaf) {
+            out.push(one({ type: "directive", name: dir.name, attrs: attrs.attrs, children: [] }));
+          } else {
+            const children = parseContainer(cur, { ...ctx, dirDepth: ctx.dirDepth + 1 }, dir.name, T);
+            // A container's close line (or EOF auto-close) has been consumed
+            // by the child parse: the span runs to the last consumed line.
+            const endLi = Math.max(li, cur.pos - 1);
+            out.push(
+              mark(T, cur, { type: "directive", name: dir.name, attrs: attrs.attrs, children }, li, endLi),
+            );
+          }
         }
       } else {
-        out.push(mark(T, cur, invalid(dir.reason), li, li));
+        out.push(one(invalid(dir.reason)));
+      }
+      if (cut !== null && cut.restStart !== null) {
+        // The words after the closer become the current line, and the
+        // cursor steps back onto it: a leaf never recurses, so nothing has
+        // advanced past li. Positions follow the cut.
+        cur.lines[li] = line.slice(cut.restStart);
+        if (cur.starts !== null) {
+          cur.starts[li] = cur.starts[li]! + cut.restStart;
+        }
+        cur.pos = li;
       }
       continue;
     }

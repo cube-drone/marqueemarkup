@@ -168,6 +168,26 @@
     "html": "<div class=\"mq-doc\"><div class=\"mq-placeholder\" data-directive=\"x\"></div></div>"
   },
   {
+    "name": "directives/leaf-then-prose-on-the-same-line",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-placeholder\" data-directive=\"counter\"></div><p>the count so far</p></div>"
+  },
+  {
+    "name": "directives/leaf-closer-must-be-delimited",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-placeholder\" data-directive=\"x\"></div></div>"
+  },
+  {
+    "name": "directives/leaf-cut-is-lexical-bad-attrs-keep-the-prose",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-invalid\" data-reason=\"bad_attribute\"></div><p>words</p></div>"
+  },
+  {
+    "name": "directives/leaf-remainder-parses-as-a-line",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-placeholder\" data-directive=\"x\"></div><div class=\"mq-placeholder\" data-directive=\"y\"></div></div>"
+  },
+  {
+    "name": "directives/leaf-quoted-closer-then-prose",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-placeholder\" data-directive=\"x\"></div><p>c</p></div>"
+  },
+  {
     "name": "directives/conflict",
     "html": "<div class=\"mq-doc\"><div class=\"mq-conflict\"><div class=\"mq-variant\"><div class=\"mq-variant-head\"><span class=\"mq-variant-label\">your phone</span> <span class=\"mq-variant-when\">2026-07-15T21:04:00Z</span></div><p>start!</p></div><div class=\"mq-variant\"><div class=\"mq-variant-head\"><span class=\"mq-variant-label\">your PC</span> <span class=\"mq-variant-when\">2026-07-15T17:22:00Z</span></div><p>start, then a whole afternoon</p></div></div></div>"
   },

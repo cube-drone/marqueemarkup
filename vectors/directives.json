@@ -3,153 +3,153 @@
     "name": "directives/container",
     "marquee": ":::section slot=nav\nWelcome!\n:::\n",
     "ast": {
-      "type": "document",
-      "version": 0,
       "children": [
         {
-          "type": "directive",
-          "name": "section",
           "attrs": {
             "slot": "nav"
           },
           "children": [
             {
-              "type": "paragraph",
               "children": [
                 {
                   "type": "text",
                   "value": "Welcome!"
                 }
-              ]
+              ],
+              "type": "paragraph"
             }
-          ]
+          ],
+          "name": "section",
+          "type": "directive"
         }
-      ]
+      ],
+      "type": "document",
+      "version": 0
     }
   },
   {
     "name": "directives/leaf",
     "marquee": ":::counter theme=retro:::\n",
     "ast": {
-      "type": "document",
-      "version": 0,
       "children": [
         {
-          "type": "directive",
-          "name": "counter",
           "attrs": {
             "theme": "retro"
           },
-          "children": []
+          "children": [],
+          "name": "counter",
+          "type": "directive"
         }
-      ]
+      ],
+      "type": "document",
+      "version": 0
     }
   },
   {
     "name": "directives/meta-with-quoted-values",
     "marquee": ":::meta title=\"House of Leaves\" date=2025-01-27:::\n",
     "ast": {
-      "type": "document",
-      "version": 0,
       "children": [
         {
-          "type": "directive",
-          "name": "meta",
           "attrs": {
             "date": "2025-01-27",
             "title": "House of Leaves"
           },
-          "children": []
+          "children": [],
+          "name": "meta",
+          "type": "directive"
         }
-      ]
+      ],
+      "type": "document",
+      "version": 0
     }
   },
   {
     "name": "directives/duplicate-key-first-writer-wins",
     "marquee": ":::meta title=first title=second:::\n",
     "ast": {
-      "type": "document",
-      "version": 0,
       "children": [
         {
-          "type": "directive",
-          "name": "meta",
           "attrs": {
             "title": "first"
           },
-          "children": []
+          "children": [],
+          "name": "meta",
+          "type": "directive"
         }
-      ]
+      ],
+      "type": "document",
+      "version": 0
     }
   },
   {
     "name": "directives/auto-close-at-eof",
     "marquee": ":::section\nwords\n",
     "ast": {
-      "type": "document",
-      "version": 0,
       "children": [
         {
-          "type": "directive",
-          "name": "section",
           "attrs": {},
           "children": [
             {
-              "type": "paragraph",
               "children": [
                 {
                   "type": "text",
                   "value": "words"
                 }
-              ]
+              ],
+              "type": "paragraph"
             }
-          ]
+          ],
+          "name": "section",
+          "type": "directive"
         }
-      ]
+      ],
+      "type": "document",
+      "version": 0
     }
   },
   {
     "name": "directives/named-close-mismatch-flagged-at-line",
     "marquee": ":::page\n:::section\n::: page\n:::\n:::\n",
     "ast": {
-      "type": "document",
-      "version": 0,
       "children": [
         {
-          "type": "directive",
-          "name": "page",
           "attrs": {},
           "children": [
             {
-              "type": "directive",
-              "name": "section",
               "attrs": {},
               "children": [
                 {
-                  "type": "invalid_directive",
+                  "children": [],
                   "reason": "mismatched_close",
-                  "children": []
+                  "type": "invalid_directive"
                 }
-              ]
+              ],
+              "name": "section",
+              "type": "directive"
             }
-          ]
+          ],
+          "name": "page",
+          "type": "directive"
         }
-      ]
+      ],
+      "type": "document",
+      "version": 0
     }
   },
   {
     "name": "directives/stray-close",
     "marquee": ":::\n",
     "ast": {
-      "type": "document",
-      "version": 0,
       "children": [
         {
-          "type": "invalid_directive",
+          "children": [],
           "reason": "stray_close",
-          "children": []
+          "type": "invalid_directive"
         }
-      ]
+      ],
+      "type": "document",
+      "version": 0
     }
   },
   {
@@ -232,243 +232,361 @@
     "name": "directives/empty-bare-value-is-bad",
     "marquee": ":::x k= v\n",
     "ast": {
-      "type": "document",
-      "version": 0,
       "children": [
         {
-          "type": "invalid_directive",
+          "children": [],
           "reason": "bad_attribute",
-          "children": []
+          "type": "invalid_directive"
         }
-      ]
+      ],
+      "type": "document",
+      "version": 0
     }
   },
   {
     "name": "directives/uppercase-name-is-bad",
     "marquee": ":::Section\n",
     "ast": {
-      "type": "document",
-      "version": 0,
       "children": [
         {
-          "type": "invalid_directive",
+          "children": [],
           "reason": "bad_name",
-          "children": []
+          "type": "invalid_directive"
         }
-      ]
+      ],
+      "type": "document",
+      "version": 0
     }
   },
   {
     "name": "directives/leaf-quoted-colons-are-safe",
     "marquee": ":::x k=\":::\":::\n",
     "ast": {
-      "type": "document",
-      "version": 0,
       "children": [
         {
-          "type": "directive",
-          "name": "x",
           "attrs": {
             "k": ":::"
           },
-          "children": []
+          "children": [],
+          "name": "x",
+          "type": "directive"
         }
-      ]
+      ],
+      "type": "document",
+      "version": 0
+    }
+  },
+  {
+    "name": "directives/leaf-then-prose-on-the-same-line",
+    "marquee": ":::counter theme=retro::: the count so far\n",
+    "ast": {
+      "children": [
+        {
+          "attrs": {
+            "theme": "retro"
+          },
+          "children": [],
+          "name": "counter",
+          "type": "directive"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "the count so far"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    }
+  },
+  {
+    "name": "directives/leaf-closer-must-be-delimited",
+    "marquee": ":::x k=a:::b\n",
+    "ast": {
+      "children": [
+        {
+          "attrs": {
+            "k": "a:::b"
+          },
+          "children": [],
+          "name": "x",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    }
+  },
+  {
+    "name": "directives/leaf-cut-is-lexical-bad-attrs-keep-the-prose",
+    "marquee": ":::x k::: words\n",
+    "ast": {
+      "children": [
+        {
+          "children": [],
+          "reason": "bad_attribute",
+          "type": "invalid_directive"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "words"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    }
+  },
+  {
+    "name": "directives/leaf-remainder-parses-as-a-line",
+    "marquee": ":::x::: :::y:::\n",
+    "ast": {
+      "children": [
+        {
+          "attrs": {},
+          "children": [],
+          "name": "x",
+          "type": "directive"
+        },
+        {
+          "attrs": {},
+          "children": [],
+          "name": "y",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    }
+  },
+  {
+    "name": "directives/leaf-quoted-closer-then-prose",
+    "marquee": ":::x k=\"a::: b\"::: c\n",
+    "ast": {
+      "children": [
+        {
+          "attrs": {
+            "k": "a::: b"
+          },
+          "children": [],
+          "name": "x",
+          "type": "directive"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "c"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document",
+      "version": 0
     }
   },
   {
     "name": "directives/conflict",
     "marquee": ":::conflict\n:::variant label=\"your phone\" when=\"2026-07-15T21:04:00Z\"\nstart!\n::: variant\n:::variant label=\"your PC\" when=\"2026-07-15T17:22:00Z\"\nstart, then a whole afternoon\n::: variant\n::: conflict\n",
     "ast": {
-      "type": "document",
-      "version": 0,
       "children": [
         {
-          "type": "directive",
-          "name": "conflict",
           "attrs": {},
           "children": [
             {
-              "type": "directive",
-              "name": "variant",
               "attrs": {
                 "label": "your phone",
                 "when": "2026-07-15T21:04:00Z"
               },
               "children": [
                 {
-                  "type": "paragraph",
                   "children": [
                     {
                       "type": "text",
                       "value": "start!"
                     }
-                  ]
+                  ],
+                  "type": "paragraph"
                 }
-              ]
+              ],
+              "name": "variant",
+              "type": "directive"
             },
             {
-              "type": "directive",
-              "name": "variant",
               "attrs": {
                 "label": "your PC",
                 "when": "2026-07-15T17:22:00Z"
               },
               "children": [
                 {
-                  "type": "paragraph",
                   "children": [
                     {
                       "type": "text",
                       "value": "start, then a whole afternoon"
                     }
-                  ]
+                  ],
+                  "type": "paragraph"
                 }
-              ]
+              ],
+              "name": "variant",
+              "type": "directive"
             }
-          ]
+          ],
+          "name": "conflict",
+          "type": "directive"
         }
-      ]
+      ],
+      "type": "document",
+      "version": 0
     }
   },
   {
     "name": "directives/conflict-base",
     "marquee": ":::conflict\n:::variant role=base\nstart\n::: variant\n:::variant label=\"mine\"\nstart now\n::: variant\n::: conflict\n",
     "ast": {
-      "type": "document",
-      "version": 0,
       "children": [
         {
-          "type": "directive",
-          "name": "conflict",
           "attrs": {},
           "children": [
             {
-              "type": "directive",
-              "name": "variant",
               "attrs": {
                 "role": "base"
               },
               "children": [
                 {
-                  "type": "paragraph",
                   "children": [
                     {
                       "type": "text",
                       "value": "start"
                     }
-                  ]
+                  ],
+                  "type": "paragraph"
                 }
-              ]
+              ],
+              "name": "variant",
+              "type": "directive"
             },
             {
-              "type": "directive",
-              "name": "variant",
               "attrs": {
                 "label": "mine"
               },
               "children": [
                 {
-                  "type": "paragraph",
                   "children": [
                     {
                       "type": "text",
                       "value": "start now"
                     }
-                  ]
+                  ],
+                  "type": "paragraph"
                 }
-              ]
+              ],
+              "name": "variant",
+              "type": "directive"
             }
-          ]
+          ],
+          "name": "conflict",
+          "type": "directive"
         }
-      ]
+      ],
+      "type": "document",
+      "version": 0
     }
   },
   {
     "name": "directives/conflict-nested",
     "marquee": ":::conflict\n:::variant label=\"a\"\n:::conflict\n:::variant label=\"a1\"\none\n::: variant\n:::variant label=\"a2\"\ntwo\n::: variant\n::: conflict\n::: variant\n:::variant label=\"b\"\nthree\n::: variant\n::: conflict\n",
     "ast": {
-      "type": "document",
-      "version": 0,
       "children": [
         {
-          "type": "directive",
-          "name": "conflict",
           "attrs": {},
           "children": [
             {
-              "type": "directive",
-              "name": "variant",
               "attrs": {
                 "label": "a"
               },
               "children": [
                 {
-                  "type": "directive",
-                  "name": "conflict",
                   "attrs": {},
                   "children": [
                     {
-                      "type": "directive",
-                      "name": "variant",
                       "attrs": {
                         "label": "a1"
                       },
                       "children": [
                         {
-                          "type": "paragraph",
                           "children": [
                             {
                               "type": "text",
                               "value": "one"
                             }
-                          ]
+                          ],
+                          "type": "paragraph"
                         }
-                      ]
+                      ],
+                      "name": "variant",
+                      "type": "directive"
                     },
                     {
-                      "type": "directive",
-                      "name": "variant",
                       "attrs": {
                         "label": "a2"
                       },
                       "children": [
                         {
-                          "type": "paragraph",
                           "children": [
                             {
                               "type": "text",
                               "value": "two"
                             }
-                          ]
+                          ],
+                          "type": "paragraph"
                         }
-                      ]
+                      ],
+                      "name": "variant",
+                      "type": "directive"
                     }
-                  ]
+                  ],
+                  "name": "conflict",
+                  "type": "directive"
                 }
-              ]
+              ],
+              "name": "variant",
+              "type": "directive"
             },
             {
-              "type": "directive",
-              "name": "variant",
               "attrs": {
                 "label": "b"
               },
               "children": [
                 {
-                  "type": "paragraph",
                   "children": [
                     {
                       "type": "text",
                       "value": "three"
                     }
-                  ]
+                  ],
+                  "type": "paragraph"
                 }
-              ]
+              ],
+              "name": "variant",
+              "type": "directive"
             }
-          ]
+          ],
+          "name": "conflict",
+          "type": "directive"
         }
-      ]
+      ],
+      "type": "document",
+      "version": 0
     }
   }
 ]

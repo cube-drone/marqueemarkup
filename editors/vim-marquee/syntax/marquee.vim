@@ -30,7 +30,8 @@ syn match  mqBreak     /^---[ \t]*$/
 syn match  mqQuote     /^\(> \?\)\+/
 syn match  mqListMark  /^[ ]*\([-*+]\|\d\+\.\)[ ]\@=/
 syn match  mqAttrString /"\([^"\\]\|\\["\\]\)*"/ contained
-syn match  mqDirective /^:::[a-z][a-z0-9_-]*.*$/ contains=mqAttrString
+" A leaf's delimited closer ends the directive; prose may follow it on the line.
+syn match  mqDirective /^:::[a-z][a-z0-9_-]*\%(\%("\%([^"\\]\|\\.\)*"\|[^"]\)\{-}:::\%([ \t]\|$\)\@=\|.*$\)/ contains=mqAttrString
 syn match  mqDirClose  /^:::\([ \t]\+[a-z][a-z0-9_-]*\)\?[ \t]*$/
 syn region mqFence     start=/^```/ end=/^```\+[ \t]*$/ keepend
 

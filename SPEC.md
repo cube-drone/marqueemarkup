@@ -265,8 +265,14 @@ two things that make front matter a wart.
   authoring-client job: you no longer hand-count `:::` any more than `}` in an editor, and most
   documents (notes, messages, plain posts - no opt-in page wrapper) have no fences at all.
 - **Leaf directives** (a counter, a media player, a computed slot - no body) self-close on the
-  open line: `:::counter theme=retro:::` (the trailing `:::` is a token *after* the attributes;
-  quoted values containing colons are safe).
+  open line: `:::counter theme=retro:::` (the closer is a `:::` token *after* the attributes -
+  outside any quoted value, and followed by the end of the line or whitespace, so a bare value
+  like `a:::b` is safe as well as a quoted one). **The closer ends the directive line.** Text
+  after it (less the whitespace beside it) is parsed as if it began on the next line - so
+  `:::counter theme=retro::: and counting` is the leaf and then a paragraph, not an error.
+  The cut is lexical: it happens before the head is judged, so a bad attribute on a leaf
+  never costs the words after its closer. (Container *closers* stay alone on their line:
+  `::: name` is already the named-close spelling, and prose there is an error at that line.)
 - **A directive body is parsed** as blocks - unlike comments and code, which are raw. That is
   why a body can carry markup and nested directives.
 - Attribute grammar is strict; directive *names* and attribute *values* are vocabulary resolved
@@ -294,9 +300,9 @@ Names and attributes are the strict half of the language, so the grammar is spel
   characters with no whitespace and no `"`. A **quoted value** is `"..."` with exactly two
   escapes, `\"` and `\\`; any other use of `\` inside quotes is malformed. Empty values must
   be quoted (`key=""`).
-- Any deviation - a bad name, whitespace around `=`, an unterminated quote, trailing garbage
-  after a leaf's closer - makes the whole directive an `invalid_directive` (strictness as
-  promised); a value over 2048 bytes likewise (`attribute_too_long`). Duplicate keys are
+- Any deviation - a bad name, whitespace around `=`, an unterminated quote - makes the
+  directive an `invalid_directive` (strictness as promised); a value over 2048 bytes likewise
+  (`attribute_too_long`). Duplicate keys are
   *well-formed* and resolve first-writer-wins (see The AST).
 
 Spans reuse this grammar verbatim for `[name key=value]` openers, but their failure mode is
@@ -763,8 +769,7 @@ renderers: renderers may differ in fanciness, parsers may never differ in struct
   editor being helpful, not a concept the language formalizes. "Error"/"strict"/"invalid" in this
   spec name that malformed-construct case, never a render failure.
 - **The `reason` enum (closed, v0):** `bad_name` (a `:::` line with a missing or ill-formed
-  name), `bad_attribute` (attribute text that doesn't parse, including trailing garbage after
-  a leaf's closer), `attribute_too_long` (a value over the 2048-byte cap), `depth_exceeded`
+  name), `bad_attribute` (attribute text that doesn't parse), `attribute_too_long` (a value over the 2048-byte cap), `depth_exceeded`
   (a directive opened past depth 8), `mismatched_close` (a named close that doesn't name the
   nearest open directive), `stray_close` (a close line with nothing open). Six values; growing
   the list is a spec change with vectors, exactly like node types.

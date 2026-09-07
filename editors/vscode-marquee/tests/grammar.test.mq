@@ -58,6 +58,11 @@ words inside
 %% ^^^^^^^ entity.name.tag.directive.marquee
 %%                    ^^^ punctuation.definition.directive.end.marquee
 
+:::counter theme=retro::: and *counting*
+%% ^^^^^^^ entity.name.tag.directive.marquee
+%%                    ^^^ punctuation.definition.directive.end.marquee
+%%                            ^^^^^^^^^^ markup.italic.marquee
+
 :::
 %% <- punctuation.definition.directive.close.marquee
 
