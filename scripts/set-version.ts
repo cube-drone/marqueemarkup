@@ -64,7 +64,7 @@ function setCargoVersion(path: string): void {
   writeFileSync(path, toml);
 }
 
-for (const crate of ["rust/parser", "rust/html_renderer", "rust/markup", "rust/markdown"]) {
+for (const crate of ["rust/parser", "rust/html_renderer", "rust/markup", "rust/markdown", "rust/html_import"]) {
   setCargoVersion(`${root}/${crate}/Cargo.toml`);
   changed.push(`${crate}/Cargo.toml`);
 }

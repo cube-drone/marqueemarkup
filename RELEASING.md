@@ -61,7 +61,7 @@ reference implementations would not be.
    ```
 
 2. **Set the version everywhere** (root + all workspaces + internal `@cube-drone/*` ranges +
-   all four Cargo.tomls + the crate path-dependencies), then refresh BOTH lockfile kinds —
+   all five Cargo.tomls + the crate path-dependencies), then refresh BOTH lockfile kinds —
    Cargo.locks still naming the old version will dirty CI's tree at the first cargo command:
 
    ```
@@ -71,6 +71,7 @@ reference implementations would not be.
    (cd rust/html_renderer && cargo metadata --format-version 1 > /dev/null)
    (cd rust/markup && cargo metadata --format-version 1 > /dev/null)
    (cd rust/markdown && cargo metadata --format-version 1 > /dev/null)
+   (cd rust/html_import && cargo metadata --format-version 1 > /dev/null)
    ```
 
 3. **Commit and tag**:
@@ -100,6 +101,7 @@ reference implementations would not be.
    (cd rust/html_renderer && cargo publish)   # cube-drone-marquee-html-renderer
    (cd rust/markup && cargo publish)      # cube-drone-marquee-markup (the omnibus + CLI)
    (cd rust/markdown && cargo publish)    # cube-drone-marquee-markdown (Markdown <-> Marquee)
+   (cd rust/html_import && cargo publish) # cube-drone-marquee-html-import (HTML -> Marquee)
    ```
 
 Notes:

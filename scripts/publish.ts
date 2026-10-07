@@ -45,6 +45,8 @@ const CARGO_ORDER: Array<{ dir: string; name: string }> = [
   { dir: "rust/markup", name: "cube-drone-marquee-markup" },
   // Depends only on the parser (published first), so it lands last cleanly.
   { dir: "rust/markdown", name: "cube-drone-marquee-markdown" },
+  // Depends on the parser; its dev-dependency on the renderer is already live.
+  { dir: "rust/html_import", name: "cube-drone-marquee-html-import" },
 ];
 
 const args = process.argv.slice(2);

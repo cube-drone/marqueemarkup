@@ -1,0 +1,31 @@
+[package]
+# Registry name wears the cube-drone prefix (see ../parser/Cargo.toml); the
+# code keeps the pretty name via [lib] below.
+name = "cube-drone-marquee-html-import"
+version = "0.8.0"
+edition = "2021"
+license = "MPL-2.0"
+description = "Best-guess, safe-by-construction conversion from untrusted HTML to Marquee"
+repository = "https://github.com/cube-drone/marqueemarkup"
+keywords = ["markup", "html", "marquee", "convert", "sanitize"]
+categories = ["text-processing"]
+
+[lib]
+name = "marquee_html_import"
+
+[dependencies]
+# A browser-grade (html5ever) parser: feed HTML is broken in every way a
+# browser forgives, and we want to see the same tree a browser would.
+scraper = "0.27"
+ego-tree = "0.11"
+url = "2"
+# Dependency-renamed so code says `use marquee_parser::` while the registry
+# says cube-drone-marquee-parser. We build a tree and `serialize` it, then
+# `parse` it back to prove each block survives.
+marquee-parser = { package = "cube-drone-marquee-parser", path = "../parser", version = "0.8.0" }
+
+[dev-dependencies]
+# The safety tests render our output through the reference renderer: the
+# renderer, not this crate, is the security boundary, and the tests prove the
+# composition holds.
+marquee-html-renderer = { package = "cube-drone-marquee-html-renderer", path = "../html_renderer", version = "0.8.0" }
