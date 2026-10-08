@@ -546,9 +546,16 @@ the same either way. There is deliberately no way to put a table inside a table.
 
 ## Stacks
 
-Content on top of content. The first child is the bottom layer; each one after it sits on top.
-place= picks one of nine spots (or fill, the whole box), and backing= keeps words readable
-over a busy picture:
+None of the prior stuff allowed you to stack content on top of other content, which means
+that you could not use Marquee to construct cat memes. This can't be allowed to stand.
+
+A "stack" stacks all of it's content, with the first thing in the stack going on the bottom.
+(That's right, the top of the stack in code is the bottom of the stack on the page. This may 
+seem counterintuitive, but it would have been confusing the other way, too. )
+
+`place=` determines where this stack layer is going to go, either `top`, `bottom`, `left`, 
+`right`, `center`, `top-left`, `top-right`, `bottom-left`, `bottom-right`, or `fill` 
+(for the whole box). 
 
 ```marquee
 :::stack aspect=4:3 width=large
@@ -584,7 +591,7 @@ over a busy picture:
 :::
 :::
 
-No picture? aspect= gives the box its shape, and a background layer makes it a slide:
+No picture? `aspect=` gives the box its shape, and a background layer makes it a slide:
 
 ```marquee
 :::stack aspect=16:9 width=large
@@ -651,9 +658,10 @@ typing itself out. That's a visual-novel scene, in plain Marquee:
 
 ## Conflicts
 
-The one block you'll almost never type — your app writes it for you. When two devices edit the
-same lines at once, a versioning app can drop the disagreement straight into the document: two
-alternatives to pick between by ordinary editing, instead of a screenful of `<<<<<<<`.
+This one's not intended for humans to write, normally. Let's say you're editing Marquee in
+a Marquee-aware environment that supports different versions? Well, there's a special block
+for conflicts, so that they can look extra pretty.  You still have to figure out how to
+deal with the conflict, though. 
 
 ```marquee
 :::conflict
@@ -742,7 +750,7 @@ Need literal triple-backticks *inside* a block? Fence with four:
 
 There is a live comment in this very spot — and rendering it as nothing *is* the demo:
 
-%% told you.
+%% you can't see me.
 
 \%% but escape the marker and the line stays in prose
 
@@ -751,33 +759,35 @@ rendering nothing.
 
 ## Alignment
 
-The `<center>` tag is back, and it brought company — `:::right`, and `:::left` for
-un-aligning inside the other two:
+The `<center>` tag is back, and it brought company — `:::right`.
+
+There's also `:::left`, which has been denounced by the Pope as "useless", on account
+as "that's how the text probably wanted to work anyways". 
 
 ```marquee
 :::center
-**CENTERED**, like the old gods intended
+**CENTERED, MOISTURIZED, UNBOTHERED**
 
 :::left
-(and this line ducks back to the left rail)
+this is just where normal text goes, it is barely worth bothering
 :::
 :::
 
 :::right
-signed, ~~the management~~
+signed, ~~the management~~ ur mom
 :::
 ```
 
 :::center
-**CENTERED**, like the old gods intended
+**CENTERED, MOISTURIZED, UNBOTHERED**
 
 :::left
-(and this line ducks back to the left rail)
+this is just where normal text goes, it is barely worth bothering
 :::
 :::
 
 :::right
-signed, ~~the management~~
+signed, ~~the management~~ ur mom
 :::
 
 ## Layout, sections, schemes
@@ -793,15 +803,16 @@ sys.status: [color=#33ff66]COZY[/color] · uptime 11,315 days
 :::
 
 :::section scheme=parchment
-Hark — the same markup, an entirely different mood (this one says `scheme=parchment`).
+Hark-up, look upon this markup. (this one says `scheme=parchment`).
 :::
 
 :::section scheme=hotdog-stand
-THE CONDIMENT KING'S OWN COLORWAY (`scheme=hotdog-stand`)
+THE CONDIMENT KING'S OWN COLORWAY. BEHOLD! (`scheme=hotdog-stand`)
 :::
 
-Some schemes are game windows, each a classic RPG text box. `accent=` sets the window's
-signature color: an EarthBound frame, an FF6 window:
+I could not help but add game windows. `accent=` sets the window's
+signature color.
+
 
 ```marquee
 :::section scheme=earthbound
@@ -809,7 +820,7 @@ signature color: an EarthBound frame, an FF6 window:
 :::
 
 :::section scheme=earthbound-strawberry
-@ Strawberry flavor. Also mint, banana, and peanut.
+@ Strawberry, mint, banana, and peanut.
 :::
 
 :::section scheme=crosscode
@@ -817,11 +828,11 @@ signature color: an EarthBound frame, an FF6 window:
 :::
 
 :::section scheme=ff6 accent=#b03060
-Config > Window color, set to wine. (`scheme=ff6 accent=#b03060`)
+This should be blue, but instead it is... wine colored? (`scheme=ff6 accent=#b03060`)
 :::
 
 :::section scheme=chronotrigger
-Crono learned **Cyclone**! (`scheme=chronotrigger`)
+Frog learned **Regular Frog Stuff**! (`scheme=chronotrigger`)
 :::
 ```
 
@@ -887,14 +898,10 @@ document.
 ::: section
 :::
 
-(That footer closed with `::: section` — a **named closer**: `:::name` opens, `::: name`
-closes. Pure readability in deep nesting, plus a safety net — a named closer that doesn't
-match the innermost open block gets flagged right at that line instead of silently
-mis-nesting the rest of the page. And notice the sections inside the noir page needed no
-scheme of their own: styling flows down by containment, and whichever knob sits closest
-wins — that's the entire cascade.)
-
 ## Widgets and placeholders
+
+Whichever app embeds Marquee might create custom behaviors- which - you can ... do whatever
+you want with these, but by default they won't render. 
 
 These depend on where you're posting — here they render labeled placeholder boxes, the
 graceful deal that lets old clients meet new vocabulary:
@@ -922,12 +929,12 @@ destructive":
 
 ## The abomination
 
-You have now seen each effect alone: polite, purposeful, stoppable. The spec says effects nest
-freely — that this "is not an edge case, it is the point." We are therefore obligated to
-conclude that the following is the point. All seven effects, one heading, eight levels deep —
-which used to ride the inline nesting cap *exactly*, until v0 sealed the cap at sixteen.
-There is now officially room for a second abomination inside this one. We mention this fact
-and immediately regret it:
+You have now seen each effect alone: polite, purposeful, stoppable.
+
+But it is possible to nest up to sixteen effects within one another, before the 
+universe starts to fold in upon itself. 
+
+Here we have nested only eight. 
 
 ```marquee
 :::section scheme=terminal
@@ -939,11 +946,7 @@ and immediately regret it:
 # [marquee][blink][wave][bounce][jitter][typewriter][rainbow by=letter phase=scatter]**WELCOME TO MY HOMEPAGE**[/rainbow][/typewriter][/jitter][/bounce][/wave][/blink][/marquee]
 :::
 
-(The typewriter is in there too — but its content is a whole nested effect rather than bare
-letters, so it sits this one out: the per-letter machinery splits text, not other spans. On
-its own it types in pure CSS now; see the effects section. And if your reduced-motion
-setting is on, the abomination is a perfectly still green-on-black heading — the exit is
-contractual, even from this.)
+(The typewriter in this doesn't work. Welp.)
 
 ---
 
