@@ -15,7 +15,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Node } from "@cube-drone/marquee-parser";
-import { bareWebProfile, containerLook, escapeText, render, renderMarquee } from "../src/index.ts";
+import { bareWebProfile, containerLook, escapeText, render, renderMarquee, usedFontTokens } from "../src/index.ts";
 
 interface Collected {
   visible: string[];
@@ -414,4 +414,14 @@ test("asides inside laid-out containers (table, stack) count once", () => {
     assert.ok(html.includes('<sup class="mq-noteref">1</sup>') && html.includes('<sup class="mq-noteref">2</sup>'), html);
     assert.ok(!html.includes(">3<"), html);
   }
+});
+
+test("accent is a color knob, and schemes wear their faces", () => {
+  const html = renderMarquee(":::section scheme=earthbound-mint accent=#ff6a00\nhi\n:::\n");
+  assert.ok(html.includes('class="mq-section mq-scheme-earthbound-mint" style="--mq-accent:#ff6a00"'), html);
+  assert.ok(!renderMarquee(':::section accent="red;background:url(x)"\nhi\n:::\n').includes("--mq-accent"));
+  assert.deepEqual(usedFontTokens(renderMarquee(":::section scheme=earthbound\nhi\n:::\n")), ["press-start"]);
+  assert.deepEqual(usedFontTokens(renderMarquee(":::section scheme=earthbound-peanut\nhi\n:::\n")), ["press-start"]);
+  assert.deepEqual(usedFontTokens(renderMarquee(":::section scheme=earthboundish\nhi\n:::\n")), []);
+  assert.equal(containerLook({ scheme: "ff6", accent: "#b03060" }).style, "--mq-accent:#b03060");
 });

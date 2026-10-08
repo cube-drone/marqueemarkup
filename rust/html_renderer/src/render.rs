@@ -55,10 +55,27 @@ fn font_face(token: &str) -> Option<&'static str> {
     FONTS.iter().find(|(t, _)| *t == token).map(|(_, f)| *f)
 }
 
+/// Schemes (and their `-flavor` variants) that wear a grab-bag face by
+/// default. Kept in lockstep with marquee.css and the TypeScript renderer.
+const SCHEME_FONTS: &[(&str, &str)] = &[("earthbound", "press-start")];
+
 /// Which grab-bag faces does this rendered HTML actually wear? Pure string
-/// scan of the mq-font-* class contract.
+/// scan of the mq-font-* class contract, plus the faces schemes wear.
 pub fn used_font_tokens(html: &str) -> Vec<String> {
     let mut used = std::collections::BTreeSet::new();
+    for (at, _) in html.match_indices("mq-scheme-") {
+        let after = &html[at + "mq-scheme-".len()..];
+        let end = after
+            .bytes()
+            .take_while(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || *b == b'-')
+            .count();
+        let scheme = &after[..end];
+        for (name, token) in SCHEME_FONTS {
+            if scheme == *name || scheme.strip_prefix(name).is_some_and(|r| r.starts_with('-')) {
+                used.insert(token.to_string());
+            }
+        }
+    }
     let mut rest = html;
     while let Some(at) = rest.find("mq-font-") {
         let after = &rest[at + "mq-font-".len()..];
@@ -335,6 +352,11 @@ fn style_vars(attrs: &Attrs, profile: &dyn Profile) -> String {
             }
         }
         None => {}
+    }
+    // A scheme's signature color - the thing its game let you customize (an
+    // EarthBound frame, an FF6 window). Schemes without one ignore it.
+    if let Some(v) = attrs.get("accent").filter(|v| is_color_value(v)) {
+        vars.push(format!("--mq-accent:{v}"));
     }
     if vars.is_empty() {
         String::new()

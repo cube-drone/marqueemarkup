@@ -189,3 +189,9 @@ test("asides inside laid-out containers (table, stack) count once", () => {
     assert.ok(out.includes(">1</sup>") && out.includes(">2</sup>") && !out.includes(">3</sup>"), out);
   }
 });
+
+test("accent is a color knob on schemed containers", () => {
+  const out = html({ source: ":::section scheme=ff6 accent=#b03060\nhi\n:::\n" });
+  assert.ok(out.includes('class="mq-section mq-scheme-ff6" style="--mq-accent:#b03060"'), out);
+  assert.ok(!html({ source: ':::section accent="red;x:y"\nhi\n:::\n' }).includes("--mq-accent"));
+});

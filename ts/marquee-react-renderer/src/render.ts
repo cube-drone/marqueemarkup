@@ -128,6 +128,10 @@ function styleVars(attrs: Attrs, profile: Profile): Record<string, string> {
   } else if (isColorValue(bg)) {
     style["--mq-bg"] = bg;
   }
+  // A scheme's signature color (an EarthBound frame, an FF6 window).
+  if (isColorValue(attrs["accent"])) {
+    style["--mq-accent"] = attrs["accent"];
+  }
   return style;
 }
 

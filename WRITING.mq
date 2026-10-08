@@ -767,6 +767,51 @@ Hark — the same markup, an entirely different mood (this one says `scheme=parc
 THE CONDIMENT KING'S OWN COLORWAY (`scheme=hotdog-stand`)
 :::
 
+Some schemes are game windows, each a classic RPG text box. `accent=` sets the window's
+signature color: an EarthBound frame, an FF6 window:
+
+```marquee
+:::section scheme=earthbound
+@ You've got a call from Dad. (`scheme=earthbound`)
+:::
+
+:::section scheme=earthbound-strawberry
+@ Strawberry flavor. Also mint, banana, and peanut.
+:::
+
+:::section scheme=crosscode
+**Lea:** Hi! (`scheme=crosscode`)
+:::
+
+:::section scheme=ff6 accent=#b03060
+Config > Window color, set to wine. (`scheme=ff6 accent=#b03060`)
+:::
+
+:::section scheme=chronotrigger
+Crono learned **Cyclone**! (`scheme=chronotrigger`)
+:::
+```
+
+:::section scheme=earthbound
+@ You've got a call from Dad. (`scheme=earthbound`)
+:::
+
+:::section scheme=earthbound-strawberry
+@ Strawberry flavor. Also mint, banana, and peanut.
+:::
+
+:::section scheme=crosscode
+**Lea:** Hi! (`scheme=crosscode`)
+:::
+
+:::section scheme=ff6 accent=#b03060
+Config > Window color, set to wine. (`scheme=ff6 accent=#b03060`)
+:::
+
+:::section scheme=chronotrigger
+Crono learned **Cyclone**! (`scheme=chronotrigger`)
+:::
+
 And backgrounds tile images, exactly as the old web intended — any image target, honoring
 the host's media policy like every other embed:
 

@@ -176,8 +176,20 @@ export function usedFontTokens(html: string): string[] {
   for (const m of html.matchAll(/mq-font-([a-z0-9-]+)/g)) {
     used.add(m[1]!);
   }
+  // A scheme that wears a grab-bag face of its own needs that face shipped.
+  for (const m of html.matchAll(/mq-scheme-([a-z0-9-]+)/g)) {
+    for (const [scheme, token] of SCHEME_FONTS) {
+      if (m[1] === scheme || m[1]!.startsWith(`${scheme}-`)) {
+        used.add(token);
+      }
+    }
+  }
   return [...used].sort();
 }
+
+/** Schemes (and their `-flavor` variants) that wear a grab-bag face by
+ * default. Kept in lockstep with marquee.css and the Rust renderer. */
+const SCHEME_FONTS: [string, string][] = [["earthbound", "press-start"]];
 
 /** One rung of the font-element seven-step dial: presentational floor
  * (works with no stylesheet, under any CSP), stylesheet class as ceiling.
@@ -297,6 +309,11 @@ function styleVarList(attrs: Attrs, profile: Profile): string {
     }
   } else if (isColorValue(bg)) {
     vars.push(`--mq-bg:${bg}`);
+  }
+  // A scheme's signature color - the thing its game let you customize (an
+  // EarthBound frame, an FF6 window). Schemes without one ignore it.
+  if (isColorValue(attrs["accent"])) {
+    vars.push(`--mq-accent:${attrs["accent"]}`);
   }
   return vars.join(";");
 }

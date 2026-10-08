@@ -359,8 +359,10 @@ Style is where the spec says "no" most, so here is the positive model, in one pl
   once (pick-a-theme); a knob written alongside overrides that scheme's value. Scheme *names*
   are spec vocabulary (closed, additive) so a scheme looks the same everywhere; an unknown
   scheme degrades to unstyled.
-- **Tiny closed knob set; only `color`'s value is open.** Color (text/background/link - hex or a
-  palette token; inline via `[color=red]`, block via a knob), background (color / named pattern
+- **Tiny closed knob set; only color values are open.** Color (text/background/link - hex or a
+  palette token; inline via `[color=red]`, block via a knob), **`accent`** (a color: a scheme's
+  signature color - whatever its look would let a player customize, such as a game window's
+  frame or fill; a scheme without one ignores it), background (color / named pattern
   / **`tile:<target>`** - the early web's tiled wallpaper: any target, resolved through the
   embedder's *media policy* exactly as an embed, because a background fetch is a fetch;
   out-of-policy or non-image targets degrade to no background, and the resolved URL is

@@ -406,3 +406,15 @@ fn asides_inside_laid_out_containers_count_once() {
         assert!(!html.contains(">3<"), "{html}");
     }
 }
+
+#[test]
+fn accent_is_a_color_knob_and_schemes_wear_their_faces() {
+    let html = mq(":::section scheme=earthbound-mint accent=#ff6a00\nhi\n:::\n");
+    assert!(html.contains("class=\"mq-section mq-scheme-earthbound-mint\" style=\"--mq-accent:#ff6a00\""), "{html}");
+    let bad = mq(":::section accent=\"red;background:url(x)\"\nhi\n:::\n");
+    assert!(!bad.contains("--mq-accent"), "not a color: no knob: {bad}");
+    use marquee_html_renderer::used_font_tokens;
+    assert_eq!(used_font_tokens(&mq(":::section scheme=earthbound\nhi\n:::\n")), vec!["press-start"]);
+    assert_eq!(used_font_tokens(&mq(":::section scheme=earthbound-peanut\nhi\n:::\n")), vec!["press-start"]);
+    assert!(used_font_tokens(&mq(":::section scheme=earthboundish\nhi\n:::\n")).is_empty(), "a prefix is not a flavor");
+}
