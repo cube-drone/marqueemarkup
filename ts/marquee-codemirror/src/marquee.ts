@@ -79,9 +79,10 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
         return lines;
       }
       if (spec.kind === "mark") {
+        const attributes = { ...spec.attrs, ...(spec.style === undefined ? {} : { style: spec.style }) };
         return Decoration.mark({
           ...(spec.class === undefined ? {} : { class: spec.class }),
-          ...(spec.style === undefined ? {} : { attributes: { style: spec.style } }),
+          ...(Object.keys(attributes).length === 0 ? {} : { attributes }),
         }).range(spec.from, spec.to);
       }
       if (spec.kind === "hide") {

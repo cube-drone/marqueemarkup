@@ -6,6 +6,7 @@
 
 import type { Attrs, Node } from "@cube-drone/marquee-parser";
 import { bareWebProfile, type Profile, type TurbolinkLevel } from "./profile.ts";
+import { effectLook, type EffectLook, type EffectUnit } from "./effects.ts";
 
 /** Render state: the profile, plus the one piece of cross-block
  * coordination the renderer owns - aside numbering (sequential through the
@@ -542,10 +543,20 @@ function renderLayer(node: Node, ctx: Ctx): string {
  * attributes - the floor of the degradation ladder. The --mq-color slot is
  * the stylesheet-era ceiling on the same element. */
 function span(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string {
+  const saved = { n: ctx.note.n, pending: [...ctx.note.pending] };
   const inner = children(nodes, ctx);
   const custom = ctx.profile.span(name, attrs, inner);
   if (custom !== null) {
     return custom;
+  }
+  const look = effectLook(name, attrs, nodes);
+  if (look !== null) {
+    if (look.units !== null) {
+      // A split renders its children again: rewind the aside numbering.
+      ctx.note.n = saved.n;
+      ctx.note.pending = [...saved.pending];
+    }
+    return renderEffect(name, look, nodes, inner, ctx);
   }
   switch (name) {
     case "sup":
@@ -606,225 +617,42 @@ function span(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string {
       ctx.note.pending.push(`<span class="mq-note-num">${ctx.note.n}</span>${inner}`);
       return `<sup class="mq-noteref">${ctx.note.n}</sup>`;
     }
-    case "marquee": {
-      const dir = isToken(attrs["direction"]) ? ` data-direction="${attrs["direction"]}"` : "";
-      const speed = attrs["speed"] !== undefined && COUNT.test(attrs["speed"])
-        ? ` style="--mq-speed:${attrs["speed"]}"`
-        : "";
-      return `<span class="mq-marquee"${dir}${speed}><span class="mq-marquee-inner">${inner}</span></span>`;
-    }
-    case "blink": {
-      const rate = attrs["rate"] !== undefined && COUNT.test(attrs["rate"])
-        ? ` style="--mq-rate:${attrs["rate"]}"`
-        : "";
-      if (attrs["by"] === "letter" || attrs["by"] === "word") {
-        // Split blink: ramp is theater-marquee chase lights, scatter is
-        // twinkle. The rate var rides the container; units inherit it.
-        return bySegments(name, attrs["by"], attrs["phase"], nodes, ctx, rate);
-      }
-      return `<span class="mq-blink"${rate}>${inner}</span>`;
-    }
-    case "rainbow":
-    case "bounce":
-    case "jitter":
-    case "wave":
-    case "rubber":
-      if (attrs["by"] === "letter" || attrs["by"] === "word") {
-        return bySegments(name, attrs["by"], attrs["phase"], nodes, ctx);
-      }
-      return `<span class="mq-${name}">${inner}</span>`;
-    case "typewriter": {
-      // Inherently per-unit: the reveal IS a by=letter effect (by=word for
-      // word-at-a-time). speed= is units per second; the container carries
-      // the per-unit delay step, each unit its ordinal in --mq-o.
-      const by = attrs["by"] === "word" ? "word" : "letter";
-      const step = revealStep(attrs["speed"], 14);
-      return bySegments(name, by, attrs["phase"], nodes, ctx, ` style="--mq-tw-step:${step}s"`);
-    }
-    case "fadein": {
-      // The ghostly reveal. Bare [fadein] fades the whole run in once;
-      // by=letter / by=word drift units in on staggered starts (same
-      // one-shot family as typewriter: sequential ordinals, high cap);
-      // phase=scatter is apparition weather.
-      if (attrs["by"] === "letter" || attrs["by"] === "word") {
-        const step = revealStep(attrs["speed"], 16);
-        return bySegments(name, attrs["by"], attrs["phase"], nodes, ctx, ` style="--mq-fi-step:${step}s"`);
-      }
-      return `<span class="mq-fadein">${inner}</span>`;
-    }
   }
   return inner; // unknown span: pure shrug, children as plain content
 }
 
-// -- per-unit effects (by=letter / by=word): each unit in its own span with
-// a phase offset in --mq-o; the stylesheet replays the effect's keyframes
-// through a negative animation-delay. Pure markup - the document stays a
-// document. Locale pinned so segmentation (and thus output) is stable.
+// -- effects: the look (classes, knobs, per-unit split) comes from
+// effects.ts, shared with every other surface that draws effects.
 
-const SEGMENTERS = {
-  letter: new Intl.Segmenter("en", { granularity: "grapheme" }),
-  word: new Intl.Segmenter("en", { granularity: "word" }),
-};
-
-type SplitBy = keyof typeof SEGMENTERS;
-
-/** DOM-weight discipline: past this many units, the run animates whole.
- * Loopers pay a live animation per element forever, so they cap low;
- * typewriter's units are 1ms one-shots (finished animations cost nothing)
- * and its natural material is long text, so it caps high. */
-const MAX_SPLIT_UNITS = 400;
-const MAX_REVEAL_UNITS = 2000;
-
-type Phase = "ramp" | "scatter";
-
-interface SplitState {
-  effect: string;
-  by: SplitBy;
-  phase: Phase;
-  i: number;
-  total: number;
-}
-
-function bySegments(
-  effect: string,
-  by: SplitBy,
-  phaseAttr: string | undefined,
-  nodes: Node[],
-  ctx: Ctx,
-  containerStyle = "",
-): string {
-  // Each effect has a natural phase order (jitter scatters, the rest sweep);
-  // the knob overrides it either way. Invalid values degrade to the default.
-  const phase: Phase =
-    phaseAttr === "scatter" || phaseAttr === "ramp"
-      ? phaseAttr
-      : effect === "jitter"
-        ? "scatter"
-        : "ramp";
-  const state: SplitState = { effect, by, phase, i: 0, total: 0 };
-  state.total = countUnits(nodes, by);
-  const cap = isReveal(effect) ? MAX_REVEAL_UNITS : MAX_SPLIT_UNITS;
-  if (state.total === 0 || state.total > cap) {
-    return `<span class="mq-${effect}">${children(nodes, ctx)}</span>`;
+function renderEffect(name: string, look: EffectLook, nodes: Node[], inner: string, ctx: Ctx): string {
+  const data = look.data.map(([k, v]) => ` data-${k}="${escapeAttr(v)}"`).join("");
+  const style = look.vars.length === 0 ? "" : ` style="${look.vars.map(([k, v]) => `${k}:${escapeAttr(v)}`).join(";")}"`;
+  if (name === "marquee") {
+    return `<span class="${look.className}"${data}${style}><span class="mq-marquee-inner">${inner}</span></span>`;
   }
-  return `<span class="mq-${effect} mq-split"${containerStyle}>${splitRender(nodes, ctx, state)}</span>`;
+  const body = look.units === null ? inner : splitRender(nodes, ctx, look.units);
+  return `<span class="${look.className}"${data}${style}>${body}</span>`;
 }
 
-/** A segment gets wrapped if it's animatable: for words, word-like segments
- * (spaces and bare punctuation ride along); for letters, anything that
- * isn't whitespace. */
-function isUnit(seg: Intl.SegmentData, by: SplitBy): boolean {
-  return by === "word" ? seg.isWordLike === true : !/^\s+$/.test(seg.segment);
-}
-
-/** Offsets are deterministic (goldens exist; a document renders the same
- * twice) in both phase orders: ramp sweeps, scatter scrambles by a fixed
- * integer hash - randomness-shaped, never random. */
-function unitOffset(state: SplitState): string {
-  // Reveal offsets (typewriter, fadein) are sequential INTEGERS (the
-  // ordinal; delay = ordinal x step), unlike the cyclic 0..1 fractions the
-  // looping effects replay. phase=scatter reveals in a
-  // scrambled-but-deterministic order: a stride at the run's golden-ratio
-  // point, nudged coprime with the total, walks a well-spread permutation
-  // at EVERY length. (A fixed prime stride is a trap: 7919 mod 40 = 39 =
-  // -1, so forty-unit runs typed in backwards.)
-  if (isReveal(state.effect)) {
-    const o =
-      state.phase === "scatter"
-        ? (state.i * scatterStride(state.total)) % state.total
-        : state.i;
-    return String(o);
-  }
-  let o: number;
-  if (state.phase === "scatter") {
-    o = ((state.i * 7919) % 101) / 101;
-  } else {
-    switch (state.effect) {
-      case "rainbow":
-        o = state.i / state.total; // gradient across the whole run
-        break;
-      case "wave":
-        o = (state.i % 8) / 8; // fixed ripple wavelength
-        break;
-      case "bounce":
-        o = (state.i % 6) / 6;
-        break;
-      default:
-        o = (state.i % 8) / 8; // jitter in ramp mode: a rippling shudder
-        break;
-    }
-  }
-  return String(Math.round(o * 1000) / 1000);
-}
-
-/** speed= (units per second, a COUNT) into a per-unit delay step in
- * seconds; invalid or absent falls to the effect's default rate. */
-function revealStep(speedAttr: string | undefined, dflt: number): number {
-  const speed =
-    speedAttr !== undefined && COUNT.test(speedAttr) && Number(speedAttr) > 0
-      ? Number(speedAttr)
-      : dflt;
-  return Math.round(1000 / speed) / 1000;
-}
-
-/** The one-shot reveals: sequential ordinals, the high unit cap. */
-function isReveal(effect: string): boolean {
-  return effect === "typewriter" || effect === "fadein";
-}
-
-function gcd(a: number, b: number): number {
-  return b === 0 ? a : gcd(b, a % b);
-}
-
-/** The smallest stride >= ~61.8% of total that's coprime with it (falls
- * back to 1 for degenerate totals - a 1- or 2-unit "scramble" is fate). */
-function scatterStride(total: number): number {
-  let stride = Math.max(1, Math.round(total * 0.618));
-  while (stride < total && gcd(stride, total) !== 1) {
-    stride += 1;
-  }
-  return gcd(stride, total) === 1 ? stride : 1;
-}
-
-function countUnits(nodes: Node[], by: SplitBy): number {
-  let n = 0;
-  for (const node of nodes) {
-    if (node.type === "text") {
-      for (const seg of SEGMENTERS[by].segment(node.value)) {
-        if (isUnit(seg, by)) {
-          n += 1;
-        }
-      }
-    } else if (
-      node.type === "emphasis" ||
-      node.type === "strong" ||
-      node.type === "strikethrough"
-    ) {
-      n += countUnits(node.children, by);
-    }
-  }
-  return n;
-}
-
-function splitRender(nodes: Node[], ctx: Ctx, state: SplitState): string {
+/** Each unit in its own span with its phase offset; spaces and punctuation
+ * between units ride along as plain text. */
+function splitRender(nodes: Node[], ctx: Ctx, units: Map<Node, EffectUnit[]>): string {
   let out = "";
   for (const node of nodes) {
     if (node.type === "text") {
-      for (const seg of SEGMENTERS[state.by].segment(node.value)) {
-        if (!isUnit(seg, state.by)) {
-          out += escapeText(seg.segment); // spaces/punctuation ride along
-          continue;
-        }
-        const o = unitOffset(state);
-        state.i += 1;
-        out += `<span class="mq-l" style="--mq-o:${o}">${escapeText(seg.segment)}</span>`;
+      let at = 0;
+      for (const u of units.get(node) ?? []) {
+        out += escapeText(node.value.slice(at, u.start));
+        out += `<span class="mq-l" style="--mq-o:${u.offset}">${escapeText(node.value.slice(u.start, u.end))}</span>`;
+        at = u.end;
       }
+      out += escapeText(node.value.slice(at));
     } else if (node.type === "emphasis") {
-      out += `<em>${splitRender(node.children, ctx, state)}</em>`;
+      out += `<em>${splitRender(node.children, ctx, units)}</em>`;
     } else if (node.type === "strong") {
-      out += `<strong>${splitRender(node.children, ctx, state)}</strong>`;
+      out += `<strong>${splitRender(node.children, ctx, units)}</strong>`;
     } else if (node.type === "strikethrough") {
-      out += `<del>${splitRender(node.children, ctx, state)}</del>`;
+      out += `<del>${splitRender(node.children, ctx, units)}</del>`;
     } else {
       out += renderNode(node, ctx); // anything else renders whole, un-split
     }

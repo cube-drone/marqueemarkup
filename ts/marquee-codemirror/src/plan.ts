@@ -29,7 +29,7 @@
 // editing parse as "not the list" for a keystroke or two - see listTouched.
 
 import { parseWithPositions, type Node, type Span } from "@cube-drone/marquee-parser";
-import { containerLook, FONTS, type Profile } from "@cube-drone/marquee-html-renderer";
+import { containerLook, effectLook, FONTS, type Profile } from "@cube-drone/marquee-html-renderer";
 
 export interface Sel {
   from: number;
@@ -41,8 +41,9 @@ export interface Sel {
 export type Look = { class: string; style: string };
 
 export type DecoSpec =
-  /** Style raw text in place (bold, a heading size, a color, an effect). */
-  | { kind: "mark"; from: number; to: number; class?: string; style?: string }
+  /** Style raw text in place (bold, a heading size, a color, an effect).
+   * `attrs` carries data attributes (a marquee's direction). */
+  | { kind: "mark"; from: number; to: number; class?: string; style?: string; attrs?: Record<string, string> }
   /** Hide a range entirely - a marker the cursor isn't near. */
   | { kind: "hide"; from: number; to: number }
   /** Replace an inline range with a small widget (a resolved emoji glyph,
@@ -69,11 +70,6 @@ export type WidgetSpec =
   // An embedder span - one the profile's `span` hook claims - rendered whole, like a link.
   | { type: "span"; node: Node };
 
-/** Inline effect spans - animated in the editor when the cursor is away
- * (their real mq-* classes), static when you're editing them. */
-const EFFECTS = new Set([
-  "blink", "rainbow", "bounce", "jitter", "wave", "rubber", "typewriter", "fadein", "marquee",
-]);
 
 const SIZE_EM: Record<string, string> = {
   "1": "0.65em", "2": "0.82em", "3": "1em", "4": "1.15em",
@@ -210,7 +206,7 @@ export function planFromAst(
           const openEnd = source.indexOf("]", span.start);
           const open: [number, number] = [span.start, openEnd === -1 ? span.start : openEnd + 1];
           const close: [number, number] = [span.end - (node.name.length + 3), span.end];
-          out.push(spanContentSpec(node, open[1], close[0], active));
+          out.push(...spanContentSpec(node, open[1], close[0], active, spans, source));
           markers(open, close, active);
         }
         node.children.forEach(inline);
@@ -348,27 +344,108 @@ function containsRenderworthy(node: Node): boolean {
   return found;
 }
 
-/** The content styling for an inline span. Effects animate (their real mq-*
- * class) when the cursor is away and go static when you edit them; spoilers
- * blur; color/font/size get inline style; unknown spans get a subtle mark. */
+/** The content styling for an inline span. Effects animate when the cursor
+ * is away and go static when you edit them; spoilers blur; color/font/size
+ * get inline style; unknown spans get a subtle mark. */
 function spanContentSpec(
   node: Node & { type: "span" },
   from: number,
   to: number,
   active: boolean,
-): DecoSpec {
+  spans: WeakMap<Node, Span>,
+  source: string,
+): DecoSpec[] {
   const name = node.name;
   if (name === "spoiler") {
     // Blurred when the cursor is away, but readable while you edit it - a
     // spoiler you can't read is uniquely useless to type into (unlike an
     // effect, which is merely animated).
-    return active ? { kind: "mark", from, to, class: "cm-mq-span" } : { kind: "mark", from, to, class: "mq-spoiler" };
+    return [active ? { kind: "mark", from, to, class: "cm-mq-span" } : { kind: "mark", from, to, class: "mq-spoiler" }];
   }
-  if (EFFECTS.has(name)) {
-    return active ? { kind: "mark", from, to, class: "cm-mq-span" } : { kind: "mark", from, to, class: `mq-${name}` };
+  const look = effectLook(name, node.attrs, node.children);
+  if (look !== null) {
+    return active ? [{ kind: "mark", from, to, class: "cm-mq-span" }] : effectSpecs(name, look, from, to, spans, source);
   }
   const style = spanStyle(name, node.attrs);
-  return style !== null ? { kind: "mark", from, to, style } : { kind: "mark", from, to, class: "cm-mq-span" };
+  return [style !== null ? { kind: "mark", from, to, style } : { kind: "mark", from, to, class: "cm-mq-span" }];
+}
+
+/** An effect drawn in place, from the renderer's own look for it (shared
+ * code, so the editor and the render can't disagree): the container mark
+ * with its classes, knobs and data attributes; a marquee's inner strip (the
+ * CSS scrolls `.mq-marquee-inner`, not the viewport); and for by=letter /
+ * by=word, one mark per unit wearing its phase offset - the renderer's units,
+ * mapped from text values back to source offsets. */
+function effectSpecs(
+  name: string,
+  look: NonNullable<ReturnType<typeof effectLook>>,
+  from: number,
+  to: number,
+  spans: WeakMap<Node, Span>,
+  source: string,
+): DecoSpec[] {
+  const container = (cls: string, withKnobs: boolean): DecoSpec => {
+    const spec: DecoSpec = { kind: "mark", from, to, class: cls };
+    if (withKnobs && look.vars.length > 0) spec.style = look.vars.map(([k, v]) => `${k}:${v}`).join(";");
+    if (look.data.length > 0) spec.attrs = Object.fromEntries(look.data.map(([k, v]) => [`data-${k}`, v]));
+    return spec;
+  };
+  if (name === "marquee") {
+    return [container(look.className, true), { kind: "mark", from, to, class: "mq-marquee-inner" }];
+  }
+  if (look.units === null) {
+    return [container(look.className, true)];
+  }
+  const units: DecoSpec[] = [];
+  for (const [text, list] of look.units) {
+    const span = spans.get(text);
+    const pos = span === undefined || text.type !== "text" ? null : sourceOffsets(text.value, source, span.start, span.end);
+    if (pos === null) {
+      // The text doesn't line up with its source (it shouldn't happen): the
+      // run animates whole, as the renderer does past its unit cap.
+      return [container(`mq-${name}`, false)];
+    }
+    for (const u of list) {
+      if (pos[u.end]! > pos[u.start]!) {
+        units.push({ kind: "mark", from: pos[u.start]!, to: pos[u.end]!, class: "mq-l", style: `--mq-o:${u.offset}` });
+      }
+    }
+  }
+  return [container(look.className, true), ...units];
+}
+
+/** Where each UTF-16 offset of a text node's value sits in the source:
+ * `pos[i]` for value[i], and `pos[value.length]` for its end. The value is
+ * the source less escapes (`\*` is one character) and less the container
+ * prefixes a blockquote strips after a newline. Null if they don't align. */
+function sourceOffsets(value: string, source: string, start: number, end: number): number[] | null {
+  const pos: number[] = [];
+  let j = start;
+  let afterNewline = false;
+  for (let i = 0; i < value.length; i += 1) {
+    const c = value[i];
+    for (;;) {
+      if (j >= end) return null;
+      if (source[j] === c) {
+        pos.push(j);
+        j += 1;
+        break;
+      }
+      if (source[j] === "\\" && source[j + 1] === c) {
+        pos.push(j);
+        j += 2;
+        break;
+      }
+      if (afterNewline && (source[j] === ">" || source[j] === " " || source[j] === "\t")) {
+        j += 1;
+        continue;
+      }
+      return null;
+    }
+    afterNewline = c === "\n";
+  }
+  pos.push(j);
+  return pos;
 }
 
 function spanStyle(name: string, attrs: Record<string, string>): string | null {

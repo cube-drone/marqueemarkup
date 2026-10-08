@@ -267,3 +267,83 @@ test("comments dim; the whole vector corpus plans in-bounds", () => {
   }
   assert.ok(cases > 90);
 });
+
+// -- effects drawn in place: the renderer's own look, mapped onto source --
+
+import { renderMarquee } from "@cube-drone/marquee-html-renderer";
+
+type Mark = Extract<DecoSpec, { kind: "mark" }>;
+const marks = (src: string, sels = noCursor): Mark[] =>
+  plan(src, sels, P).filter((s): s is Mark => s.kind === "mark");
+const unitMarks = (src: string): Mark[] => marks(src).filter((m) => m.class === "mq-l");
+
+test("by=letter draws one mark per unit, with the renderer's phase offsets", () => {
+  const src = "[rainbow by=letter]abc[/rainbow]\n";
+  const container = marks(src).find((m) => m.class === "mq-rainbow mq-split");
+  assert.ok(container, "the split container");
+  const units = unitMarks(src);
+  assert.deepEqual(units.map((u) => src.slice(u.from, u.to)), ["a", "b", "c"]);
+  assert.deepEqual(units.map((u) => u.style), ["--mq-o:0", "--mq-o:0.333", "--mq-o:0.667"]);
+});
+
+test("phase= is honored: scatter scrambles the offsets", () => {
+  const ramp = unitMarks("[wave by=letter]abcdef[/wave]\n").map((u) => u.style);
+  const scatter = unitMarks("[wave by=letter phase=scatter]abcdef[/wave]\n").map((u) => u.style);
+  assert.notDeepEqual(ramp, scatter);
+});
+
+test("by=word marks words; spaces and punctuation ride along unmarked", () => {
+  const src = "[bounce by=word]hello, big world[/bounce]\n";
+  assert.deepEqual(unitMarks(src).map((u) => src.slice(u.from, u.to)), ["hello", "big", "world"]);
+});
+
+test("units map through escapes and soft line breaks back to source", () => {
+  const esc = "[rainbow by=letter]a\\*b[/rainbow]\n";
+  assert.deepEqual(unitMarks(esc).map((u) => esc.slice(u.from, u.to)), ["a", "\\*", "b"]);
+  const wrapped = "[wave by=letter]ab\ncd[/wave]\n";
+  assert.deepEqual(unitMarks(wrapped).map((u) => wrapped.slice(u.from, u.to)), ["a", "b", "c", "d"]);
+  // (A blockquote isn't drawn in place at all: away from the cursor it's
+  // the renderer's own widget, which splits for itself.)
+});
+
+test("the unit caps hold: a run past them animates whole, no per-unit marks", () => {
+  const long = `[rainbow by=letter]${"x".repeat(401)}[/rainbow]\n`;
+  assert.equal(unitMarks(long).length, 0);
+  assert.ok(marks(long).some((m) => m.class === "mq-rainbow"), "still animates, whole");
+  const reveal = `[typewriter]${"x".repeat(2000)}[/typewriter]\n`;
+  assert.equal(unitMarks(reveal).length, 2000, "reveals cap high");
+});
+
+test("knobs: marquee direction and speed, blink rate, reveal speed", () => {
+  const mq = marks("[marquee direction=right speed=3]go[/marquee]\n");
+  const outer = mq.find((m) => m.class === "mq-marquee");
+  assert.deepEqual(outer?.attrs, { "data-direction": "right" });
+  assert.equal(outer?.style, "--mq-speed:3");
+  assert.ok(mq.some((m) => m.class === "mq-marquee-inner"), "the strip the CSS actually scrolls");
+  assert.equal(marks("[blink rate=3]x[/blink]\n").find((m) => m.class === "mq-blink")?.style, "--mq-rate:3");
+  const tw = marks("[typewriter speed=20]hi[/typewriter]\n").find((m) => m.class === "mq-typewriter mq-split");
+  assert.equal(tw?.style, "--mq-tw-step:0.05s");
+});
+
+test("an effect you're editing stays static", () => {
+  const src = "[rainbow by=letter]abc[/rainbow]\n";
+  const editing = marks(src, cursorAt(20));
+  assert.equal(editing.filter((m) => m.class === "mq-l").length, 0);
+  assert.ok(editing.some((m) => m.class === "cm-mq-span"));
+});
+
+test("the editor and the renderer agree on every unit and offset", () => {
+  const bodies = ["hello world", "a *b* **c** ~~d~~ e", "x\\*y \\[z\\]", "naïve café 👩‍👩‍👧 ok", "with :smile: and [a link](https://e.x)"];
+  for (const name of ["rainbow", "wave", "bounce", "jitter", "blink", "typewriter", "fadein"]) {
+    for (const knobs of [" by=letter", " by=word", " by=letter phase=scatter", " by=word phase=ramp"]) {
+      for (const body of bodies) {
+        const src = `[${name}${knobs}]${body}[/${name}]\n`;
+        const fromEditor = unitMarks(src).map((u) => `${u.style}|${src.slice(u.from, u.to).replace(/\\(.)/g, "$1")}`);
+        const fromRender = [...renderMarquee(src).matchAll(/<span class="mq-l" style="(--mq-o:[^"]*)">([^<]*)<\/span>/g)].map(
+          (m) => `${m[1]}|${m[2]!.replaceAll("&amp;", "&").replaceAll("&lt;", "<").replaceAll("&gt;", ">")}`,
+        );
+        assert.deepEqual(fromEditor, fromRender, src);
+      }
+    }
+  }
+});
