@@ -616,6 +616,39 @@ The box grows to fit, so nothing gets cut off: a caption too long for its pictur
 whole box taller, and the picture crops at its edges instead. Pictures can be cropped; words
 never are.
 
+Put it all together: a backdrop, a character, and a dialogue box in a game-window scheme,
+typing itself out. That's a visual-novel scene, in plain Marquee:
+
+```marquee
+:::stack aspect=16:9 width=full
+![a sunset over the water](example-media/picture.jpg)
+
+:::layer place=bottom-right
+:::media height=300
+![a man in a camel coat, unimpressed](example-media/public-domain-man.png)
+:::
+:::
+
+:::layer place=bottom scheme=earthbound
+[typewriter]You will never defeat me! I deal **8** damage! That's quite a bit of damage![/typewriter]
+:::
+:::
+```
+
+:::stack aspect=16:9 width=full
+![a sunset over the water](example-media/picture.jpg)
+
+:::layer place=bottom-right
+:::media height=300
+![a man in a camel coat, unimpressed](example-media/public-domain-man.png)
+:::
+:::
+
+:::layer place=bottom scheme=earthbound
+[typewriter]You will never defeat me! I deal **8** damage! That's quite a bit of damage![/typewriter]
+:::
+:::
+
 ## Conflicts
 
 The one block you'll almost never type — your app writes it for you. When two devices edit the

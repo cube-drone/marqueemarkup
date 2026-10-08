@@ -10,6 +10,7 @@ reference these exact names — drop files in as:
 | `clip.mp4` | the video embed |
 | `angry-burger-emoji.png` | the custom image emoji (`:angry-burger:` in the preview host's table) |
 | `banner.jpg`, `pasta_1.jpg`–`pasta_4.jpg` | the Borsalino demo site (`examples/borsalino/`) |
+| `public-domain-man.png` | the visual-novel tableau's character (the Stacks section) |
 
 Until a file exists, the preview tool shows a labeled placeholder box in its place — the same
 graceful degradation as everything else, so nothing here blocks anything.
