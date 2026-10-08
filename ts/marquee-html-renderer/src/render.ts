@@ -6,7 +6,7 @@
 
 import type { Attrs, Node } from "@cube-drone/marquee-parser";
 import { bareWebProfile, type Profile, type TurbolinkLevel } from "./profile.ts";
-import { effectLook, type EffectLook, type EffectUnit } from "./effects.ts";
+import { effectLook, splitPieces, type EffectLook, type SplitPiece } from "./effects.ts";
 
 /** Render state: the profile, plus the one piece of cross-block
  * coordination the renderer owns - aside numbering (sequential through the
@@ -652,29 +652,34 @@ function renderEffect(name: string, look: EffectLook, nodes: Node[], inner: stri
   if (name === "marquee") {
     return `<span class="${look.className}"${data}${style}><span class="mq-marquee-inner">${inner}</span></span>`;
   }
-  const body = look.units === null ? inner : splitRender(nodes, ctx, look.units);
+  const body = look.units === null ? inner : splitRender(nodes, ctx, look);
   return `<span class="${look.className}"${data}${style}>${body}</span>`;
 }
 
 /** Each unit in its own span with its phase offset; spaces and punctuation
- * between units ride along as plain text. */
-function splitRender(nodes: Node[], ctx: Ctx, units: Map<Node, EffectUnit[]>): string {
+ * between units ride along as plain text; each word's units sit in a group
+ * that wraps as one. */
+function splitRender(nodes: Node[], ctx: Ctx, look: EffectLook): string {
+  const pieces = (list: SplitPiece[]): string =>
+    list
+      .map((p) =>
+        p.kind === "text"
+          ? escapeText(p.text)
+          : p.kind === "unit"
+            ? `<span class="mq-l" style="--mq-o:${p.offset}">${escapeText(p.text)}</span>`
+            : `<span class="mq-w">${pieces(p.pieces)}</span>`,
+      )
+      .join("");
   let out = "";
   for (const node of nodes) {
     if (node.type === "text") {
-      let at = 0;
-      for (const u of units.get(node) ?? []) {
-        out += escapeText(node.value.slice(at, u.start));
-        out += `<span class="mq-l" style="--mq-o:${u.offset}">${escapeText(node.value.slice(u.start, u.end))}</span>`;
-        at = u.end;
-      }
-      out += escapeText(node.value.slice(at));
+      out += pieces(splitPieces(node, look));
     } else if (node.type === "emphasis") {
-      out += `<em>${splitRender(node.children, ctx, units)}</em>`;
+      out += `<em>${splitRender(node.children, ctx, look)}</em>`;
     } else if (node.type === "strong") {
-      out += `<strong>${splitRender(node.children, ctx, units)}</strong>`;
+      out += `<strong>${splitRender(node.children, ctx, look)}</strong>`;
     } else if (node.type === "strikethrough") {
-      out += `<del>${splitRender(node.children, ctx, units)}</del>`;
+      out += `<del>${splitRender(node.children, ctx, look)}</del>`;
     } else {
       out += renderNode(node, ctx); // anything else renders whole, un-split
     }

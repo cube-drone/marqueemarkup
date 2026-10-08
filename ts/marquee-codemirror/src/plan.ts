@@ -374,8 +374,9 @@ function spanContentSpec(
  * code, so the editor and the render can't disagree): the container mark
  * with its classes, knobs and data attributes; a marquee's inner strip (the
  * CSS scrolls `.mq-marquee-inner`, not the viewport); and for by=letter /
- * by=word, one mark per unit wearing its phase offset - the renderer's units,
- * mapped from text values back to source offsets. */
+ * by=word, one mark per unit wearing its phase offset, inside one mark per
+ * word group - the renderer's units and groups, mapped from text values back
+ * to source offsets. */
 function effectSpecs(
   name: string,
   look: NonNullable<ReturnType<typeof effectLook>>,
@@ -404,6 +405,10 @@ function effectSpecs(
       // The text doesn't line up with its source (it shouldn't happen): the
       // run animates whole, as the renderer does past its unit cap.
       return [container(`mq-${name}`, false)];
+    }
+    // Word groups first: a group wraps its units, and keeps them on one line.
+    for (const [start, end] of look.groups?.get(text) ?? []) {
+      units.push({ kind: "mark", from: pos[start]!, to: pos[end]!, class: "mq-w" });
     }
     for (const u of list) {
       if (pos[u.end]! > pos[u.start]!) {

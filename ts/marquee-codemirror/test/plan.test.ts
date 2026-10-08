@@ -347,3 +347,11 @@ test("the editor and the renderer agree on every unit and offset", () => {
     }
   }
 });
+
+test("a word's units sit in a group mark, so the word wraps as one", () => {
+  const src = "[typewriter]That's quite **8** damage![/typewriter]\n";
+  const groups = marks(src).filter((m) => m.class === "mq-w").map((m) => src.slice(m.from, m.to));
+  assert.deepEqual(groups, ["That's", "quite", "damage!"]);
+  // Spaceless scripts wrap between characters: never grouped.
+  assert.equal(marks("[rainbow by=letter]漢字かな[/rainbow]\n").filter((m) => m.class === "mq-w").length, 0);
+});

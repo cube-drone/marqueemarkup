@@ -954,18 +954,19 @@ fn split_render(nodes: &[Node], ctx: &mut Ctx, state: &mut SplitState) -> String
     for node in nodes {
         match node {
             Node::Text { value } => {
+                // Units as byte ranges of the whole value, then laid out with
+                // their word groups.
+                let mut units: Vec<(usize, usize, String)> = Vec::new();
+                let mut at = 0;
                 for segment in segments(value, state.by) {
-                    if !is_unit(segment, state.by) {
-                        out.push_str(&escape_text(segment)); // rides along
-                        continue;
+                    let start = at;
+                    at += segment.len();
+                    if is_unit(segment, state.by) {
+                        units.push((start, at, unit_offset(state)));
+                        state.i += 1;
                     }
-                    let o = unit_offset(state);
-                    state.i += 1;
-                    out.push_str(&format!(
-                        "<span class=\"mq-l\" style=\"--mq-o:{o}\">{}</span>",
-                        escape_text(segment)
-                    ));
                 }
+                out.push_str(&split_text(value, &units));
             }
             Node::Emphasis { children: c } => {
                 out.push_str(&format!("<em>{}</em>", split_render(c, ctx, state)));
@@ -980,4 +981,73 @@ fn split_render(nodes: &[Node], ctx: &mut Ctx, state: &mut SplitState) -> String
         }
     }
     out
+}
+
+/// One text node of a split effect: units in their spans, spaces and
+/// punctuation riding along, and each run of text between spaces that holds
+/// units in a `mq-w` group. Units are inline-blocks (transforms need them to
+/// be), and a line may break on either side of every inline-block; the
+/// group (`white-space: nowrap`) puts the break opportunities back where the
+/// spaces are. Same rule as the TypeScript renderer's effects.ts.
+fn split_text(value: &str, units: &[(usize, usize, String)]) -> String {
+    let lay = |from: usize, to: usize| -> String {
+        let mut out = String::new();
+        let mut at = from;
+        for (start, end, offset) in units.iter().filter(|u| u.0 >= from && u.1 <= to) {
+            out.push_str(&escape_text(&value[at..*start]));
+            out.push_str(&format!(
+                "<span class=\"mq-l\" style=\"--mq-o:{offset}\">{}</span>",
+                escape_text(&value[*start..*end])
+            ));
+            at = *end;
+        }
+        out.push_str(&escape_text(&value[at..to]));
+        out
+    };
+    let mut out = String::new();
+    let mut at = 0;
+    for (start, end) in word_runs(value) {
+        let inside: Vec<_> = units.iter().filter(|u| u.0 >= start && u.1 <= end).collect();
+        // Nothing to hold together: no units, a spaceless script, or a run
+        // that is exactly one unit (already a single inline-block).
+        let lone = inside.len() == 1 && inside[0].0 == start && inside[0].1 == end;
+        if inside.is_empty() || lone || value[start..end].chars().any(is_spaceless) {
+            continue;
+        }
+        out.push_str(&lay(at, start));
+        out.push_str(&format!("<span class=\"mq-w\">{}</span>", lay(start, end)));
+        at = end;
+    }
+    out.push_str(&lay(at, value.len()));
+    out
+}
+
+/// The byte ranges of the runs of non-whitespace in `value`.
+fn word_runs(value: &str) -> Vec<(usize, usize)> {
+    let mut runs = Vec::new();
+    let mut start = None;
+    for (i, c) in value.char_indices() {
+        match (c.is_whitespace(), start) {
+            (false, None) => start = Some(i),
+            (true, Some(s)) => {
+                runs.push((s, i));
+                start = None;
+            }
+            _ => {}
+        }
+    }
+    if let Some(s) = start {
+        runs.push((s, value.len()));
+    }
+    runs
+}
+
+/// Scripts written without spaces between words wrap between characters, so
+/// their runs are never grouped: Han, kana, fullwidth forms, Thai, Lao,
+/// Khmer, Myanmar.
+fn is_spaceless(c: char) -> bool {
+    matches!(c,
+        '\u{0E00}'..='\u{0EFF}' | '\u{1000}'..='\u{109F}' | '\u{1780}'..='\u{17FF}'
+        | '\u{2E80}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{FF00}'..='\u{FFEF}'
+        | '\u{20000}'..='\u{3FFFF}')
 }

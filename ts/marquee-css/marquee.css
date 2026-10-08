@@ -542,6 +542,14 @@ big {
   display: inline-block;
 }
 
+/* ...and a line may break on either side of any inline-block, so a word's
+   units ride in a group that wraps as one: the break opportunities go back
+   to the spaces. (Renderers don't group spaceless scripts - Han, kana,
+   Thai - which wrap between characters anyway.) */
+.mq-split .mq-w {
+  white-space: nowrap;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .mq-rainbow.mq-split,
   .mq-bounce.mq-split,

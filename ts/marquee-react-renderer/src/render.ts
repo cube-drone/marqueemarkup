@@ -13,8 +13,12 @@
 import { createElement as h, useState, type KeyboardEvent, type ReactNode } from "react";
 import type { Attrs, Node, Span } from "@cube-drone/marquee-parser";
 import {
+  effectLook,
   FONTS,
   render as renderHtml,
+  splitPieces,
+  type EffectLook,
+  type SplitPiece,
   type EmojiResolution,
   type Profile,
   type TurbolinkLevel,
@@ -748,122 +752,29 @@ function span(node: Node & { type: "span" }, ctx: Ctx, key: string): ReactNode {
   return h("span", nodeProps(node, ctx, { key, style: { display: "contents" } }), ...kids);
 }
 
-// -- effects, including the per-unit (by=letter / by=word) machinery. The
-// offsets mirror the static renderer's exactly, so a document animates the
-// same in both - deterministic, never random.
+// -- effects: the look (classes, knobs, the per-unit split and its word
+// groups) comes from the static renderer's effects.ts, so a document
+// animates the same in both - deterministic, never random.
 
-const SEGMENTERS = {
-  letter: new Intl.Segmenter("en", { granularity: "grapheme" }),
-  word: new Intl.Segmenter("en", { granularity: "word" }),
-};
-
-type SplitBy = keyof typeof SEGMENTERS;
-
-const MAX_SPLIT_UNITS = 400;
-const MAX_REVEAL_UNITS = 2000;
-
-function isReveal(effectName: string): boolean {
-  return effectName === "typewriter" || effectName === "fadein";
-}
-
-function revealStep(speedAttr: string | undefined, dflt: number): number {
-  const speed =
-    speedAttr !== undefined && COUNT.test(speedAttr) && Number(speedAttr) > 0
-      ? Number(speedAttr)
-      : dflt;
-  return Math.round(1000 / speed) / 1000;
-}
-
-function gcd(a: number, b: number): number {
-  return b === 0 ? a : gcd(b, a % b);
-}
-
-function scatterStride(total: number): number {
-  let stride = Math.max(1, Math.round(total * 0.618));
-  while (stride < total && gcd(stride, total) !== 1) {
-    stride += 1;
-  }
-  return gcd(stride, total) === 1 ? stride : 1;
-}
-
-interface SplitState {
-  effect: string;
-  by: SplitBy;
-  phase: "ramp" | "scatter";
-  i: number;
-  total: number;
-}
-
-function unitOffset(state: SplitState): string {
-  if (isReveal(state.effect)) {
-    const o =
-      state.phase === "scatter" ? (state.i * scatterStride(state.total)) % state.total : state.i;
-    return String(o);
-  }
-  let o: number;
-  if (state.phase === "scatter") {
-    o = ((state.i * 7919) % 101) / 101;
-  } else {
-    switch (state.effect) {
-      case "rainbow":
-        o = state.i / state.total;
-        break;
-      case "bounce":
-        o = (state.i % 6) / 6;
-        break;
-      default:
-        o = (state.i % 8) / 8;
-        break;
-    }
-  }
-  return String(Math.round(o * 1000) / 1000);
-}
-
-function isUnit(seg: Intl.SegmentData, by: SplitBy): boolean {
-  return by === "word" ? seg.isWordLike === true : !/^\s+$/.test(seg.segment);
-}
-
-function countUnits(nodes: Node[], by: SplitBy): number {
-  let n = 0;
-  for (const node of nodes) {
-    if (node.type === "text") {
-      for (const seg of SEGMENTERS[by].segment(node.value)) {
-        if (isUnit(seg, by)) {
-          n += 1;
-        }
-      }
-    } else if (node.type === "emphasis" || node.type === "strong" || node.type === "strikethrough") {
-      n += countUnits(node.children, by);
-    }
-  }
-  return n;
-}
-
-function splitRender(nodes: Node[], ctx: Ctx, state: SplitState): ReactNode[] {
+function splitRender(nodes: Node[], ctx: Ctx, look: EffectLook): ReactNode[] {
+  const pieces = (list: SplitPiece[], prefix: string): ReactNode[] =>
+    list.map((p, i) =>
+      p.kind === "text"
+        ? p.text // spaces and punctuation ride along
+        : p.kind === "unit"
+          ? h("span", { key: `${prefix}${i}`, className: "mq-l", style: { "--mq-o": p.offset } as Record<string, string> }, p.text)
+          : h("span", { key: `${prefix}${i}`, className: "mq-w" }, ...pieces(p.pieces, `${prefix}${i}-`)),
+    );
   const out: ReactNode[] = [];
   nodes.forEach((node, ni) => {
     if (node.type === "text") {
-      for (const seg of SEGMENTERS[state.by].segment(node.value)) {
-        if (!isUnit(seg, state.by)) {
-          out.push(seg.segment); // spaces and punctuation ride along
-          continue;
-        }
-        const o = unitOffset(state);
-        state.i += 1;
-        out.push(
-          h(
-            "span",
-            { key: `${ni}-${state.i}`, className: "mq-l", style: { "--mq-o": o } as Record<string, string> },
-            seg.segment,
-          ),
-        );
-      }
+      out.push(...pieces(splitPieces(node, look), `${ni}-`));
     } else if (node.type === "emphasis") {
-      out.push(h("em", { key: ni }, ...splitRender(node.children, ctx, state)));
+      out.push(h("em", { key: ni }, ...splitRender(node.children, ctx, look)));
     } else if (node.type === "strong") {
-      out.push(h("strong", { key: ni }, ...splitRender(node.children, ctx, state)));
+      out.push(h("strong", { key: ni }, ...splitRender(node.children, ctx, look)));
     } else if (node.type === "strikethrough") {
-      out.push(h("del", { key: ni }, ...splitRender(node.children, ctx, state)));
+      out.push(h("del", { key: ni }, ...splitRender(node.children, ctx, look)));
     } else {
       out.push(renderNode(node, ctx, String(ni))); // anything else renders whole
     }
@@ -872,58 +783,13 @@ function splitRender(nodes: Node[], ctx: Ctx, state: SplitState): ReactNode[] {
 }
 
 function effect(node: Node & { type: "span" }, ctx: Ctx, key: string): ReactNode {
-  const { name, attrs } = node;
-  const byAttr = attrs["by"];
-  const splitBy: SplitBy | null =
-    byAttr === "letter" || byAttr === "word"
-      ? byAttr
-      : name === "typewriter"
-        ? "letter" // typewriter is per-unit by nature
-        : null;
-
-  const style: Record<string, string> = {};
-  if (name === "blink" && attrs["rate"] !== undefined && COUNT.test(attrs["rate"])) {
-    style["--mq-rate"] = attrs["rate"];
-  }
-  if (name === "typewriter") {
-    style["--mq-tw-step"] = `${revealStep(attrs["speed"], 14)}s`;
-  }
-  if (name === "fadein" && splitBy !== null) {
-    style["--mq-fi-step"] = `${revealStep(attrs["speed"], 16)}s`;
-  }
-
-  const className = `mq-${name} ${ANIM_CLASS}`;
-
-  if (splitBy === null) {
-    return h(
-      "span",
-      nodeProps(node, ctx, { key, className, style }),
-      ...renderChildren(node.children, ctx),
-    );
-  }
-
-  const phase: "ramp" | "scatter" =
-    attrs["phase"] === "scatter" || attrs["phase"] === "ramp"
-      ? attrs["phase"]
-      : name === "jitter"
-        ? "scatter"
-        : "ramp";
-  const total = countUnits(node.children, splitBy);
-  const cap = isReveal(name) ? MAX_REVEAL_UNITS : MAX_SPLIT_UNITS;
-  if (total === 0 || total > cap) {
-    // Past the cap: the run animates whole. DOM weight discipline.
-    return h(
-      "span",
-      nodeProps(node, ctx, { key, className, style }),
-      ...renderChildren(node.children, ctx),
-    );
-  }
-  const state: SplitState = { effect: name, by: splitBy, phase, i: 0, total };
-  return h(
-    "span",
-    nodeProps(node, ctx, { key, className: `${className} mq-split`, style }),
-    ...splitRender(node.children, ctx, state),
-  );
+  // The look - classes, knobs, the per-unit split and its word groups - is
+  // the HTML renderer's own (effects.ts), so the two can't disagree.
+  const look = effectLook(node.name, node.attrs, node.children)!;
+  const style: Record<string, string> = Object.fromEntries(look.vars);
+  const className = `mq-${node.name} ${ANIM_CLASS}${look.units === null ? "" : " mq-split"}`;
+  const kids = look.units === null ? renderChildren(node.children, ctx) : splitRender(node.children, ctx, look);
+  return h("span", nodeProps(node, ctx, { key, className, style }), ...kids);
 }
 
 export { ANIMATED };

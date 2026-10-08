@@ -11,7 +11,7 @@ import type { Profile } from "./profile.ts";
 
 export { render, escapeText, escapeAttr, FONTS, usedFontTokens, containerLook } from "./render.ts";
 export { bareWebProfile } from "./profile.ts";
-export { EFFECT_NAMES, effectLook, type EffectLook, type EffectUnit } from "./effects.ts";
+export { EFFECT_NAMES, effectLook, splitPieces, type EffectLook, type EffectUnit, type SplitPiece } from "./effects.ts";
 export type { EmojiResolution, Profile, MediaResolution, TurbolinkLevel } from "./profile.ts";
 
 /** Parse and render in one step. Throws UnsupportedVersionError for unknown

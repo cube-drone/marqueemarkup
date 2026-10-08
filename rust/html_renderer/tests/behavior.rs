@@ -421,3 +421,14 @@ fn accent_is_a_color_knob_and_schemes_wear_their_faces() {
         assert_eq!(used_font_tokens(&mq(&format!(":::section scheme={scheme}\nhi\n:::\n"))), vec!["vt323"], "{scheme}");
     }
 }
+
+#[test]
+fn split_words_wrap_as_one() {
+    // Units are inline-blocks, which a line may break between; each word's
+    // units ride in a nowrap group so the breaks fall at the spaces.
+    let html = mq("[typewriter]That's quite **8** damage![/typewriter]\n");
+    assert_eq!(html.matches("<span class=\"mq-w\">").count(), 3, "That's, quite, damage!: {html}");
+    assert!(html.contains("<strong><span class=\"mq-l\" style=\"--mq-o:11\">8</span></strong>"), "a lone unit needs no group: {html}");
+    let cjk = mq("[rainbow by=letter]漢字かな ok[/rainbow]\n");
+    assert_eq!(cjk.matches("mq-w").count(), 1, "spaceless scripts wrap between characters: {cjk}");
+}

@@ -428,3 +428,10 @@ test("accent is a color knob, and schemes wear their faces", () => {
   }
   assert.equal(containerLook({ scheme: "ff6", accent: "#b03060" }).style, "--mq-accent:#b03060");
 });
+
+test("split words wrap as one: a word's units sit in a nowrap group", () => {
+  const html = renderMarquee("[typewriter]That's quite **8** damage![/typewriter]\n");
+  assert.equal(html.split('<span class="mq-w">').length - 1, 3, html);
+  assert.ok(html.includes('<strong><span class="mq-l" style="--mq-o:11">8</span></strong>'), html);
+  assert.equal(renderMarquee("[rainbow by=letter]漢字かな ok[/rainbow]\n").split("mq-w").length - 1, 1);
+});

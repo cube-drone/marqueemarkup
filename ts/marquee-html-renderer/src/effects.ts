@@ -35,6 +35,12 @@ export interface EffectLook {
   /** Per-unit animation, or null when the run animates as one piece (no
    * `by=`, no units, or past the unit cap). Keyed by text node identity. */
   units: Map<Node, EffectUnit[]> | null;
+  /** With units: the word groups - `[start, end)` value ranges, each a run
+   * of text between spaces that holds units - which must wrap as one. Units
+   * are inline-blocks (transforms need them to be), and a line may break on
+   * either side of every inline-block; a `white-space: nowrap` group puts
+   * the break opportunities back where the spaces are. */
+  groups: Map<Node, [number, number][]> | null;
 }
 
 /** How an effect span looks, or null if `name` isn't an effect. */
@@ -42,7 +48,7 @@ export function effectLook(name: string, attrs: Attrs, children: Node[]): Effect
   if (!EFFECT_NAMES.has(name)) {
     return null;
   }
-  const look: EffectLook = { className: `mq-${name}`, vars: [], data: [], units: null };
+  const look: EffectLook = { className: `mq-${name}`, vars: [], data: [], units: null, groups: null };
   const by = attrs["by"] === "letter" || attrs["by"] === "word" ? attrs["by"] : null;
   let splitBy: SplitBy | null = null;
   switch (name) {
@@ -92,7 +98,66 @@ export function effectLook(name: string, attrs: Attrs, children: Node[]): Effect
   }
   look.className += " mq-split";
   look.units = units;
+  look.groups = wordGroups(units);
   return look;
+}
+
+/** A text node, laid out for a split render: plain text that rides along,
+ * animated units, and word groups holding units (and the punctuation that
+ * clings to them) that must not wrap apart. */
+export type SplitPiece =
+  | { kind: "text"; text: string }
+  | { kind: "unit"; text: string; offset: string }
+  | { kind: "group"; pieces: SplitPiece[] };
+
+export function splitPieces(node: Node & { type: "text" }, look: EffectLook): SplitPiece[] {
+  const units = look.units?.get(node) ?? [];
+  const groups = look.groups?.get(node) ?? [];
+  const lay = (from: number, to: number): SplitPiece[] => {
+    const out: SplitPiece[] = [];
+    let at = from;
+    for (const u of units) {
+      if (u.start < from || u.end > to) continue;
+      if (u.start > at) out.push({ kind: "text", text: node.value.slice(at, u.start) });
+      out.push({ kind: "unit", text: node.value.slice(u.start, u.end), offset: u.offset });
+      at = u.end;
+    }
+    if (to > at) out.push({ kind: "text", text: node.value.slice(at, to) });
+    return out;
+  };
+  const out: SplitPiece[] = [];
+  let at = 0;
+  for (const [start, end] of groups) {
+    out.push(...lay(at, start), { kind: "group", pieces: lay(start, end) });
+    at = end;
+  }
+  out.push(...lay(at, node.value.length));
+  return out;
+}
+
+/** Scripts written without spaces between words wrap between characters,
+ * so their runs are never grouped (a whole sentence would become one
+ * unbreakable word): Han, kana, fullwidth forms, Thai, Lao, Khmer, Myanmar. */
+const SPACELESS = /[\u0E00-\u0EFF\u1000-\u109F\u1780-\u17FF\u2E80-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF\u{20000}-\u{3FFFF}]/u;
+
+function wordGroups(units: Map<Node, EffectUnit[]>): Map<Node, [number, number][]> {
+  const out = new Map<Node, [number, number][]>();
+  for (const [node, list] of units) {
+    if (node.type !== "text") continue;
+    const groups: [number, number][] = [];
+    for (const m of node.value.matchAll(/\S+/g)) {
+      const start = m.index;
+      const end = start + m[0].length;
+      const inside = list.filter((u) => u.start >= start && u.end <= end);
+      // Nothing to hold together: no units, a spaceless script, or a run
+      // that is exactly one unit (already a single inline-block).
+      if (inside.length === 0 || SPACELESS.test(m[0])) continue;
+      if (inside.length === 1 && inside[0]!.start === start && inside[0]!.end === end) continue;
+      groups.push([start, end]);
+    }
+    out.set(node, groups);
+  }
+  return out;
 }
 
 // -- per-unit effects (by=letter / by=word): each unit carries a phase
