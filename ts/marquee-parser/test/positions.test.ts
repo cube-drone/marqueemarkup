@@ -87,6 +87,7 @@ test("hand spans: a leaf's closer ends its span; the prose after it is the next 
   const src = "a\n\n:::counter theme=retro::: the *count*\nso far\n";
   const { doc, spans, source } = parseWithPositions(src);
   assert.equal(sliceOf(source, spans, firstOfType(doc, "directive")), ":::counter theme=retro:::");
+  assert.ok(doc.type === "document");
   const paragraphs = doc.children.filter((n) => n.type === "paragraph");
   assert.equal(sliceOf(source, spans, paragraphs[1]!), "the *count*\nso far");
   assert.equal(sliceOf(source, spans, firstOfType(doc, "emphasis")), "*count*");
