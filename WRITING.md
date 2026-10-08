@@ -407,11 +407,15 @@ webring stuff
 
 **Game windows** are schemes too, each a classic RPG text box drawn in pure CSS:
 
-- `earthbound` — the plain gray-and-white window, white text in a chunky pixel font — and its
-  flavors `earthbound-mint`, `earthbound-strawberry`, `earthbound-banana`, `earthbound-peanut`.
-- `crosscode` — a black panel with a gray-and-black border and two corners sliced off.
-- `ff6` — the blue gradient window in a silver frame.
-- `chronotrigger` — a dithered blue window in a beveled frame.
+- `earthbound` — the plain gray-and-white window, white text in a chunky pixel font, with the
+  game's own pixel-stepped corners — and its flavors `earthbound-mint`, `earthbound-strawberry`,
+  `earthbound-banana`, `earthbound-peanut`.
+- `crosscode` — a slightly see-through black panel with a gray-and-black border and two corners
+  sliced off.
+- `ff6` — the blue window in a silver frame, its gradient in SNES-style bands.
+- `chronotrigger` — a dithered, banded blue window in a beveled frame.
+
+The last three speak VT323, a pixel terminal face.
 
 `accent=` sets a window's signature color: the frame for EarthBound (so
 `scheme=earthbound-mint accent=#ff6a00` is a flavor of your own), the window itself for FF6

@@ -57,7 +57,12 @@ fn font_face(token: &str) -> Option<&'static str> {
 
 /// Schemes (and their `-flavor` variants) that wear a grab-bag face by
 /// default. Kept in lockstep with marquee.css and the TypeScript renderer.
-const SCHEME_FONTS: &[(&str, &str)] = &[("earthbound", "press-start")];
+const SCHEME_FONTS: &[(&str, &str)] = &[
+    ("earthbound", "press-start"),
+    ("crosscode", "vt323"),
+    ("ff6", "vt323"),
+    ("chronotrigger", "vt323"),
+];
 
 /// Which grab-bag faces does this rendered HTML actually wear? Pure string
 /// scan of the mq-font-* class contract, plus the faces schemes wear.

@@ -423,5 +423,8 @@ test("accent is a color knob, and schemes wear their faces", () => {
   assert.deepEqual(usedFontTokens(renderMarquee(":::section scheme=earthbound\nhi\n:::\n")), ["press-start"]);
   assert.deepEqual(usedFontTokens(renderMarquee(":::section scheme=earthbound-peanut\nhi\n:::\n")), ["press-start"]);
   assert.deepEqual(usedFontTokens(renderMarquee(":::section scheme=earthboundish\nhi\n:::\n")), []);
+  for (const scheme of ["crosscode", "ff6", "chronotrigger"]) {
+    assert.deepEqual(usedFontTokens(renderMarquee(`:::section scheme=${scheme}\nhi\n:::\n`)), ["vt323"], scheme);
+  }
   assert.equal(containerLook({ scheme: "ff6", accent: "#b03060" }).style, "--mq-accent:#b03060");
 });

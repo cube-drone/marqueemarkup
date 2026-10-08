@@ -417,4 +417,7 @@ fn accent_is_a_color_knob_and_schemes_wear_their_faces() {
     assert_eq!(used_font_tokens(&mq(":::section scheme=earthbound\nhi\n:::\n")), vec!["press-start"]);
     assert_eq!(used_font_tokens(&mq(":::section scheme=earthbound-peanut\nhi\n:::\n")), vec!["press-start"]);
     assert!(used_font_tokens(&mq(":::section scheme=earthboundish\nhi\n:::\n")).is_empty(), "a prefix is not a flavor");
+    for scheme in ["crosscode", "ff6", "chronotrigger"] {
+        assert_eq!(used_font_tokens(&mq(&format!(":::section scheme={scheme}\nhi\n:::\n"))), vec!["vt323"], "{scheme}");
+    }
 }

@@ -886,25 +886,61 @@ big {
  * Frames are inset shadows: they take no layout room and can't collide with
  * a neighbor; the padding clears them. */
 
-/* EarthBound: rings of one game pixel (2px here) around a dark window -
- * dark edge, light ring, the flavor's color, dark ring. Plain is the
- * gray-and-white window; the four flavors are the game's own, accent is the
- * flavor ring, so any color makes a flavor of your own. Press Start 2P,
- * because the game's own face is not ours to ship. */
+/* EarthBound: rings of one game pixel (--mq-eb-px) around a dark window,
+ * measured from the game's own window art: plain is gray-white-gray, the
+ * four flavors are the game's own, accent is the flavor ring - so any color
+ * makes a flavor of your own. The corners are pixel-rounded, exactly:
+ * clip-path steps the silhouette (row insets 4, 2, 1, 1 game pixels), the
+ * inset shadows draw the rings square, and a ::before overlay repaints the
+ * few corner pixels where a rounded ring differs from a square one (inset
+ * shadows paint over an element's own background, hence the overlay). The
+ * rectangles are generated from a diff of the two; every color stays a
+ * knob. Press Start 2P, because the game's own face is not ours to ship. */
 .mq-scheme-earthbound,
 [class*="mq-scheme-earthbound-"] {
+  --mq-eb-px: 2px;
   --mq-bg: #290829;
   --mq-color: #ffefad;
   --mq-eb-edge: #393052;
   --mq-eb-light: #ffefad;
+  position: relative;
   background: var(--mq-bg);
   color: var(--mq-color);
-  border-radius: 8px;
   box-shadow:
-    inset 0 0 0 2px var(--mq-eb-edge),
-    inset 0 0 0 4px var(--mq-eb-light),
-    inset 0 0 0 10px var(--mq-accent),
-    inset 0 0 0 16px var(--mq-eb-edge);
+    inset 0 0 0 calc(1 * var(--mq-eb-px)) var(--mq-eb-edge),
+    inset 0 0 0 calc(2 * var(--mq-eb-px)) var(--mq-eb-light),
+    inset 0 0 0 calc(5 * var(--mq-eb-px)) var(--mq-accent),
+    inset 0 0 0 calc(8 * var(--mq-eb-px)) var(--mq-eb-edge);
+  clip-path: polygon(
+    0 calc(4 * var(--mq-eb-px)),
+    calc(1 * var(--mq-eb-px)) calc(4 * var(--mq-eb-px)),
+    calc(1 * var(--mq-eb-px)) calc(2 * var(--mq-eb-px)),
+    calc(2 * var(--mq-eb-px)) calc(2 * var(--mq-eb-px)),
+    calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)),
+    calc(4 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)),
+    calc(4 * var(--mq-eb-px)) 0,
+    calc(100% - 4 * var(--mq-eb-px)) 0,
+    calc(100% - 4 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)),
+    calc(100% - 2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)),
+    calc(100% - 2 * var(--mq-eb-px)) calc(2 * var(--mq-eb-px)),
+    calc(100% - 1 * var(--mq-eb-px)) calc(2 * var(--mq-eb-px)),
+    calc(100% - 1 * var(--mq-eb-px)) calc(4 * var(--mq-eb-px)),
+    100% calc(4 * var(--mq-eb-px)),
+    100% calc(100% - 4 * var(--mq-eb-px)),
+    calc(100% - 1 * var(--mq-eb-px)) calc(100% - 4 * var(--mq-eb-px)),
+    calc(100% - 1 * var(--mq-eb-px)) calc(100% - 2 * var(--mq-eb-px)),
+    calc(100% - 2 * var(--mq-eb-px)) calc(100% - 2 * var(--mq-eb-px)),
+    calc(100% - 2 * var(--mq-eb-px)) calc(100% - 1 * var(--mq-eb-px)),
+    calc(100% - 4 * var(--mq-eb-px)) calc(100% - 1 * var(--mq-eb-px)),
+    calc(100% - 4 * var(--mq-eb-px)) 100%,
+    calc(4 * var(--mq-eb-px)) 100%,
+    calc(4 * var(--mq-eb-px)) calc(100% - 1 * var(--mq-eb-px)),
+    calc(2 * var(--mq-eb-px)) calc(100% - 1 * var(--mq-eb-px)),
+    calc(2 * var(--mq-eb-px)) calc(100% - 2 * var(--mq-eb-px)),
+    calc(1 * var(--mq-eb-px)) calc(100% - 2 * var(--mq-eb-px)),
+    calc(1 * var(--mq-eb-px)) calc(100% - 4 * var(--mq-eb-px)),
+    0 calc(100% - 4 * var(--mq-eb-px))
+  );
 }
 
 .mq-scheme-earthbound {
@@ -914,16 +950,72 @@ big {
   --mq-eb-edge: #101010;
   --mq-eb-light: #8c9494;
   box-shadow:
-    inset 0 0 0 2px var(--mq-eb-edge),
-    inset 0 0 0 4px var(--mq-eb-light),
-    inset 0 0 0 6px var(--mq-accent),
-    inset 0 0 0 8px var(--mq-eb-light);
+    inset 0 0 0 calc(1 * var(--mq-eb-px)) var(--mq-eb-edge),
+    inset 0 0 0 calc(2 * var(--mq-eb-px)) var(--mq-eb-light),
+    inset 0 0 0 calc(3 * var(--mq-eb-px)) var(--mq-accent),
+    inset 0 0 0 calc(4 * var(--mq-eb-px)) var(--mq-eb-light);
 }
 
 .mq-scheme-earthbound-mint { --mq-accent: #6bd3bd; --mq-eb-edge: #393052; --mq-eb-light: #ffefad; }
 .mq-scheme-earthbound-strawberry { --mq-accent: #ff94ad; --mq-eb-edge: #42214a; --mq-eb-light: #ffefce; }
 .mq-scheme-earthbound-banana { --mq-accent: #efff5a; --mq-eb-edge: #4a3152; --mq-eb-light: #ffffd6; }
 .mq-scheme-earthbound-peanut { --mq-accent: #e7a552; --mq-eb-edge: #421829; --mq-eb-light: #ffefad; }
+
+:is(.mq-scheme-earthbound, [class*="mq-scheme-earthbound-"])::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) left calc(2 * var(--mq-eb-px)) top calc(1 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) right calc(2 * var(--mq-eb-px)) top calc(1 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) left calc(2 * var(--mq-eb-px)) bottom calc(1 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) right calc(2 * var(--mq-eb-px)) bottom calc(1 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) left calc(1 * var(--mq-eb-px)) top calc(2 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(2 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) right calc(1 * var(--mq-eb-px)) top calc(2 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(2 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) left calc(1 * var(--mq-eb-px)) bottom calc(2 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(2 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) right calc(1 * var(--mq-eb-px)) bottom calc(2 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(2 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) left calc(2 * var(--mq-eb-px)) top calc(2 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) right calc(2 * var(--mq-eb-px)) top calc(2 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) left calc(2 * var(--mq-eb-px)) bottom calc(2 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) right calc(2 * var(--mq-eb-px)) bottom calc(2 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) left calc(2 * var(--mq-eb-px)) top calc(3 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) right calc(2 * var(--mq-eb-px)) top calc(3 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) left calc(2 * var(--mq-eb-px)) bottom calc(3 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) right calc(2 * var(--mq-eb-px)) bottom calc(3 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-accent), var(--mq-accent)) left calc(5 * var(--mq-eb-px)) top calc(5 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-accent), var(--mq-accent)) right calc(5 * var(--mq-eb-px)) top calc(5 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-accent), var(--mq-accent)) left calc(5 * var(--mq-eb-px)) bottom calc(5 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-accent), var(--mq-accent)) right calc(5 * var(--mq-eb-px)) bottom calc(5 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat;
+}
+
+.mq-scheme-earthbound::before {
+  background:
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) left calc(2 * var(--mq-eb-px)) top calc(1 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) right calc(2 * var(--mq-eb-px)) top calc(1 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) left calc(2 * var(--mq-eb-px)) bottom calc(1 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) right calc(2 * var(--mq-eb-px)) bottom calc(1 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) left calc(1 * var(--mq-eb-px)) top calc(2 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(2 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) right calc(1 * var(--mq-eb-px)) top calc(2 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(2 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) left calc(1 * var(--mq-eb-px)) bottom calc(2 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(2 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-edge), var(--mq-eb-edge)) right calc(1 * var(--mq-eb-px)) bottom calc(2 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(2 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) left calc(2 * var(--mq-eb-px)) top calc(2 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) right calc(2 * var(--mq-eb-px)) top calc(2 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) left calc(2 * var(--mq-eb-px)) bottom calc(2 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) right calc(2 * var(--mq-eb-px)) bottom calc(2 * var(--mq-eb-px)) / calc(2 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) left calc(2 * var(--mq-eb-px)) top calc(3 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) right calc(2 * var(--mq-eb-px)) top calc(3 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) left calc(2 * var(--mq-eb-px)) bottom calc(3 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) right calc(2 * var(--mq-eb-px)) bottom calc(3 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-accent), var(--mq-accent)) left calc(3 * var(--mq-eb-px)) top calc(3 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-accent), var(--mq-accent)) right calc(3 * var(--mq-eb-px)) top calc(3 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-accent), var(--mq-accent)) left calc(3 * var(--mq-eb-px)) bottom calc(3 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-accent), var(--mq-accent)) right calc(3 * var(--mq-eb-px)) bottom calc(3 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) left calc(4 * var(--mq-eb-px)) top calc(4 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) right calc(4 * var(--mq-eb-px)) top calc(4 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) left calc(4 * var(--mq-eb-px)) bottom calc(4 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat,
+    linear-gradient(var(--mq-eb-light), var(--mq-eb-light)) right calc(4 * var(--mq-eb-px)) bottom calc(4 * var(--mq-eb-px)) / calc(1 * var(--mq-eb-px)) calc(1 * var(--mq-eb-px)) no-repeat;
+}
 
 :where(.mq-scheme-earthbound, [class*="mq-scheme-earthbound-"]) {
   font-family: "Press Start 2P", ui-monospace, monospace;
@@ -944,12 +1036,13 @@ big {
   color: var(--mq-accent);
 }
 
-/* CrossCode: a black panel, a gray line inside a black one, and the top-right
- * and bottom-left corners sliced off. clip-path does the slicing; a gradient
- * in each cut corner carries both lines along the diagonal, so the border
- * runs unbroken round the cut. Accent is the gray line. */
+/* CrossCode: a slightly see-through black panel, a gray line inside a black
+ * one, and the top-right and bottom-left corners sliced off. clip-path does
+ * the slicing; a gradient in each cut corner carries both lines along the
+ * diagonal, so the border runs unbroken round the cut. Accent is the gray
+ * line. */
 .mq-scheme-crosscode {
-  --mq-bg: #050505;
+  --mq-bg: rgb(5 5 5 / 0.85);
   --mq-color: #f2f2f2;
   --mq-accent: #9a9a9a;
   --mq-cc-cut: 14px;
@@ -993,14 +1086,30 @@ big {
 
 /* Final Fantasy VI: the vertical blue gradient - accent is the window color,
  * which is exactly what the game's config screen let you change - in a
- * silver frame with soft corners, white text dropping a shadow. */
+ * silver frame with soft corners, white text dropping a shadow. The gradient
+ * comes in bands, as the SNES drew it (it had colors to spare, not to
+ * blend): hard stops, each band the accent mixed a step further to black. */
 .mq-scheme-ff6 {
   --mq-accent: #4f63d2;
   --mq-color: #ffffff;
   color: var(--mq-color);
   background-color: var(--mq-accent);
   background-image:
-    linear-gradient(to bottom, transparent, color-mix(in srgb, var(--mq-accent) 30%, #000)),
+    linear-gradient(
+      to bottom,
+      var(--mq-accent) 0.0% 8.33%,
+      color-mix(in srgb, var(--mq-accent) 94%, #000) 8.33% 16.67%,
+      color-mix(in srgb, var(--mq-accent) 88%, #000) 16.67% 25.0%,
+      color-mix(in srgb, var(--mq-accent) 82%, #000) 25.0% 33.33%,
+      color-mix(in srgb, var(--mq-accent) 76%, #000) 33.33% 41.67%,
+      color-mix(in srgb, var(--mq-accent) 70%, #000) 41.67% 50.0%,
+      color-mix(in srgb, var(--mq-accent) 64%, #000) 50.0% 58.33%,
+      color-mix(in srgb, var(--mq-accent) 58%, #000) 58.33% 66.67%,
+      color-mix(in srgb, var(--mq-accent) 52%, #000) 66.67% 75.0%,
+      color-mix(in srgb, var(--mq-accent) 46%, #000) 75.0% 83.33%,
+      color-mix(in srgb, var(--mq-accent) 40%, #000) 83.33% 91.67%,
+      color-mix(in srgb, var(--mq-accent) 34%, #000) 91.67% 100.0%
+    ),
     var(--mq-bg-tile, none);
   border: 3px solid #e7e7ef;
   border-radius: 8px;
@@ -1020,7 +1129,8 @@ big {
 
 /* Chrono Trigger: a dithered blue window in a beveled pewter frame - light
  * on the top-left edges, dark on the bottom-right - with tight corners.
- * Accent is the window color (the game shipped eight; any will do). */
+ * Accent is the window color (the game shipped eight; any will do). Banded
+ * like FF6's, for the same SNES reason. */
 .mq-scheme-chronotrigger {
   --mq-accent: #2a3a9c;
   --mq-color: #ffffff;
@@ -1028,7 +1138,17 @@ big {
   background-color: var(--mq-accent);
   background-image:
     repeating-linear-gradient(45deg, rgb(255 255 255 / 0.05) 0 2px, transparent 2px 4px),
-    linear-gradient(160deg, color-mix(in srgb, var(--mq-accent) 80%, #fff), color-mix(in srgb, var(--mq-accent) 55%, #000)),
+    linear-gradient(
+      160deg,
+      var(--mq-accent) 0.0% 12.5%,
+      color-mix(in srgb, var(--mq-accent) 93%, #000) 12.5% 25.0%,
+      color-mix(in srgb, var(--mq-accent) 86%, #000) 25.0% 37.5%,
+      color-mix(in srgb, var(--mq-accent) 79%, #000) 37.5% 50.0%,
+      color-mix(in srgb, var(--mq-accent) 71%, #000) 50.0% 62.5%,
+      color-mix(in srgb, var(--mq-accent) 64%, #000) 62.5% 75.0%,
+      color-mix(in srgb, var(--mq-accent) 57%, #000) 75.0% 87.5%,
+      color-mix(in srgb, var(--mq-accent) 50%, #000) 87.5% 100.0%
+    ),
     var(--mq-bg-tile, none);
   border: 3px solid;
   border-color: #dfe3ee #6d7385 #555b6c #c9cfdc;
@@ -1043,4 +1163,15 @@ big {
 
 .mq-scheme-chronotrigger a {
   color: #9ff0ff;
+}
+
+/* The other windows speak VT323 - a terminal-ish pixel face that reads like
+ * their in-game text - at a size that matches body text (it runs small). */
+:where(.mq-scheme-crosscode, .mq-scheme-ff6, .mq-scheme-chronotrigger) {
+  font-family: VT323, ui-monospace, monospace;
+}
+
+:where(.mq-scheme-crosscode, .mq-scheme-ff6, .mq-scheme-chronotrigger):not([class*="mq-font-"]) {
+  font-size: 1.3em;
+  line-height: 1.25;
 }

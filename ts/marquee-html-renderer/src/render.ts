@@ -189,7 +189,12 @@ export function usedFontTokens(html: string): string[] {
 
 /** Schemes (and their `-flavor` variants) that wear a grab-bag face by
  * default. Kept in lockstep with marquee.css and the Rust renderer. */
-const SCHEME_FONTS: [string, string][] = [["earthbound", "press-start"]];
+const SCHEME_FONTS: [string, string][] = [
+  ["earthbound", "press-start"],
+  ["crosscode", "vt323"],
+  ["ff6", "vt323"],
+  ["chronotrigger", "vt323"],
+];
 
 /** One rung of the font-element seven-step dial: presentational floor
  * (works with no stylesheet, under any CSP), stylesheet class as ceiling.
