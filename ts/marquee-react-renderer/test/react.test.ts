@@ -163,3 +163,29 @@ test("string-hook vocabulary places the children: a profile-only span or directi
   const plain = html({ source: "a [spoiler]secret[/spoiler] b\n", profile: { span: () => null } });
   assert.ok(plain.includes("mq-spoiler") && plain.includes("secret"));
 });
+
+test("stacks: layers in source order, closed knobs, overflow flows below", () => {
+  const out = html({ source: ":::stack aspect=4:3 width=medium\n![cat](cat.jpg)\n\n:::layer place=top backing=outline\nTOP TEXT\n:::\n:::\n" });
+  assert.ok(out.includes('class="mq-stack mq-stack-aspect" style="--mq-stack-aspect:4/3;--mq-stack-w:20rem"'), out);
+  const base = out.indexOf("mq-layer mq-place-fill mq-layer-cover");
+  const top = out.indexOf("mq-layer mq-place-top mq-backing-outline");
+  assert.ok(base !== -1 && top !== -1 && base < top, out);
+  const bad = html({ source: ":::stack aspect=constructor\n:::layer place=upside-down backing=glitter\nwords\n:::\n:::\n" });
+  assert.ok(bad.includes('class="mq-layer mq-place-fill"') && !bad.includes("--mq-stack-aspect"), bad);
+  const ten = Array.from({ length: 10 }, (_, i) => `layer ${i + 1}\n\n`).join("");
+  const many = html({ source: `:::stack\n${ten}:::\n` });
+  assert.equal(many.split('class="mq-layer ').length - 1, 8, many);
+  assert.ok(many.slice(many.indexOf("mq-stack-rest")).includes("layer 10"), many);
+  const loose = html({ source: ":::layer place=top scheme=noir\nout here\n:::\n" });
+  assert.ok(loose.includes('class="mq-layer mq-scheme-noir"'), loose);
+});
+
+test("asides inside laid-out containers (table, stack) count once", () => {
+  for (const source of [
+    ":::table\n[c]a[sidenote]n[/sidenote][/c]\n:::\n\nafter[sidenote]m[/sidenote]\n",
+    ":::stack\n:::layer place=bottom\na[sidenote]n[/sidenote]\n:::\n:::\n\nafter[sidenote]m[/sidenote]\n",
+  ]) {
+    const out = html({ source });
+    assert.ok(out.includes(">1</sup>") && out.includes(">2</sup>") && !out.includes(">3</sup>"), out);
+  }
+});

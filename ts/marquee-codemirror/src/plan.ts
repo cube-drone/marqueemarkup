@@ -310,9 +310,10 @@ export function planFromAst(
 
 /** A media block - a `:::media` container or anything carrying an embed -
  * keeps a live preview below its source while being edited. (A turbolink is
- * a link, not media: no preview.) */
+ * a link, not media: no preview.) So does every `:::stack`, pictures or not:
+ * its source is a list of layers, and only the render shows how they sit. */
 function isMediaBlock(node: Node): boolean {
-  if (node.type === "directive" && node.name === "media") return true;
+  if (node.type === "directive" && (node.name === "media" || node.name === "stack")) return true;
   let found = false;
   const walk = (n: Node): void => {
     if (found) return;

@@ -179,6 +179,9 @@ test("only media blocks hold a dimmed preview while being edited", () => {
   // A :::media container: same.
   const media = ":::media\n![cat](cat.jpg)\n:::\n";
   assert.ok(plan(media, cursorAt(4), bareWebProfile).some((s) => s.kind === "preview"));
+  // A :::stack, even with no picture in it: only the render shows the layering.
+  const slide = ":::stack aspect=16:9\n:::layer place=center\nTitle\n:::\n:::\n";
+  assert.ok(plan(slide, cursorAt(30), bareWebProfile).some((s) => s.kind === "preview"));
   // Text-shaped blocks while editing: source only, no preview.
   assert.ok(!plan("> a quote\n", cursorAt(3), bareWebProfile).some((s) => s.kind === "preview"));
   assert.ok(!plan("```js\ncode\n```\n", cursorAt(7), bareWebProfile).some((s) => s.kind === "preview"));

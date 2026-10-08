@@ -375,10 +375,18 @@ fn media_size(v: &str) -> Option<String> {
 }
 
 fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
+    // The profile hook sees the children rendered; built-ins that lay their
+    // children out themselves (table, stack) render them again, so rewind
+    // the aside numbering first - or a note inside counts twice.
+    let (note_n, pending) = (ctx.note_n, ctx.pending.clone());
     let inner = children(nodes, ctx);
     if let Some(custom) = ctx.profile.directive(name, attrs, &inner) {
         return custom;
     }
+    let rewind = |ctx: &mut Ctx| {
+        ctx.note_n = note_n;
+        ctx.pending = pending.clone();
+    };
     match name {
         // Carries metadata, renders nothing by default - but never eats an
         // (unconventional) body.
@@ -425,7 +433,22 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
             };
             format!("<div class=\"mq-media\"{style}>{inner}</div>")
         }
-        "table" => render_table(attrs, nodes, ctx),
+        "table" => {
+            rewind(ctx);
+            render_table(attrs, nodes, ctx)
+        }
+        "stack" => {
+            rewind(ctx);
+            render_stack(attrs, nodes, ctx)
+        }
+        // Outside a stack a layer is just a section-like container: its style
+        // knobs apply, place/backing mean nothing.
+        "layer" => format!(
+            "<div class=\"mq-layer{}{}\"{}>{inner}</div>",
+            scheme_class(attrs),
+            font_class(attrs),
+            style_vars(attrs, ctx.profile)
+        ),
         // The <center> tag, back from the dead in directive clothing - plus
         // right for symmetry and left as the un-aligner. Physical
         // directions, deliberately: predictable beats logical.
@@ -533,6 +556,93 @@ fn render_table(attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
     }
     // Cell sidenotes land just below the table, like a paragraph's would.
     flush_notes(ctx, format!("<table class=\"mq-table\">{}</table>", rows.concat()))
+}
+
+/// A stack paints at most this many layers; the rest flow below the box.
+const MAX_LAYERS: usize = 8;
+
+const PLACES: &[&str] = &[
+    "fill", "top-left", "top", "top-right", "left", "center", "right", "bottom-left", "bottom",
+    "bottom-right",
+];
+
+/// The `aspect` vocabulary as CSS aspect-ratio values.
+fn stack_aspect(v: &str) -> Option<&'static str> {
+    match v {
+        "16:9" => Some("16/9"),
+        "4:3" => Some("4/3"),
+        "3:2" => Some("3/2"),
+        "1:1" => Some("1/1"),
+        "card" => Some("5/7"),
+        _ => None,
+    }
+}
+
+/// :::stack (SPEC.md, "Stacks"): every direct child is a layer, source
+/// order is z-order. The stylesheet puts every layer in one grid cell, so
+/// the box is as big as its biggest layer needs and paint order is DOM order:
+/// no z-index, no absolute positioning, nothing clipped. Layers past the cap
+/// render in flow below the box.
+fn render_stack(attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
+    let mut vars: Vec<String> = Vec::new();
+    // The class tells the stylesheet a cover base fills the box rather than
+    // sizing it.
+    let mut cls = "mq-stack";
+    if let Some(a) = attrs.get("aspect").and_then(|v| stack_aspect(v)) {
+        vars.push(format!("--mq-stack-aspect:{a}"));
+        cls = "mq-stack mq-stack-aspect";
+    }
+    if let Some(w) = attrs.get("width").and_then(|v| media_size(v)) {
+        vars.push(format!("--mq-stack-w:{w}"));
+    }
+    let style = if vars.is_empty() {
+        String::new()
+    } else {
+        format!(" style=\"{}\"", vars.join(";"))
+    };
+    let split = nodes.len().min(MAX_LAYERS);
+    let layers: String = nodes[..split].iter().map(|n| render_layer(n, ctx)).collect();
+    let rest = &nodes[split..];
+    let rest_html = if rest.is_empty() {
+        String::new()
+    } else {
+        format!("<div class=\"mq-stack-rest\">{}</div>", children(rest, ctx))
+    };
+    format!("<div class=\"{cls}\"{style}>{layers}</div>{rest_html}")
+}
+
+/// One layer of a stack: a `:::layer` child carries knobs; any other child
+/// block is a layer with the defaults (`fill`, no backing).
+fn render_layer(node: &Node, ctx: &mut Ctx) -> String {
+    let empty = Attrs::new();
+    let (attrs, content): (&Attrs, &[Node]) = match node {
+        Node::Directive { name, attrs, children: c } if name == "layer" => (attrs, c),
+        other => (&empty, std::slice::from_ref(other)),
+    };
+    let place = attrs.get("place").map(String::as_str).filter(|p| PLACES.contains(p)).unwrap_or("fill");
+    let backing = match attrs.get("backing").map(String::as_str) {
+        Some(b @ ("box" | "outline")) => format!(" mq-backing-{b}"),
+        _ => String::new(),
+    };
+    // A fill layer that is exactly one embed is that media covering the box -
+    // the one crop the spec permits, of pictures, never of words.
+    let cover = match content {
+        [Node::Paragraph { children: c }] if place == "fill" => {
+            if matches!(c.as_slice(), [Node::Embed { .. }]) {
+                " mq-layer-cover"
+            } else {
+                ""
+            }
+        }
+        _ => "",
+    };
+    let inner = children(content, ctx);
+    format!(
+        "<div class=\"mq-layer mq-place-{place}{backing}{cover}{}{}\"{}>{inner}</div>",
+        scheme_class(attrs),
+        font_class(attrs),
+        style_vars(attrs, ctx.profile)
+    )
 }
 
 /// One rung of the font-element seven-step dial: presentational floor

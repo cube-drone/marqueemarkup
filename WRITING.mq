@@ -544,6 +544,78 @@ association, not just the bold):
 Line the source up into columns or don't — spacing between cells is yours, and it renders
 the same either way. There is deliberately no way to put a table inside a table.
 
+## Stacks
+
+Content on top of content. The first child is the bottom layer; each one after it sits on top.
+place= picks one of nine spots (or fill, the whole box), and backing= keeps words readable
+over a busy picture:
+
+```marquee
+:::stack aspect=4:3 width=large
+![a sunset over the water](example-media/picture.jpg)
+
+:::layer place=top backing=outline
+[size=6]WHEN THE CODE COMPILES[/size]
+:::
+
+:::layer place=bottom backing=outline
+[size=6]FIRST TRY[/size]
+:::
+
+:::layer place=bottom-right
+:angry-burger:
+:::
+:::
+```
+
+:::stack aspect=4:3 width=large
+![a sunset over the water](example-media/picture.jpg)
+
+:::layer place=top backing=outline
+[size=6]WHEN THE CODE COMPILES[/size]
+:::
+
+:::layer place=bottom backing=outline
+[size=6]FIRST TRY[/size]
+:::
+
+:::layer place=bottom-right
+:angry-burger:
+:::
+:::
+
+No picture? aspect= gives the box its shape, and a background layer makes it a slide:
+
+```marquee
+:::stack aspect=16:9 width=large
+:::layer background=navy color=#ffffff
+# Quarterly Results
+
+They were *fine*. [blink]Mostly.[/blink]
+:::
+
+:::layer place=bottom-right backing=box
+slide 3 of 12
+:::
+:::
+```
+
+:::stack aspect=16:9 width=large
+:::layer background=navy color=#ffffff
+# Quarterly Results
+
+They were *fine*. [blink]Mostly.[/blink]
+:::
+
+:::layer place=bottom-right backing=box
+slide 3 of 12
+:::
+:::
+
+The box grows to fit, so nothing gets cut off: a caption too long for its picture makes the
+whole box taller, and the picture crops at its edges instead. Pictures can be cropped; words
+never are.
+
 ## Conflicts
 
 The one block you'll almost never type — your app writes it for you. When two devices edit the

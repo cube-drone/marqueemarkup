@@ -467,6 +467,59 @@ cell. The blank line between rows is just the ordinary paragraph break:
   or don't; it renders the same.
 - There is deliberately no way to put a table inside a table.
 
+## Stacks: content on top of content
+
+A `:::stack` piles its children on top of each other: a picture with words over it, a card
+with a badge in the corner, a title slide, a visual-novel frame. The first child is the bottom
+layer; each one after it sits on top of the ones before.
+
+```
+:::stack aspect=4:3
+![a cat looking smug](cat.jpg)
+
+:::layer place=top backing=outline
+[big]WHEN THE CODE COMPILES[/big]
+:::
+
+:::layer place=bottom backing=outline
+[big]FIRST TRY[/big]
+:::
+
+:::layer place=bottom-right
+![my mark](mark.png)
+:::
+:::
+```
+
+The picture doesn't need a `:::layer` wrapper. Any block inside a stack is a layer; you only
+wrap one in `:::layer` to give it settings:
+
+- `place=` is where the layer sits: `fill` (the default, the whole box) or one of nine spots,
+  `top-left` `top` `top-right` `left` `center` `right` `bottom-left` `bottom` `bottom-right`.
+  There are no coordinates. Pick a spot.
+- `backing=` keeps words readable over a busy picture: `box` puts a dark panel behind them
+  (the dialogue box), `outline` draws a dark edge around white letters (the meme).
+- Layers take the same style settings as sections: `background`, `color`, `scheme`, `font`.
+
+And on the stack itself:
+
+- `aspect=` gives the box a shape when there's no picture to set one: `16:9`, `4:3`, `3:2`,
+  `1:1`, or `card` (a playing-card shape). Pair it with a `background` layer for a slide.
+- `width=` takes the same sizes as `:::media`: `small`, `medium`, `large`, `full`, or pixels.
+
+**The box grows to fit; nothing gets cut off.** If your caption is too long for the picture,
+the whole box gets taller to hold every word, and the picture crops at its edges to fill the
+bigger box. Pictures can be cropped. Words never are.
+
+Layers can overlap, which is the point. If one hides another's words, you'll see it in the
+preview and can move it with `place=`. A stack paints up to 8 layers; extra ones show up under
+the box as normal content. Stacks can go inside layers, so you can put a captioned picture
+inside a frame.
+
+Readers whose app doesn't know stacks yet see the layers one after another, in the order you
+wrote them: the picture, then the top text, then the bottom text. Write them in the order
+you'd want them read, and that fallback reads naturally.
+
 ## Conflicts
 
 This is the one block you'll almost never *type* — your app writes it for you. When you and

@@ -371,3 +371,47 @@ test("a looping resolution draws a silent animation: autoplay, loop, muted, no c
   assert.ok(!/cat-loop\.webm[^>]*controls|controls[^>]*cat-loop\.webm/.test(html), "and no controls");
   assert.ok(html.includes('<video class="mq-embed" controls src="https://e.x/talk.webm"'), "a plain video keeps its player");
 });
+
+test("stacks: layers in source order, closed knobs", () => {
+  const html = renderMarquee(":::stack aspect=4:3 width=medium\n![cat](cat.jpg)\n\n:::layer place=top backing=outline\nTOP TEXT\n:::\n:::\n");
+  assert.ok(html.includes('<div class="mq-stack mq-stack-aspect" style="--mq-stack-aspect:4/3;--mq-stack-w:20rem">'), html);
+  const base = html.indexOf("mq-layer mq-place-fill mq-layer-cover");
+  const top = html.indexOf("mq-layer mq-place-top mq-backing-outline");
+  assert.ok(base !== -1 && top !== -1 && base < top, `paint order is source order: ${html}`);
+});
+
+test("stacks: knobs off the list degrade to defaults", () => {
+  const html = renderMarquee(":::stack aspect=7:2 width=enormous\n:::layer place=upside-down backing=glitter\nwords\n:::\n:::\n");
+  assert.ok(html.includes('<div class="mq-stack"><div class="mq-layer mq-place-fill">'), html);
+  // Prototype keys are not vocabulary either.
+  assert.ok(!renderMarquee(":::stack aspect=constructor\nx\n:::\n").includes("--mq-stack-aspect"));
+});
+
+test("stacks: only a sole embed in a fill layer covers", () => {
+  const html = renderMarquee(":::stack\n![a](a.png) and words\n\n:::layer place=top\n![b](b.png)\n:::\n:::\n");
+  assert.ok(!html.includes("mq-layer-cover"), html);
+});
+
+test("stacks: layers past eight flow below the box", () => {
+  const src = Array.from({ length: 10 }, (_, i) => `layer ${i + 1}\n\n`).join("");
+  const html = renderMarquee(`:::stack\n${src}:::\n`);
+  assert.equal(html.split('class="mq-layer ').length - 1, 8, html);
+  const rest = html.indexOf('<div class="mq-stack-rest">');
+  assert.ok(rest !== -1 && html.slice(rest).includes("layer 9") && html.slice(rest).includes("layer 10"), html);
+});
+
+test("stacks: a layer outside a stack is just a container", () => {
+  const html = renderMarquee(":::layer place=top backing=box scheme=noir\nout here\n:::\n");
+  assert.ok(html.includes('<div class="mq-layer mq-scheme-noir"><p>out here</p></div>'), html);
+});
+
+test("asides inside laid-out containers (table, stack) count once", () => {
+  for (const src of [
+    ":::table\n[c]a[sidenote]n[/sidenote][/c]\n:::\n\nafter[sidenote]m[/sidenote]\n",
+    ":::stack\n:::layer place=bottom\na[sidenote]n[/sidenote]\n:::\n:::\n\nafter[sidenote]m[/sidenote]\n",
+  ]) {
+    const html = renderMarquee(src);
+    assert.ok(html.includes('<sup class="mq-noteref">1</sup>') && html.includes('<sup class="mq-noteref">2</sup>'), html);
+    assert.ok(!html.includes(">3<"), html);
+  }
+});

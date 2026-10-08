@@ -1,0 +1,668 @@
+[
+  {
+    "ast": {
+      "children": [
+        {
+          "attrs": {},
+          "children": [
+            {
+              "children": [
+                {
+                  "alt": "just a picture",
+                  "target": "cat.jpg",
+                  "type": "embed"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "name": "stack",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    },
+    "marquee": ":::stack\n![just a picture](cat.jpg)\n:::\n",
+    "name": "stacks/base-only"
+  },
+  {
+    "ast": {
+      "children": [
+        {
+          "attrs": {
+            "aspect": "card",
+            "width": "medium"
+          },
+          "children": [
+            {
+              "children": [
+                {
+                  "alt": "a dragon",
+                  "target": "dragon.png",
+                  "type": "embed"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "backing": "box",
+                "place": "bottom",
+                "scheme": "noir"
+              },
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "Ancient Dragon"
+                    }
+                  ],
+                  "level": 2,
+                  "type": "heading"
+                },
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "Flying. When this enters play, everyone has a bad day."
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "name": "layer",
+              "type": "directive"
+            },
+            {
+              "attrs": {
+                "backing": "box",
+                "place": "top-right"
+              },
+              "children": [
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "7"
+                        }
+                      ],
+                      "type": "strong"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "name": "layer",
+              "type": "directive"
+            }
+          ],
+          "name": "stack",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    },
+    "marquee": ":::stack aspect=card width=medium\n![a dragon](dragon.png)\n\n:::layer place=bottom backing=box scheme=noir\n## Ancient Dragon\n\nFlying. When this enters play, everyone has a bad day.\n:::\n\n:::layer place=top-right backing=box\n**7**\n:::\n:::\n",
+    "name": "stacks/card"
+  },
+  {
+    "ast": {
+      "children": [
+        {
+          "attrs": {},
+          "children": [
+            {
+              "children": [
+                {
+                  "alt": "a",
+                  "target": "a.png",
+                  "type": "embed"
+                },
+                {
+                  "type": "text",
+                  "value": " and words"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "place": "top"
+              },
+              "children": [
+                {
+                  "children": [
+                    {
+                      "alt": "b",
+                      "target": "b.png",
+                      "type": "embed"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "name": "layer",
+              "type": "directive"
+            }
+          ],
+          "name": "stack",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    },
+    "marquee": ":::stack\n![a](a.png) and words\n\n:::layer place=top\n![b](b.png)\n:::\n:::\n",
+    "name": "stacks/fill-media-only-when-sole"
+  },
+  {
+    "ast": {
+      "children": [
+        {
+          "attrs": {
+            "backing": "box",
+            "place": "top",
+            "scheme": "noir"
+          },
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "just a container out here"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "name": "layer",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    },
+    "marquee": ":::layer place=top backing=box scheme=noir\njust a container out here\n:::\n",
+    "name": "stacks/layer-outside-a-stack"
+  },
+  {
+    "ast": {
+      "children": [
+        {
+          "attrs": {
+            "aspect": "4:3"
+          },
+          "children": [
+            {
+              "children": [
+                {
+                  "alt": "a cat looking smug",
+                  "target": "cat.jpg",
+                  "type": "embed"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "backing": "outline",
+                "place": "top"
+              },
+              "children": [
+                {
+                  "children": [
+                    {
+                      "attrs": {},
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "WHEN THE CODE COMPILES"
+                        }
+                      ],
+                      "name": "big",
+                      "type": "span"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "name": "layer",
+              "type": "directive"
+            },
+            {
+              "attrs": {
+                "backing": "outline",
+                "place": "bottom"
+              },
+              "children": [
+                {
+                  "children": [
+                    {
+                      "attrs": {},
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "FIRST TRY"
+                        }
+                      ],
+                      "name": "big",
+                      "type": "span"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "name": "layer",
+              "type": "directive"
+            },
+            {
+              "attrs": {
+                "place": "bottom-right"
+              },
+              "children": [
+                {
+                  "children": [
+                    {
+                      "alt": "fingerprint",
+                      "target": "thumb.png",
+                      "type": "embed"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "name": "layer",
+              "type": "directive"
+            }
+          ],
+          "name": "stack",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    },
+    "marquee": ":::stack aspect=4:3\n![a cat looking smug](cat.jpg)\n\n:::layer place=top backing=outline\n[big]WHEN THE CODE COMPILES[/big]\n:::\n\n:::layer place=bottom backing=outline\n[big]FIRST TRY[/big]\n:::\n\n:::layer place=bottom-right\n![fingerprint](thumb.png)\n:::\n::: stack\n",
+    "name": "stacks/meme"
+  },
+  {
+    "ast": {
+      "children": [
+        {
+          "attrs": {},
+          "children": [
+            {
+              "children": [
+                {
+                  "alt": "a room",
+                  "target": "room.png",
+                  "type": "embed"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "place": "center"
+              },
+              "children": [
+                {
+                  "attrs": {},
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "alt": "a painting",
+                          "target": "painting.png",
+                          "type": "embed"
+                        }
+                      ],
+                      "type": "paragraph"
+                    },
+                    {
+                      "attrs": {
+                        "backing": "box",
+                        "place": "bottom"
+                      },
+                      "children": [
+                        {
+                          "children": [
+                            {
+                              "type": "text",
+                              "value": "the painting's caption"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "name": "layer",
+                      "type": "directive"
+                    }
+                  ],
+                  "name": "stack",
+                  "type": "directive"
+                }
+              ],
+              "name": "layer",
+              "type": "directive"
+            }
+          ],
+          "name": "stack",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    },
+    "marquee": ":::stack\n![a room](room.png)\n\n:::layer place=center\n:::stack\n![a painting](painting.png)\n\n:::layer place=bottom backing=box\nthe painting's caption\n:::\n:::\n:::\n:::\n",
+    "name": "stacks/nested"
+  },
+  {
+    "ast": {
+      "children": [
+        {
+          "attrs": {},
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "layer 1"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "layer 2"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "layer 3"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "layer 4"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "layer 5"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "layer 6"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "layer 7"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "layer 8"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "layer 9"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "layer 10"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "name": "stack",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    },
+    "marquee": ":::stack\n\nlayer 1\n\nlayer 2\n\nlayer 3\n\nlayer 4\n\nlayer 5\n\nlayer 6\n\nlayer 7\n\nlayer 8\n\nlayer 9\n\nlayer 10\n:::\n",
+    "name": "stacks/nine-layers-flow-below"
+  },
+  {
+    "ast": {
+      "children": [
+        {
+          "attrs": {},
+          "children": [
+            {
+              "children": [
+                {
+                  "alt": "a map",
+                  "target": "map.png",
+                  "type": "embed"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "backing": "box",
+                "place": "bottom"
+              },
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "here be dragons"
+                    },
+                    {
+                      "attrs": {},
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "probably"
+                        }
+                      ],
+                      "name": "sidenote",
+                      "type": "span"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "name": "layer",
+              "type": "directive"
+            }
+          ],
+          "name": "stack",
+          "type": "directive"
+        },
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "after"
+            },
+            {
+              "attrs": {},
+              "children": [
+                {
+                  "type": "text",
+                  "value": "second"
+                }
+              ],
+              "name": "sidenote",
+              "type": "span"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    },
+    "marquee": ":::stack\n![a map](map.png)\n\n:::layer place=bottom backing=box\nhere be dragons[sidenote]probably[/sidenote]\n:::\n:::\n\nafter[sidenote]second[/sidenote]\n",
+    "name": "stacks/sidenote-in-a-layer"
+  },
+  {
+    "ast": {
+      "children": [
+        {
+          "attrs": {
+            "aspect": "16:9"
+          },
+          "children": [
+            {
+              "attrs": {
+                "background": "navy",
+                "color": "#fff"
+              },
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "Quarterly Results"
+                    }
+                  ],
+                  "level": 1,
+                  "type": "heading"
+                },
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "They were "
+                    },
+                    {
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "fine"
+                        }
+                      ],
+                      "type": "emphasis"
+                    },
+                    {
+                      "type": "text",
+                      "value": "."
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "name": "layer",
+              "type": "directive"
+            },
+            {
+              "attrs": {
+                "font": "mono",
+                "place": "bottom-left"
+              },
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "slide 3 of 12"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "name": "layer",
+              "type": "directive"
+            }
+          ],
+          "name": "stack",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    },
+    "marquee": ":::stack aspect=16:9\n:::layer background=navy color=#fff\n# Quarterly Results\n\nThey were *fine*.\n:::\n\n:::layer place=bottom-left font=mono\nslide 3 of 12\n:::\n:::\n",
+    "name": "stacks/slide"
+  },
+  {
+    "ast": {
+      "children": [
+        {
+          "attrs": {
+            "aspect": "7:2",
+            "width": "enormous"
+          },
+          "children": [
+            {
+              "attrs": {
+                "backing": "glitter",
+                "place": "upside-down"
+              },
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "the knobs are wrong; the words are fine"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "name": "layer",
+              "type": "directive"
+            }
+          ],
+          "name": "stack",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    },
+    "marquee": ":::stack aspect=7:2 width=enormous\n:::layer place=upside-down backing=glitter\nthe knobs are wrong; the words are fine\n:::\n:::\n",
+    "name": "stacks/unknown-knobs-shrug"
+  }
+]

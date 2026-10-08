@@ -339,8 +339,8 @@ webring stuff
   slotted layout (elsewhere - e.g. a themed group with a `scheme` - a slotless section is just a
   container, and children inherit its style). Duplicate slot claims are a strict error; unclaimed
   slots collapse.
-- Style attributes (`background`, `scheme`, `color`, `cursor`, ...) attach here and to sections
-  and spans; the full model is one section down (Styling).
+- Style attributes (`background`, `scheme`, `color`, `cursor`, ...) attach here and to sections,
+  stack layers, and spans; the full model is one section down (Styling).
 
 ### Styling
 
@@ -381,7 +381,9 @@ Style is where the spec says "no" most, so here is the positive model, in one pl
   Windows control panel - bounded on purpose. (Alignment is not positioning: the **`:::center`
   / `:::right` / `:::left` container directives** exist, as the old web intended - `<center>`
   reborn as vocabulary, `right` for symmetry, `left` as the un-aligner inside the other two.
-  Physical directions, deliberately: a page reads the same everywhere.)
+  Physical directions, deliberately: a page reads the same everywhere. Layering is not
+  positioning either: `:::stack` paints content over content at nine named anchors, never
+  coordinates - see Stacks.)
 
 ### Includes: shared nav, footers, mix-ins
 
@@ -594,6 +596,87 @@ stacks) and its strong point is inline nesting (explicit BBCode closers, legible
   future *attrs* (additive, corpus-driven), not future grammar.
 - Depth arithmetic: page > section > table is three directive levels - comfortable under the
   cap even before v0's raise, by design.
+
+### Stacks: layered content
+
+```
+:::stack aspect=4:3
+![a cat looking smug](blob:CAT)
+
+:::layer place=top backing=outline
+[big]WHEN THE CODE COMPILES[/big]
+:::
+
+:::layer place=bottom backing=outline
+[big]FIRST TRY[/big]
+:::
+
+:::layer place=bottom-right
+![fingerprint](blob:THUMB)
+:::
+::: stack
+```
+
+Content atop content - the meme, the trading card, the title slide, the visual-novel frame -
+as pure vocabulary: one container directive, one child directive, closed knobs. Layering is
+*picked, not authored*, exactly as page layout is: a layer chooses one of a few named places in
+a box; it never carries coordinates, offsets, or a z-index.
+
+- **Every direct child of a `:::stack` is one layer, and source order is z-order** - the first
+  child is the bottom (the *base*), each later child paints over the ones before. A `:::layer`
+  child carries knobs; any other child block (the bare embed paragraph above) is a layer with
+  default knobs, which is why the base rarely needs the wrapper. Nothing about the base is
+  special except that it is first.
+- **`place`** - where a layer sits in the box: `fill` (the default: the layer covers the whole
+  box) or one of nine anchors, `top-left` `top` `top-right` `left` `center` `right`
+  `bottom-left` `bottom` `bottom-right`. An anchored layer shrinks to its content, capped at the
+  box's width. Physical directions, deliberately - as with `:::left`/`:::right`.
+- **`backing`** - legibility over whatever is beneath: `none` (default), `box` (a
+  semi-opaque panel behind the layer's content - the dialogue box), `outline` (text stroked in
+  a contrasting color - the meme). Colors come from the effective scheme; an explicit
+  `background` knob on the layer overrides the panel's color. Text over an arbitrary image is
+  unreadable without one of these, which is why it is a knob from day one rather than an
+  afterthought.
+- **The box is as big as its biggest layer needs - nothing overflows, nothing is clipped.** The
+  box takes the stack's width (the available width; `width` takes the same values as
+  `:::media`'s). Its height is the largest of: the `aspect` height, if given; each layer's
+  natural height at its width. So a caption longer than its picture makes the whole box taller -
+  the effect bends, the words survive. Renderers MUST NOT clip, scale down, or hide a layer's
+  text to fit the box. The one permitted crop is of media, never of words: a `fill` layer whose
+  sole content is one embed is that media *covering* the box (cover-cropped, aspect preserved,
+  never distorted) - so when a long caption grows the box, the picture loses its edges.
+  Without `aspect`, such a base sizes the box by its own natural aspect at the box's width;
+  with `aspect`, it fills the box and does not size it (a portrait photo in a `16:9` stack is
+  cropped to the slide, not the slide stretched to the photo).
+- **`aspect`** - a minimum box shape for stacks with no picture to size them (slides, cards):
+  `16:9`, `4:3`, `3:2`, `1:1`, `card` (5:7, the trading card). Content may make the box
+  taller, never shorter; an unknown value is no minimum.
+- **Overlap is the point, and it is the author's to manage.** Layers at different places may
+  overlap; two layers at the same place overlap too, the later on top. A layer that hides
+  another's words is visibly wrong and fixable in the authoring preview, the same failure
+  class as a misplaced fence - never a silent loss in the document, where every word remains.
+- **Reading order is source order.** The DOM (or the renderer's equivalent) carries layers in
+  source order, so assistive technology reads base, then overlays, as written; renderers MUST
+  NOT reorder layers to achieve the paint order. Paint order *equals* source order, so it never
+  has to.
+- **Layers are section-like.** Style knobs (`background`, `scheme`, `color`, `font`) attach to
+  a `:::layer` and inherit through it by containment, as with `:::section`. Effects inside
+  layers obey the animation contract like anywhere else - a `[marquee]` crawling across a
+  picture is permitted, and stills under reduced motion. Outside a stack, a `:::layer` is just
+  a container: its children render in flow, and `place`/`backing` mean nothing.
+- **Caps.** A stack paints at most **8** layers; the ninth child onward renders *in flow,
+  below the box*, in order - layering is lost, words are not. Stacks may nest (a layer may hold
+  a stack); each level costs two directive levels (stack, layer) against the depth cap of 8, so
+  page > section > stack > layer > stack > layer is the realistic ceiling.
+- **Degradation is free, by construction.** A renderer that doesn't know `stack` renders its
+  children as ordinary content (the unknown-container rule) - and because z-order *is* source
+  order, the fallback reads naturally: the picture, then the top text, then the bottom text, then
+  the badge. A renderer that knows stacks but cannot layer (a terminal, a plain-text export)
+  MAY render exactly that flow and is conforming.
+- **Not this:** sequencing (click to advance a visual novel's dialogue, slide-to-slide
+  transitions) is state, not layout - a stack is one frame, and a sequence of frames is a
+  separate construct, built on stacks if ever. Nor free positioning: if nine anchors and `fill`
+  can't place it, it is the swamp, and stays drained.
 
 ### Conflicts: versioned-document alternatives
 
@@ -904,6 +987,8 @@ to a different system entirely:
   existing to test against). Shapes are settled; contents wait on use.
 - [x] Tables: resolved (see Tables) - paragraph-rows with `[c]` cell spans, `header=` on the
   directive; pipe bodies permanently declined. Alignment/captions/spans await the corpus, as attrs.
+- [ ] Stacks: shape settled (see Stacks); the `aspect` token list and the `backing` set grow
+  from use - a `shadow` backing and a `portrait` aspect are the likely first asks.
 - [ ] **Not Marquee's** (named so nobody hunts for them here): the query language
   resolved directives carry; the custom-emoji map artifact and the messaging vocabulary profile.
   All belong to the embedder. Marquee owns the `emoji`/`directive`/`embed` grammar

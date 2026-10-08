@@ -329,6 +329,14 @@ function fontClass(attrs: Attrs): string {
 
 function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string {
   const { profile } = ctx;
+  // The profile hook sees the children rendered; built-ins that lay their
+  // children out themselves (table, stack) render them again, so rewind the
+  // aside numbering first - or a note inside counts twice.
+  const saved = { n: ctx.note.n, pending: [...ctx.note.pending] };
+  const rewind = () => {
+    ctx.note.n = saved.n;
+    ctx.note.pending = [...saved.pending];
+  };
   const inner = children(nodes, ctx);
   const custom = profile.directive(name, attrs, inner);
   if (custom !== null) {
@@ -368,7 +376,15 @@ function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string 
       return `<div class="mq-media"${style}>${inner}</div>`;
     }
     case "table":
+      rewind();
       return renderTable(attrs, nodes, ctx);
+    case "stack":
+      rewind();
+      return renderStack(attrs, nodes, ctx);
+    case "layer":
+      // Outside a stack a layer is just a section-like container: its style
+      // knobs apply, place/backing mean nothing.
+      return `<div class="mq-layer${schemeClass(attrs)}${fontClass(attrs)}"${styleVars(attrs, profile)}>${inner}</div>`;
     case "center":
     case "right":
     case "left":
@@ -458,6 +474,66 @@ function renderTable(attrs: Attrs, nodes: Node[], ctx: Ctx): string {
   }
   // Cell sidenotes land just below the table, like a paragraph's would.
   return flushNotes(ctx, `<table class="mq-table">${rows.join("")}</table>`);
+}
+
+/** A stack paints at most this many layers; the rest flow below the box. */
+const MAX_LAYERS = 8;
+
+const PLACES = new Set([
+  "fill", "top-left", "top", "top-right", "left", "center", "right", "bottom-left", "bottom", "bottom-right",
+]);
+
+/** The `aspect` vocabulary as CSS aspect-ratio values. */
+const STACK_ASPECTS: Record<string, string> = {
+  "16:9": "16/9",
+  "4:3": "4/3",
+  "3:2": "3/2",
+  "1:1": "1/1",
+  card: "5/7",
+};
+
+/** :::stack (SPEC.md, "Stacks"): every direct child is a layer, source order
+ * is z-order. The stylesheet puts every layer in one grid cell, so the box
+ * is as big as its biggest layer needs and paint order is DOM order: no
+ * z-index, no absolute positioning, nothing clipped. Layers past the cap
+ * render in flow below the box. */
+function renderStack(attrs: Attrs, nodes: Node[], ctx: Ctx): string {
+  const vars: string[] = [];
+  const aspect = Object.hasOwn(STACK_ASPECTS, attrs["aspect"] ?? "") ? STACK_ASPECTS[attrs["aspect"]!] : undefined;
+  if (aspect !== undefined) {
+    vars.push(`--mq-stack-aspect:${aspect}`);
+  }
+  const w = mediaSize(attrs["width"]);
+  if (w !== null) {
+    vars.push(`--mq-stack-w:${w}`);
+  }
+  const style = vars.length === 0 ? "" : ` style="${vars.join(";")}"`;
+  const layers = nodes.slice(0, MAX_LAYERS).map((n) => renderLayer(n, ctx)).join("");
+  const rest = nodes.slice(MAX_LAYERS);
+  const restHtml = rest.length === 0 ? "" : `<div class="mq-stack-rest">${children(rest, ctx)}</div>`;
+  // The class tells the stylesheet a cover base fills the box rather than
+  // sizing it.
+  const cls = aspect === undefined ? "mq-stack" : "mq-stack mq-stack-aspect";
+  return `<div class="${cls}"${style}>${layers}</div>${restHtml}`;
+}
+
+/** One layer of a stack: a `:::layer` child carries knobs; any other child
+ * block is a layer with the defaults (`fill`, no backing). */
+function renderLayer(node: Node, ctx: Ctx): string {
+  const isLayer = node.type === "directive" && node.name === "layer";
+  const attrs: Attrs = isLayer ? node.attrs : {};
+  const content: Node[] = isLayer ? node.children : [node];
+  const place = PLACES.has(attrs["place"] ?? "") ? attrs["place"]! : "fill";
+  const backing = attrs["backing"] === "box" || attrs["backing"] === "outline" ? ` mq-backing-${attrs["backing"]}` : "";
+  // A fill layer that is exactly one embed is that media covering the box -
+  // the one crop the spec permits, of pictures, never of words.
+  const only = content.length === 1 ? content[0]! : undefined;
+  const cover =
+    place === "fill" && only?.type === "paragraph" && only.children.length === 1 && only.children[0]!.type === "embed"
+      ? " mq-layer-cover"
+      : "";
+  const inner = children(content, ctx);
+  return `<div class="mq-layer mq-place-${place}${backing}${cover}${schemeClass(attrs)}${fontClass(attrs)}"${styleVars(attrs, ctx.profile)}>${inner}</div>`;
 }
 
 /** Effect/typographic spans. The `<font>` tag is deliberate: presentational

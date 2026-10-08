@@ -379,6 +379,14 @@ function turbolink(
 
 function directive(node: Node & { type: "directive" }, ctx: Ctx, key: string): ReactNode {
   const { name, attrs } = node;
+  // The hooks see the children rendered; built-ins that lay their children
+  // out themselves (table, stack) render them again, so rewind the aside
+  // numbering first - or a note inside counts twice.
+  const saved = { n: ctx.note.n, pending: [...ctx.note.pending] };
+  const rewind = (): void => {
+    ctx.note.n = saved.n;
+    ctx.note.pending = [...saved.pending];
+  };
   const kids = renderChildren(node.children, ctx);
 
   const custom = ctx.hooks.directive?.(name, attrs, kids);
@@ -440,7 +448,23 @@ function directive(node: Node & { type: "directive" }, ctx: Ctx, key: string): R
       return h("div", nodeProps(node, ctx, { key, className: "mq-media", style }), ...kids);
     }
     case "table":
+      rewind();
       return renderTable(node, ctx, key);
+    case "stack":
+      rewind();
+      return renderStack(node, ctx, key);
+    case "layer":
+      // Outside a stack a layer is just a section-like container: its style
+      // knobs apply, place/backing mean nothing.
+      return h(
+        "div",
+        nodeProps(node, ctx, {
+          key,
+          className: `mq-layer${schemeClass(attrs)}${fontClass(attrs)}`,
+          style: styleVars(attrs, ctx.profile),
+        }),
+        ...kids,
+      );
     case "center":
     case "right":
     case "left":
@@ -528,6 +552,75 @@ function renderTable(node: Node & { type: "directive" }, ctx: Ctx, key: string):
     h("tbody", null, rows),
   );
   return withNotes(ctx, table, key);
+}
+
+/** A stack paints at most this many layers; the rest flow below the box. */
+const MAX_LAYERS = 8;
+
+const PLACES = new Set([
+  "fill", "top-left", "top", "top-right", "left", "center", "right", "bottom-left", "bottom", "bottom-right",
+]);
+
+/** The `aspect` vocabulary as CSS aspect-ratio values. */
+const STACK_ASPECTS: Record<string, string> = {
+  "16:9": "16/9",
+  "4:3": "4/3",
+  "3:2": "3/2",
+  "1:1": "1/1",
+  card: "5/7",
+};
+
+/** :::stack - every direct child is a layer, source order is z-order; the
+ * stylesheet puts every layer in one grid cell (SPEC.md, "Stacks"). Layers
+ * past the cap render in flow below the box. */
+function renderStack(node: Node & { type: "directive" }, ctx: Ctx, key: string): ReactNode {
+  const style: Record<string, string> = {};
+  const aspectAttr = node.attrs["aspect"] ?? "";
+  if (Object.hasOwn(STACK_ASPECTS, aspectAttr)) {
+    style["--mq-stack-aspect"] = STACK_ASPECTS[aspectAttr]!;
+  }
+  const w = mediaSize(node.attrs["width"]);
+  if (w !== null) {
+    style["--mq-stack-w"] = w;
+  }
+  const layers = node.children.slice(0, MAX_LAYERS).map((child, i) => renderLayer(child, ctx, String(i)));
+  // The class tells the stylesheet a cover base fills the box rather than
+  // sizing it.
+  const className = style["--mq-stack-aspect"] === undefined ? "mq-stack" : "mq-stack mq-stack-aspect";
+  const stack = h("div", nodeProps(node, ctx, { key, className, style }), ...layers);
+  const rest = node.children.slice(MAX_LAYERS);
+  if (rest.length === 0) {
+    return stack;
+  }
+  return h(
+    "div",
+    { key, style: { display: "contents" } },
+    stack,
+    h("div", { key: "rest", className: "mq-stack-rest" }, ...renderChildren(rest, ctx)),
+  );
+}
+
+/** One layer of a stack: a `:::layer` child carries knobs; any other child
+ * block is a layer with the defaults (`fill`, no backing). */
+function renderLayer(child: Node, ctx: Ctx, key: string): ReactNode {
+  const isLayer = child.type === "directive" && child.name === "layer";
+  const attrs: Attrs = isLayer ? child.attrs : {};
+  const content: Node[] = isLayer ? child.children : [child];
+  const place = PLACES.has(attrs["place"] ?? "") ? attrs["place"]! : "fill";
+  const backing = attrs["backing"] === "box" || attrs["backing"] === "outline" ? ` mq-backing-${attrs["backing"]}` : "";
+  // A fill layer that is exactly one embed is that media covering the box -
+  // the one crop the spec permits, of pictures, never of words.
+  const only = content.length === 1 ? content[0]! : undefined;
+  const cover =
+    place === "fill" && only?.type === "paragraph" && only.children.length === 1 && only.children[0]!.type === "embed"
+      ? " mq-layer-cover"
+      : "";
+  const props = {
+    key,
+    className: `mq-layer mq-place-${place}${backing}${cover}${schemeClass(attrs)}${fontClass(attrs)}`,
+    style: styleVars(attrs, ctx.profile),
+  };
+  return h("div", isLayer ? nodeProps(child, ctx, props) : props, ...renderChildren(content, ctx));
 }
 
 function sizeRung(value: string, inner: ReactNode[], node: Node, ctx: Ctx, key: string): ReactNode {

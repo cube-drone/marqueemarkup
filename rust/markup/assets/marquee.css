@@ -123,6 +123,117 @@
   background: rgba(127, 127, 127, 0.12);
 }
 
+/* ---- stacks: layered content (SPEC.md, "Stacks"). Every layer sits in the
+ * one grid cell, so the box is as big as its biggest layer needs (nothing
+ * overflows, nothing clips) and paint order is DOM order - no z-index, no
+ * absolute positioning. aspect-ratio is a minimum, not a cage: the automatic
+ * minimum size lets content make the box taller. ---- */
+
+.mq-stack {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 1fr;
+  width: var(--mq-stack-w, 100%);
+  max-width: 100%;
+  aspect-ratio: var(--mq-stack-aspect, auto);
+  margin: 1em 0;
+  isolation: isolate;
+}
+
+.mq-stack > .mq-layer {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+/* A layer's look is its own: custom properties inherit, and a layer that
+   picked up its page's --mq-bg would paint the page over the picture. Reset
+   at zero specificity so the layer's own scheme class or inline knobs win;
+   the text color still inherits through `inherit`. */
+:where(.mq-stack > .mq-layer) {
+  --mq-bg: initial;
+  --mq-bg-tile: initial;
+  --mq-color: initial;
+}
+
+.mq-layer {
+  background-color: var(--mq-bg, transparent);
+  background-image: var(--mq-bg-tile, none);
+  color: var(--mq-color, inherit);
+}
+
+.mq-stack > .mq-layer > :first-child {
+  margin-top: 0;
+}
+
+.mq-stack > .mq-layer > :last-child {
+  margin-bottom: 0;
+}
+
+/* place: fill covers the box; the nine anchors shrink to their content,
+   held off the edge, and align their text the way they lean */
+.mq-place-fill {
+  align-self: stretch;
+  justify-self: stretch;
+}
+
+.mq-stack > .mq-place-fill:not(.mq-layer-cover) {
+  padding: 1rem;
+}
+
+.mq-stack > .mq-layer:not(.mq-place-fill) {
+  margin: 0.75rem;
+  max-width: calc(100% - 1.5rem);
+}
+
+.mq-place-top-left { align-self: start; justify-self: start; text-align: left; }
+.mq-place-top { align-self: start; justify-self: center; text-align: center; }
+.mq-place-top-right { align-self: start; justify-self: end; text-align: right; }
+.mq-place-left { align-self: center; justify-self: start; text-align: left; }
+.mq-place-center { align-self: center; justify-self: center; text-align: center; }
+.mq-place-right { align-self: center; justify-self: end; text-align: right; }
+.mq-place-bottom-left { align-self: end; justify-self: start; text-align: left; }
+.mq-place-bottom { align-self: end; justify-self: center; text-align: center; }
+.mq-place-bottom-right { align-self: end; justify-self: end; text-align: right; }
+
+/* A fill layer that is one embed is that media covering the box: the one
+   permitted crop, of pictures, never of words. Without aspect it sizes the
+   box by its own shape; with aspect, contain: size takes it out of the
+   sizing, so the box is the aspect (or the words) and the picture crops. */
+.mq-layer-cover > p {
+  height: 100%;
+  margin: 0;
+}
+
+.mq-layer-cover :is(img, video).mq-embed {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mq-stack-aspect > .mq-layer-cover {
+  contain: size;
+}
+
+/* backing: legibility over whatever is beneath */
+.mq-backing-box {
+  background-color: var(--mq-bg, rgb(16 16 20 / 0.72));
+  color: var(--mq-color, #fff);
+  padding: 0.5em 0.75em;
+  border-radius: 0.25em;
+}
+
+.mq-backing-outline {
+  color: var(--mq-color, #fff);
+  font-weight: 800;
+  text-shadow:
+    -0.06em -0.06em 0 #000,
+    0.06em -0.06em 0 #000,
+    -0.06em 0.06em 0 #000,
+    0.06em 0.06em 0 #000,
+    0 0 0.2em #000;
+}
+
 /* ---- spoilers: content present, visually withheld. Zero-JS: blurred,
    revealed on hover or focus. The element is focusable (tabindex=0), so a
    tap focuses and reveals it on phones too, where there is no hover - :focus

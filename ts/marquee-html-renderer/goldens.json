@@ -392,6 +392,46 @@
     "html": "<div class=\"mq-doc\"><p><span class=\"mq-typewriter mq-split\" style=\"--mq-tw-step:0.033s\"><span class=\"mq-l\" style=\"--mq-o:0\">s</span><span class=\"mq-l\" style=\"--mq-o:1\">l</span><span class=\"mq-l\" style=\"--mq-o:2\">o</span><span class=\"mq-l\" style=\"--mq-o:3\">w</span> <span class=\"mq-l\" style=\"--mq-o:4\">r</span><span class=\"mq-l\" style=\"--mq-o:5\">e</span><span class=\"mq-l\" style=\"--mq-o:6\">v</span><span class=\"mq-l\" style=\"--mq-o:7\">e</span><span class=\"mq-l\" style=\"--mq-o:8\">a</span><span class=\"mq-l\" style=\"--mq-o:9\">l</span></span></p></div>"
   },
   {
+    "name": "stacks/base-only",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-stack\"><div class=\"mq-layer mq-place-fill mq-layer-cover\"><p><img class=\"mq-embed\" src=\"cat.jpg\" alt=\"just a picture\" loading=\"lazy\"></p></div></div></div>"
+  },
+  {
+    "name": "stacks/card",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-stack mq-stack-aspect\" style=\"--mq-stack-aspect:5/7;--mq-stack-w:20rem\"><div class=\"mq-layer mq-place-fill mq-layer-cover\"><p><img class=\"mq-embed\" src=\"dragon.png\" alt=\"a dragon\" loading=\"lazy\"></p></div><div class=\"mq-layer mq-place-bottom mq-backing-box mq-scheme-noir\"><h2>Ancient Dragon</h2><p>Flying. When this enters play, everyone has a bad day.</p></div><div class=\"mq-layer mq-place-top-right mq-backing-box\"><p><strong>7</strong></p></div></div></div>"
+  },
+  {
+    "name": "stacks/fill-media-only-when-sole",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-stack\"><div class=\"mq-layer mq-place-fill\"><p><img class=\"mq-embed\" src=\"a.png\" alt=\"a\" loading=\"lazy\"> and words</p></div><div class=\"mq-layer mq-place-top\"><p><img class=\"mq-embed\" src=\"b.png\" alt=\"b\" loading=\"lazy\"></p></div></div></div>"
+  },
+  {
+    "name": "stacks/layer-outside-a-stack",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-layer mq-scheme-noir\"><p>just a container out here</p></div></div>"
+  },
+  {
+    "name": "stacks/meme",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-stack mq-stack-aspect\" style=\"--mq-stack-aspect:4/3\"><div class=\"mq-layer mq-place-fill mq-layer-cover\"><p><img class=\"mq-embed\" src=\"cat.jpg\" alt=\"a cat looking smug\" loading=\"lazy\"></p></div><div class=\"mq-layer mq-place-top mq-backing-outline\"><p><big>WHEN THE CODE COMPILES</big></p></div><div class=\"mq-layer mq-place-bottom mq-backing-outline\"><p><big>FIRST TRY</big></p></div><div class=\"mq-layer mq-place-bottom-right\"><p><img class=\"mq-embed\" src=\"thumb.png\" alt=\"fingerprint\" loading=\"lazy\"></p></div></div></div>"
+  },
+  {
+    "name": "stacks/nested",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-stack\"><div class=\"mq-layer mq-place-fill mq-layer-cover\"><p><img class=\"mq-embed\" src=\"room.png\" alt=\"a room\" loading=\"lazy\"></p></div><div class=\"mq-layer mq-place-center\"><div class=\"mq-stack\"><div class=\"mq-layer mq-place-fill mq-layer-cover\"><p><img class=\"mq-embed\" src=\"painting.png\" alt=\"a painting\" loading=\"lazy\"></p></div><div class=\"mq-layer mq-place-bottom mq-backing-box\"><p>the painting's caption</p></div></div></div></div></div>"
+  },
+  {
+    "name": "stacks/nine-layers-flow-below",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-stack\"><div class=\"mq-layer mq-place-fill\"><p>layer 1</p></div><div class=\"mq-layer mq-place-fill\"><p>layer 2</p></div><div class=\"mq-layer mq-place-fill\"><p>layer 3</p></div><div class=\"mq-layer mq-place-fill\"><p>layer 4</p></div><div class=\"mq-layer mq-place-fill\"><p>layer 5</p></div><div class=\"mq-layer mq-place-fill\"><p>layer 6</p></div><div class=\"mq-layer mq-place-fill\"><p>layer 7</p></div><div class=\"mq-layer mq-place-fill\"><p>layer 8</p></div></div><div class=\"mq-stack-rest\"><p>layer 9</p><p>layer 10</p></div></div>"
+  },
+  {
+    "name": "stacks/sidenote-in-a-layer",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-stack\"><div class=\"mq-layer mq-place-fill mq-layer-cover\"><p><img class=\"mq-embed\" src=\"map.png\" alt=\"a map\" loading=\"lazy\"></p></div><div class=\"mq-layer mq-place-bottom mq-backing-box\"><p>here be dragons<sup class=\"mq-noteref\">1</sup></p><aside class=\"mq-notes\"><p class=\"mq-note\"><span class=\"mq-note-num\">1</span>probably</p></aside></div></div><p>after<sup class=\"mq-noteref\">2</sup></p><aside class=\"mq-notes\"><p class=\"mq-note\"><span class=\"mq-note-num\">2</span>second</p></aside></div>"
+  },
+  {
+    "name": "stacks/slide",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-stack mq-stack-aspect\" style=\"--mq-stack-aspect:16/9\"><div class=\"mq-layer mq-place-fill\" style=\"--mq-color:#fff;--mq-bg:navy\"><h1>Quarterly Results</h1><p>They were <em>fine</em>.</p></div><div class=\"mq-layer mq-place-bottom-left mq-font-mono\"><p>slide 3 of 12</p></div></div></div>"
+  },
+  {
+    "name": "stacks/unknown-knobs-shrug",
+    "html": "<div class=\"mq-doc\"><div class=\"mq-stack\"><div class=\"mq-layer mq-place-fill\"><p>the knobs are wrong; the words are fine</p></div></div></div>"
+  },
+  {
     "name": "tables/basic-with-header-row",
     "html": "<div class=\"mq-doc\"><table class=\"mq-table\"><tr><th scope=\"col\">dish</th><th scope=\"col\">price</th></tr><tr><td><em>Spaghetti</em> al Limone</td><td>$12</td></tr></table></div>"
   },

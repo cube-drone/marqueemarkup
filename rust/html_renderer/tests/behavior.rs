@@ -351,3 +351,58 @@ fn a_looping_resolution_draws_a_silent_animation() {
     );
     assert!(html.contains("<video class=\"mq-embed\" controls src=\"https://e.x/talk.webm\""), "a plain video keeps its player");
 }
+
+fn mq(src: &str) -> String {
+    render_marquee(src, &BareWebProfile).unwrap()
+}
+
+#[test]
+fn stacks_layer_in_source_order_with_closed_knobs() {
+    let html = mq(":::stack aspect=4:3 width=medium\n![cat](cat.jpg)\n\n:::layer place=top backing=outline\nTOP TEXT\n:::\n:::\n");
+    assert!(html.contains("<div class=\"mq-stack mq-stack-aspect\" style=\"--mq-stack-aspect:4/3;--mq-stack-w:20rem\">"), "{html}");
+    let base = html.find("mq-layer mq-place-fill mq-layer-cover").expect("base layer covers");
+    let top = html.find("mq-layer mq-place-top mq-backing-outline").expect("overlay");
+    assert!(base < top, "paint order is source order: {html}");
+}
+
+#[test]
+fn stack_knobs_off_the_list_degrade_to_defaults() {
+    let html = mq(":::stack aspect=7:2 width=enormous\n:::layer place=upside-down backing=glitter\nwords\n:::\n:::\n");
+    assert!(html.contains("<div class=\"mq-stack\"><div class=\"mq-layer mq-place-fill\">"), "{html}");
+    assert!(html.contains("words"));
+}
+
+#[test]
+fn only_a_sole_embed_in_a_fill_layer_covers() {
+    let html = mq(":::stack\n![a](a.png) and words\n\n:::layer place=top\n![b](b.png)\n:::\n:::\n");
+    assert!(!html.contains("mq-layer-cover"), "words beside the picture: no crop: {html}");
+}
+
+#[test]
+fn layers_past_eight_flow_below_the_box() {
+    let src: String = (1..=10).map(|i| format!("layer {i}\n\n")).collect();
+    let html = mq(&format!(":::stack\n{src}:::\n"));
+    assert_eq!(html.matches("class=\"mq-layer ").count(), 8, "{html}");
+    let rest = html.find("<div class=\"mq-stack-rest\">").expect("overflow flows");
+    assert!(html[rest..].contains("layer 9") && html[rest..].contains("layer 10"), "{html}");
+}
+
+#[test]
+fn a_layer_outside_a_stack_is_just_a_container() {
+    let html = mq(":::layer place=top backing=box scheme=noir\nout here\n:::\n");
+    assert!(html.contains("<div class=\"mq-layer mq-scheme-noir\"><p>out here</p></div>"), "{html}");
+}
+
+#[test]
+fn asides_inside_laid_out_containers_count_once() {
+    // table and stack render their children twice (once for the profile
+    // hook); the numbering must not notice.
+    for src in [
+        ":::table\n[c]a[sidenote]n[/sidenote][/c]\n:::\n\nafter[sidenote]m[/sidenote]\n",
+        ":::stack\n:::layer place=bottom\na[sidenote]n[/sidenote]\n:::\n:::\n\nafter[sidenote]m[/sidenote]\n",
+    ] {
+        let html = mq(src);
+        assert!(html.contains("<sup class=\"mq-noteref\">1</sup>") && html.contains("<sup class=\"mq-noteref\">2</sup>"), "{html}");
+        assert!(!html.contains(">3<"), "{html}");
+    }
+}

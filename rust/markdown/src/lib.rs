@@ -648,6 +648,17 @@ mod tests {
     }
 
     #[test]
+    fn stacks_flatten_to_their_layers_in_source_order() {
+        // Markdown has no layering; a stack degrades exactly as SPEC.md's
+        // fallback does - the layers, one after another, as written.
+        let out = md(":::stack aspect=4:3\n![cat](cat.jpg)\n\n:::layer place=top backing=outline\nTOP\n:::\n\n:::layer place=bottom\nBOTTOM\n:::\n:::\n");
+        assert_eq!(out, "![cat](cat.jpg)\n\nTOP\n\nBOTTOM\n");
+        let opt = Options { on_loss: OnLoss::Comment, ..Default::default() };
+        let noted = to_markdown_with(":::stack\nx\n:::\n", &opt).expect("known");
+        assert!(noted.contains("unwrapped 'stack' directive"), "{noted}");
+    }
+
+    #[test]
     fn emoji_stays_a_shortcode() {
         assert!(md(":sparkles:\n").contains(":sparkles:"));
     }
