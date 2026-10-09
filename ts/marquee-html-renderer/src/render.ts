@@ -8,16 +8,51 @@ import type { Attrs, Node } from "@cube-drone/marquee-parser";
 import { bareWebProfile, type Profile, type TurbolinkLevel } from "./profile.ts";
 import { effectLook, splitPieces, type EffectLook, type SplitPiece } from "./effects.ts";
 
-/** Render state: the profile, plus the one piece of cross-block
- * coordination the renderer owns - aside numbering (sequential through the
- * document) and the pending notes that flush after the triggering block. */
+export interface RenderOptions {
+  /** Which serialization to write. "html" (the default) is HTML5 for a web
+   * page: void elements unclosed (`<br>`), boolean attributes bare
+   * (`controls`). "xhtml" is well-formed XML for an ePub page or any XHTML
+   * document: void elements close themselves (`<br/>`), every attribute
+   * carries a quoted value, the only entities are XML's own, and characters
+   * XML forbids become U+FFFD. Same elements, same classes, same words.
+   * Embedder vocabulary is placed as given, so a profile used with "xhtml"
+   * must return XHTML too (see `Profile.directive`). */
+  output?: "html" | "xhtml";
+}
+
+/** Render state: the profile and the output spelling, plus the one piece of
+ * cross-block coordination the renderer owns - aside numbering (sequential
+ * through the document) and the pending notes that flush after the
+ * triggering block. */
 interface Ctx {
   profile: Profile;
+  /** Escape author text / an attribute value for the output spelling. */
+  text: (s: string) => string;
+  attr: (s: string) => string;
+  /** The end of a void element's start tag. */
+  void: string;
+  /** A boolean attribute with its leading space: bare in HTML, `name="name"`
+   * in XHTML (XML has no attribute without a value). */
+  flag: (name: string) => string;
   note: { n: number; pending: string[] };
 }
 
-export function render(node: Node, profile: Profile = bareWebProfile): string {
-  return renderNode(node, { profile, note: { n: 0, pending: [] } });
+export function render(node: Node, profile: Profile = bareWebProfile, options: RenderOptions = {}): string {
+  const xhtml = options.output === "xhtml";
+  const ctx: Ctx = {
+    profile,
+    text: xhtml ? escapeTextXml : escapeText,
+    attr: xhtml ? escapeAttrXml : escapeAttr,
+    void: xhtml ? "/>" : ">",
+    flag: xhtml ? (name) => ` ${name}="${name}"` : (name) => ` ${name}`,
+    note: { n: 0, pending: [] },
+  };
+  return renderNode(node, ctx);
+}
+
+/** The href an allowed link wears: the profile's rewrite, or the target. */
+function href(target: string, ctx: Ctx): string {
+  return ctx.attr(ctx.profile.linkTarget?.(target) ?? target);
 }
 
 /** Asides render just below the paragraph (or heading) that triggered
@@ -49,8 +84,8 @@ function renderNode(node: Node, ctx: Ctx): string {
     }
     case "code_block": {
       const lang = infoToken(node.info);
-      const cls = lang === null ? "" : ` class="language-${escapeAttr(lang)}"`;
-      const text = node.text === "" ? "" : `${escapeText(node.text)}\n`;
+      const cls = lang === null ? "" : ` class="language-${ctx.attr(lang)}"`;
+      const text = node.text === "" ? "" : `${ctx.text(node.text)}\n`;
       return `<pre class="mq-code"><code${cls}>${text}</code></pre>`;
     }
     case "blockquote":
@@ -62,15 +97,15 @@ function renderNode(node: Node, ctx: Ctx): string {
     case "list_item":
       return `<li>${children(node.children, ctx)}</li>`;
     case "thematic_break":
-      return "<hr>";
+      return `<hr${ctx.void}`;
     case "directive":
       return directive(node.name, node.attrs, node.children, ctx);
     case "invalid_directive":
-      return `<div class="mq-invalid" data-reason="${escapeAttr(node.reason)}"></div>`;
+      return `<div class="mq-invalid" data-reason="${ctx.attr(node.reason)}"></div>`;
     case "comment":
       return ""; // the anti-shrug: correct rendering is absence
     case "text":
-      return escapeText(node.value);
+      return ctx.text(node.value);
     case "emphasis":
       return `<em>${children(node.children, ctx)}</em>`;
     case "strong":
@@ -78,29 +113,29 @@ function renderNode(node: Node, ctx: Ctx): string {
     case "strikethrough":
       return `<del>${children(node.children, ctx)}</del>`;
     case "code_span":
-      return `<code>${escapeText(node.text)}</code>`;
+      return `<code>${ctx.text(node.text)}</code>`;
     case "link": {
       const inner = children(node.children, ctx);
       return ctx.profile.linkAllowed(node.target)
-        ? `<a href="${escapeAttr(node.target)}">${inner}</a>`
+        ? `<a href="${href(node.target, ctx)}">${inner}</a>`
         : `<span class="mq-blocked">${inner}</span>`;
     }
     case "embed":
-      return embed(node.target, node.alt, ctx.profile);
+      return embed(node.target, node.alt, ctx);
     case "turbolink":
-      return turbolink(node.target, undefined, ctx.profile);
+      return turbolink(node.target, undefined, ctx);
     case "span":
       return span(node.name, node.attrs, node.children, ctx);
     case "emoji": {
       const resolved = ctx.profile.emoji(node.slug);
       if (resolved !== null && typeof resolved === "object") {
         const alt = resolved.alt ?? `:${node.slug}:`;
-        return `<img class="mq-emoji" src="${escapeAttr(resolved.image)}" alt="${escapeAttr(alt)}" loading="lazy">`;
+        return `<img class="mq-emoji" src="${ctx.attr(resolved.image)}" alt="${ctx.attr(alt)}" loading="lazy"${ctx.void}`;
       }
-      return escapeText(resolved ?? `:${node.slug}:`);
+      return ctx.text(resolved ?? `:${node.slug}:`);
     }
     case "hard_break":
-      return "<br>";
+      return `<br${ctx.void}`;
   }
 }
 
@@ -240,34 +275,37 @@ function infoToken(info: string | undefined): string | null {
 
 // -- constructs
 
-function embed(target: string, alt: string, profile: Profile): string {
-  const media = profile.media(target);
+function embed(target: string, alt: string, ctx: Ctx): string {
+  const media = ctx.profile.media(target);
   if (media !== null) {
-    const url = escapeAttr(media.url);
+    const url = ctx.attr(media.url);
+    const label = ctx.attr(alt);
+    const flag = ctx.flag;
     switch (media.kind) {
       case "image":
-        return `<img class="mq-embed" src="${url}" alt="${escapeAttr(alt)}" loading="lazy">`;
+        return `<img class="mq-embed" src="${url}" alt="${label}" loading="lazy"${ctx.void}`;
       case "audio":
-        return `<audio class="mq-embed" controls src="${url}" aria-label="${escapeAttr(alt)}"></audio>`;
+        return `<audio class="mq-embed"${flag("controls")} src="${url}" aria-label="${label}"></audio>`;
       case "video":
         return media.loop === true
-          ? `<video class="mq-embed" autoplay loop muted playsinline src="${url}" aria-label="${escapeAttr(alt)}"></video>`
-          : `<video class="mq-embed" controls src="${url}" aria-label="${escapeAttr(alt)}"></video>`;
+          ? `<video class="mq-embed"${flag("autoplay")}${flag("loop")}${flag("muted")}${flag("playsinline")} src="${url}" aria-label="${label}"></video>`
+          : `<video class="mq-embed"${flag("controls")} src="${url}" aria-label="${label}"></video>`;
     }
   }
   // The contractual shrug applied to media: degrade to a labeled link, or
   // to inert text when the scheme is out of policy.
-  const label = escapeText(`[${alt === "" ? target : alt}]`);
-  return profile.linkAllowed(target)
-    ? `<a class="mq-embed-fallback" href="${escapeAttr(target)}">${label}</a>`
+  const label = ctx.text(`[${alt === "" ? target : alt}]`);
+  return ctx.profile.linkAllowed(target)
+    ? `<a class="mq-embed-fallback" href="${href(target, ctx)}">${label}</a>`
     : `<span class="mq-embed-fallback">${label}</span>`;
 }
 
 const TURBOLINK_LEVELS = new Set<TurbolinkLevel>(["full", "title", "bare"]);
 
-function turbolink(target: string, levelAttr: string | undefined, profile: Profile): string {
+function turbolink(target: string, levelAttr: string | undefined, ctx: Ctx): string {
+  const { profile } = ctx;
   if (!profile.linkAllowed(target)) {
-    return `<p class="mq-turbolink">${escapeText(target)}</p>`;
+    return `<p class="mq-turbolink">${ctx.text(target)}</p>`;
   }
   const level =
     levelAttr !== undefined && TURBOLINK_LEVELS.has(levelAttr as TurbolinkLevel)
@@ -278,11 +316,11 @@ function turbolink(target: string, levelAttr: string | undefined, profile: Profi
     if (rich !== null) {
       // Enrichment augments, never replaces: the wrapper itself carries the
       // original link, so no plugin can eat it - not even by accident.
-      return `<div class="mq-turbolink mq-turbolink-rich">${rich}<a class="mq-turbolink-source" href="${escapeAttr(target)}">${escapeText(target)}</a></div>`;
+      return `<div class="mq-turbolink mq-turbolink-rich">${rich}<a class="mq-turbolink-source" href="${href(target, ctx)}">${ctx.text(target)}</a></div>`;
     }
   }
   // The contractual floor: a plain link, always reachable.
-  return `<p class="mq-turbolink"><a href="${escapeAttr(target)}">${escapeText(target)}</a></p>`;
+  return `<p class="mq-turbolink"><a href="${href(target, ctx)}">${ctx.text(target)}</a></p>`;
 }
 
 /** A resolved URL made safe for a CSS url("...") token: encodeURI handles
@@ -381,7 +419,7 @@ function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string 
     case "turbolink": {
       const target = attrs["target"];
       if (target !== undefined) {
-        return turbolink(target, attrs["level"], profile);
+        return turbolink(target, attrs["level"], ctx);
       }
       break; // malformed use: fall through to the placeholder
     }
@@ -434,10 +472,10 @@ function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string 
       // differential-rendering hazard); role=base marks the common ancestor.
       const head: string[] = [];
       if (attrs["label"] !== undefined) {
-        head.push(`<span class="mq-variant-label">${escapeText(attrs["label"])}</span>`);
+        head.push(`<span class="mq-variant-label">${ctx.text(attrs["label"])}</span>`);
       }
       if (attrs["when"] !== undefined) {
-        head.push(`<span class="mq-variant-when">${escapeText(attrs["when"])}</span>`);
+        head.push(`<span class="mq-variant-when">${ctx.text(attrs["when"])}</span>`);
       }
       const cls = attrs["role"] === "base" ? "mq-variant mq-variant-base" : "mq-variant";
       const headHtml = head.length === 0 ? "" : `<div class="mq-variant-head">${head.join(" ")}</div>`;
@@ -448,8 +486,8 @@ function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string 
   // that something wrapped them; a leaf renders the inert placeholder.
   // Never eat authored content.
   return nodes.length > 0
-    ? `<div class="mq-unknown" data-directive="${escapeAttr(name)}">${inner}</div>`
-    : `<div class="mq-placeholder" data-directive="${escapeAttr(name)}"></div>`;
+    ? `<div class="mq-unknown" data-directive="${ctx.attr(name)}">${inner}</div>`
+    : `<div class="mq-placeholder" data-directive="${ctx.attr(name)}"></div>`;
 }
 
 /** :::table (SPEC.md, "Tables"): each paragraph child is a row; a row's
@@ -607,7 +645,7 @@ function span(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string {
       const value = attrs["font"];
       const face = value !== undefined ? FONTS[value] : undefined;
       if (face !== undefined) {
-        return `<font class="mq-font-${value}" face="${escapeAttr(face)}">${inner}</font>`;
+        return `<font class="mq-font-${value}" face="${ctx.attr(face)}">${inner}</font>`;
       }
       return inner; // not on the list: the words survive in their own clothes
     }
@@ -647,8 +685,8 @@ function span(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string {
 // effects.ts, shared with every other surface that draws effects.
 
 function renderEffect(name: string, look: EffectLook, nodes: Node[], inner: string, ctx: Ctx): string {
-  const data = look.data.map(([k, v]) => ` data-${k}="${escapeAttr(v)}"`).join("");
-  const style = look.vars.length === 0 ? "" : ` style="${look.vars.map(([k, v]) => `${k}:${escapeAttr(v)}`).join(";")}"`;
+  const data = look.data.map(([k, v]) => ` data-${k}="${ctx.attr(v)}"`).join("");
+  const style = look.vars.length === 0 ? "" : ` style="${look.vars.map(([k, v]) => `${k}:${ctx.attr(v)}`).join(";")}"`;
   if (name === "marquee") {
     return `<span class="${look.className}"${data}${style}><span class="mq-marquee-inner">${inner}</span></span>`;
   }
@@ -664,9 +702,9 @@ function splitRender(nodes: Node[], ctx: Ctx, look: EffectLook): string {
     list
       .map((p) =>
         p.kind === "text"
-          ? escapeText(p.text)
+          ? ctx.text(p.text)
           : p.kind === "unit"
-            ? `<span class="mq-l" style="--mq-o:${p.offset}">${escapeText(p.text)}</span>`
+            ? `<span class="mq-l" style="--mq-o:${p.offset}">${ctx.text(p.text)}</span>`
             : `<span class="mq-w">${pieces(p.pieces)}</span>`,
       )
       .join("");
@@ -695,4 +733,25 @@ export function escapeText(s: string): string {
 
 export function escapeAttr(s: string): string {
   return escapeText(s).replaceAll('"', "&quot;");
+}
+
+/** Characters XML 1.0 forbids outright - even as a numeric reference: the C0
+ * controls bar tab, newline, and return, the noncharacters U+FFFE/U+FFFF,
+ * and (a JS string can hold one) a lone surrogate. HTML parsers shrug these
+ * off; an XML parser refuses the whole page, so XHTML output carries U+FFFD
+ * in their place. */
+const XML_FORBIDDEN = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
+
+function escapeTextXml(s: string): string {
+  return escapeText(s).replace(XML_FORBIDDEN, "\uFFFD");
+}
+
+/** An XML parser normalizes whitespace in an attribute value to spaces, so a
+ * newline in alt text survives only as a character reference. */
+function escapeAttrXml(s: string): string {
+  return escapeTextXml(s)
+    .replaceAll('"', "&quot;")
+    .replaceAll("\t", "&#9;")
+    .replaceAll("\n", "&#10;")
+    .replaceAll("\r", "&#13;");
 }

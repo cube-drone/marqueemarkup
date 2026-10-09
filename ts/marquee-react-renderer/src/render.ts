@@ -254,7 +254,7 @@ export function renderNode(node: Node, ctx: Ctx, key: string): ReactNode {
     case "link": {
       const inner = renderChildren(node.children, ctx);
       return ctx.profile.linkAllowed(node.target)
-        ? h("a", nodeProps(node, ctx, { key, href: node.target }), ...inner)
+        ? h("a", nodeProps(node, ctx, { key, href: href(node.target, ctx) }), ...inner)
         : h("span", nodeProps(node, ctx, { key, className: "mq-blocked" }), ...inner);
     }
     case "embed":
@@ -353,6 +353,11 @@ function embed(node: Node & { type: "embed" }, ctx: Ctx, key: string): ReactNode
 
 const TURBOLINK_LEVELS = new Set<TurbolinkLevel>(["full", "title", "bare"]);
 
+/** Where an allowed link points: the profile's rewrite, or the target. */
+function href(target: string, ctx: Ctx): string {
+  return ctx.profile.linkTarget?.(target) ?? target;
+}
+
 function turbolink(
   node: Node,
   target: string,
@@ -377,14 +382,14 @@ function turbolink(
         "div",
         nodeProps(node, ctx, { key, className: "mq-turbolink mq-turbolink-rich" }),
         react ?? trustedHtml("span", html!, "rich"),
-        h("a", { key: "src", className: "mq-turbolink-source", href: target }, target),
+        h("a", { key: "src", className: "mq-turbolink-source", href: href(target, ctx) }, target),
       );
     }
   }
   return h(
     "p",
     nodeProps(node, ctx, { key, className: "mq-turbolink" }),
-    h("a", { href: target }, target),
+    h("a", { href: href(target, ctx) }, target),
   );
 }
 

@@ -23,6 +23,14 @@ export interface Profile {
   /** May this target become a hyperlink? Disallowed links render their
    * children without an anchor (content survives, capability doesn't). */
   linkAllowed(target: string): boolean;
+  /** Where an allowed link points: null (or no method) keeps the target as
+   * written; a string is the address the anchor uses instead (a note's
+   * chapter inside an ePub, a file's path inside an export). Asked only after
+   * `linkAllowed` says yes - a refused link stays refused - and for every
+   * anchor the renderer draws from an author target: links, turbolinks, and
+   * the fallback link of an embed. The visible text stays the author's;
+   * `turbolink` and `media` still see the original target. */
+  linkTarget?(target: string): string | null;
   /** Resolve an embed target to a media kind, or null for the inert
    * fallback. The kind is resolved at render time (SPEC.md, "Media"). */
   media(target: string): MediaResolution | null;
@@ -54,6 +62,9 @@ export interface Profile {
    * - Place the children: a claiming answer MUST include `renderedChildren`
    *   (already-escaped HTML) or a known substitute for them - the shrug's
    *   never-eat-content rule binds embedder vocabulary too.
+   * - Match the output: a profile rendered with `{ output: "xhtml" }` must
+   *   return well-formed XHTML (here and in `span` and `turbolink`) - the
+   *   renderer places embedder HTML as given and can't rewrite it.
    * Embedder-first: a claim on a name the language defines wins. */
   directive(name: string, attrs: Attrs, renderedChildren: string): string | null;
   /** Embedder span vocabulary - the inline twin of `directive`

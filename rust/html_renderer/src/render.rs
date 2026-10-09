@@ -4,7 +4,7 @@
 //! vocabulary shrugs (children survive, effect doesn't); comments render
 //! nothing; invalid constructs render inert placeholders.
 
-use crate::escape::{escape_attr, escape_text};
+use crate::escape::{escape_attr, escape_attr_xml, escape_text, escape_text_xml};
 use crate::profile::{EmojiResolution, MediaKind, Profile, TurbolinkLevel};
 use marquee_parser::{Attrs, Node};
 use unicode_segmentation::UnicodeSegmentation;
@@ -96,17 +96,83 @@ pub fn used_font_tokens(html: &str) -> Vec<String> {
     used.into_iter().collect()
 }
 
-/// Render state: the profile, plus the one piece of cross-block
-/// coordination the renderer owns - aside numbering (sequential through the
-/// document) and the pending notes that flush after the triggering block.
+/// Which serialization the renderer writes. The elements and classes are the
+/// same either way; only the spelling differs.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Output {
+    /// HTML5 for a web page: void elements unclosed (`<br>`), boolean
+    /// attributes bare (`controls`).
+    #[default]
+    Html,
+    /// Well-formed XML for an ePub page or any XHTML document: void elements
+    /// close themselves (`<br/>`), every attribute carries a quoted value,
+    /// the only entities are XML's own, and characters XML forbids become
+    /// U+FFFD. Embedder vocabulary is placed as given, so a profile used
+    /// here must return XHTML too (see `Profile::directive`).
+    Xhtml,
+}
+
+/// Render state: the profile and the output spelling, plus the one piece of
+/// cross-block coordination the renderer owns - aside numbering (sequential
+/// through the document) and the pending notes that flush after the
+/// triggering block.
 struct Ctx<'a> {
     profile: &'a dyn Profile,
+    output: Output,
     note_n: u32,
     pending: Vec<String>,
 }
 
+impl Ctx<'_> {
+    fn text(&self, s: &str) -> String {
+        text_in(self.output, s)
+    }
+
+    fn attr(&self, s: &str) -> String {
+        match self.output {
+            Output::Html => escape_attr(s),
+            Output::Xhtml => escape_attr_xml(s),
+        }
+    }
+
+    /// The end of a void element's start tag.
+    fn void(&self) -> &'static str {
+        match self.output {
+            Output::Html => ">",
+            Output::Xhtml => "/>",
+        }
+    }
+
+    /// A boolean attribute, with its leading space: bare in HTML, `name="name"`
+    /// in XHTML (XML has no attribute without a value).
+    fn flag(&self, name: &str) -> String {
+        match self.output {
+            Output::Html => format!(" {name}"),
+            Output::Xhtml => format!(" {name}=\"{name}\""),
+        }
+    }
+
+    /// The href an allowed link wears: the profile's rewrite, or the target.
+    fn href(&self, target: &str) -> String {
+        let to = self.profile.link_target(target);
+        self.attr(to.as_deref().unwrap_or(target))
+    }
+}
+
+fn text_in(output: Output, s: &str) -> String {
+    match output {
+        Output::Html => escape_text(s),
+        Output::Xhtml => escape_text_xml(s),
+    }
+}
+
+/// Render as HTML5 - `render_with(node, profile, Output::Html)`.
 pub fn render(node: &Node, profile: &dyn Profile) -> String {
-    let mut ctx = Ctx { profile, note_n: 0, pending: Vec::new() };
+    render_with(node, profile, Output::Html)
+}
+
+pub fn render_with(node: &Node, profile: &dyn Profile, output: Output) -> String {
+    let mut ctx = Ctx { profile, output, note_n: 0, pending: Vec::new() };
     render_node(node, &mut ctx)
 }
 
@@ -146,13 +212,13 @@ fn render_node(node: &Node, ctx: &mut Ctx) -> String {
         }
         Node::CodeBlock { info, text } => {
             let cls = match info.as_deref().and_then(info_token) {
-                Some(lang) => format!(" class=\"language-{}\"", escape_attr(lang)),
+                Some(lang) => format!(" class=\"language-{}\"", ctx.attr(lang)),
                 None => String::new(),
             };
             let body = if text.is_empty() {
                 String::new()
             } else {
-                format!("{}\n", escape_text(text))
+                format!("{}\n", ctx.text(text))
             };
             format!("<pre class=\"mq-code\"><code{cls}>{body}</code></pre>")
         }
@@ -164,42 +230,43 @@ fn render_node(node: &Node, ctx: &mut Ctx) -> String {
             format!("<{tag}>{}</{tag}>", children(c, ctx))
         }
         Node::ListItem { children: c } => format!("<li>{}</li>", children(c, ctx)),
-        Node::ThematicBreak => "<hr>".to_string(),
+        Node::ThematicBreak => format!("<hr{}", ctx.void()),
         Node::Directive { name, attrs, children: c } => directive(name, attrs, c, ctx),
         Node::InvalidDirective { reason, .. } => {
             let reason = serde_reason(reason);
             format!("<div class=\"mq-invalid\" data-reason=\"{reason}\"></div>")
         }
         Node::Comment { .. } => String::new(), // the anti-shrug: absence
-        Node::Text { value } => escape_text(value),
+        Node::Text { value } => ctx.text(value),
         Node::Emphasis { children: c } => format!("<em>{}</em>", children(c, ctx)),
         Node::Strong { children: c } => format!("<strong>{}</strong>", children(c, ctx)),
         Node::Strikethrough { children: c } => format!("<del>{}</del>", children(c, ctx)),
-        Node::CodeSpan { text } => format!("<code>{}</code>", escape_text(text)),
+        Node::CodeSpan { text } => format!("<code>{}</code>", ctx.text(text)),
         Node::Link { target, children: c } => {
             let inner = children(c, ctx);
             if ctx.profile.link_allowed(target) {
-                format!("<a href=\"{}\">{inner}</a>", escape_attr(target))
+                format!("<a href=\"{}\">{inner}</a>", ctx.href(target))
             } else {
                 format!("<span class=\"mq-blocked\">{inner}</span>")
             }
         }
-        Node::Embed { target, alt } => embed(target, alt, ctx.profile),
-        Node::Turbolink { target } => turbolink(target, None, ctx.profile),
+        Node::Embed { target, alt } => embed(target, alt, ctx),
+        Node::Turbolink { target } => turbolink(target, None, ctx),
         Node::Span { name, attrs, children: c } => span(name, attrs, c, ctx),
         Node::Emoji { slug } => match ctx.profile.emoji(slug) {
             Some(EmojiResolution::Image { url, alt }) => {
                 let alt = alt.unwrap_or_else(|| format!(":{slug}:"));
                 format!(
-                    "<img class=\"mq-emoji\" src=\"{}\" alt=\"{}\" loading=\"lazy\">",
-                    escape_attr(&url),
-                    escape_attr(&alt)
+                    "<img class=\"mq-emoji\" src=\"{}\" alt=\"{}\" loading=\"lazy\"{}",
+                    ctx.attr(&url),
+                    ctx.attr(&alt),
+                    ctx.void()
                 )
             }
-            Some(EmojiResolution::Text(text)) => escape_text(&text),
-            None => escape_text(&format!(":{slug}:")),
+            Some(EmojiResolution::Text(text)) => ctx.text(&text),
+            None => ctx.text(&format!(":{slug}:")),
         },
-        Node::HardBreak => "<br>".to_string(),
+        Node::HardBreak => format!("<br{}", ctx.void()),
     }
 }
 
@@ -257,38 +324,46 @@ fn info_token(info: &str) -> Option<&str> {
 
 // -- constructs
 
-fn embed(target: &str, alt: &str, profile: &dyn Profile) -> String {
-    if let Some(media) = profile.media(target) {
-        let url = escape_attr(&media.url);
-        let alt_attr = escape_attr(alt);
+fn embed(target: &str, alt: &str, ctx: &Ctx) -> String {
+    if let Some(media) = ctx.profile.media(target) {
+        let url = ctx.attr(&media.url);
+        let alt_attr = ctx.attr(alt);
         return match media.kind {
-            MediaKind::Image => {
-                format!("<img class=\"mq-embed\" src=\"{url}\" alt=\"{alt_attr}\" loading=\"lazy\">")
-            }
+            MediaKind::Image => format!(
+                "<img class=\"mq-embed\" src=\"{url}\" alt=\"{alt_attr}\" loading=\"lazy\"{}",
+                ctx.void()
+            ),
             MediaKind::Audio => format!(
-                "<audio class=\"mq-embed\" controls src=\"{url}\" aria-label=\"{alt_attr}\"></audio>"
+                "<audio class=\"mq-embed\"{} src=\"{url}\" aria-label=\"{alt_attr}\"></audio>",
+                ctx.flag("controls")
             ),
             MediaKind::Video if media.looping => format!(
-                "<video class=\"mq-embed\" autoplay loop muted playsinline src=\"{url}\" aria-label=\"{alt_attr}\"></video>"
+                "<video class=\"mq-embed\"{}{}{}{} src=\"{url}\" aria-label=\"{alt_attr}\"></video>",
+                ctx.flag("autoplay"),
+                ctx.flag("loop"),
+                ctx.flag("muted"),
+                ctx.flag("playsinline")
             ),
             MediaKind::Video => format!(
-                "<video class=\"mq-embed\" controls src=\"{url}\" aria-label=\"{alt_attr}\"></video>"
+                "<video class=\"mq-embed\"{} src=\"{url}\" aria-label=\"{alt_attr}\"></video>",
+                ctx.flag("controls")
             ),
         };
     }
     // The contractual shrug applied to media: degrade to a labeled link, or
     // to inert text when the scheme is out of policy.
-    let label = escape_text(&format!("[{}]", if alt.is_empty() { target } else { alt }));
-    if profile.link_allowed(target) {
-        format!("<a class=\"mq-embed-fallback\" href=\"{}\">{label}</a>", escape_attr(target))
+    let label = ctx.text(&format!("[{}]", if alt.is_empty() { target } else { alt }));
+    if ctx.profile.link_allowed(target) {
+        format!("<a class=\"mq-embed-fallback\" href=\"{}\">{label}</a>", ctx.href(target))
     } else {
         format!("<span class=\"mq-embed-fallback\">{label}</span>")
     }
 }
 
-fn turbolink(target: &str, level_attr: Option<&str>, profile: &dyn Profile) -> String {
+fn turbolink(target: &str, level_attr: Option<&str>, ctx: &Ctx) -> String {
+    let profile = ctx.profile;
     if !profile.link_allowed(target) {
-        return format!("<p class=\"mq-turbolink\">{}</p>", escape_text(target));
+        return format!("<p class=\"mq-turbolink\">{}</p>", ctx.text(target));
     }
     let level = match level_attr {
         Some("full") => TurbolinkLevel::Full,
@@ -302,16 +377,16 @@ fn turbolink(target: &str, level_attr: Option<&str>, profile: &dyn Profile) -> S
             // carries the original link.
             return format!(
                 "<div class=\"mq-turbolink mq-turbolink-rich\">{rich}<a class=\"mq-turbolink-source\" href=\"{}\">{}</a></div>",
-                escape_attr(target),
-                escape_text(target)
+                ctx.href(target),
+                ctx.text(target)
             );
         }
     }
     // The contractual floor: a plain link, always reachable.
     format!(
         "<p class=\"mq-turbolink\"><a href=\"{}\">{}</a></p>",
-        escape_attr(target),
-        escape_text(target)
+        ctx.href(target),
+        ctx.text(target)
     )
 }
 
@@ -443,7 +518,7 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
             )
         }
         "turbolink" if attrs.contains_key("target") => {
-            turbolink(attrs.get("target").unwrap(), attrs.get("level").map(|s| s.as_str()), ctx.profile)
+            turbolink(attrs.get("target").unwrap(), attrs.get("level").map(|s| s.as_str()), ctx)
         }
         "media" => {
             let mut vars: Vec<String> = Vec::new();
@@ -497,10 +572,10 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
         "variant" => {
             let mut head: Vec<String> = Vec::new();
             if let Some(label) = attrs.get("label") {
-                head.push(format!("<span class=\"mq-variant-label\">{}</span>", escape_text(label)));
+                head.push(format!("<span class=\"mq-variant-label\">{}</span>", ctx.text(label)));
             }
             if let Some(when) = attrs.get("when") {
-                head.push(format!("<span class=\"mq-variant-when\">{}</span>", escape_text(when)));
+                head.push(format!("<span class=\"mq-variant-when\">{}</span>", ctx.text(when)));
             }
             let cls = if attrs.get("role").map(String::as_str) == Some("base") {
                 "mq-variant mq-variant-base"
@@ -519,11 +594,11 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
         // placeholder. Never eat authored content.
         _ if !nodes.is_empty() => format!(
             "<div class=\"mq-unknown\" data-directive=\"{}\">{inner}</div>",
-            escape_attr(name)
+            ctx.attr(name)
         ),
         _ => format!(
             "<div class=\"mq-placeholder\" data-directive=\"{}\"></div>",
-            escape_attr(name)
+            ctx.attr(name)
         ),
     }
 }
@@ -712,7 +787,7 @@ fn span(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
                 let token = attrs.get("font").unwrap();
                 format!(
                     "<font class=\"mq-font-{token}\" face=\"{}\">{inner}</font>",
-                    escape_attr(face)
+                    ctx.attr(face)
                 )
             }
             None => inner, // not on the list: words in their own clothes
@@ -966,7 +1041,7 @@ fn split_render(nodes: &[Node], ctx: &mut Ctx, state: &mut SplitState) -> String
                         state.i += 1;
                     }
                 }
-                out.push_str(&split_text(value, &units));
+                out.push_str(&split_text(value, &units, ctx.output));
             }
             Node::Emphasis { children: c } => {
                 out.push_str(&format!("<em>{}</em>", split_render(c, ctx, state)));
@@ -989,19 +1064,20 @@ fn split_render(nodes: &[Node], ctx: &mut Ctx, state: &mut SplitState) -> String
 /// be), and a line may break on either side of every inline-block; the
 /// group (`white-space: nowrap`) puts the break opportunities back where the
 /// spaces are. Same rule as the TypeScript renderer's effects.ts.
-fn split_text(value: &str, units: &[(usize, usize, String)]) -> String {
+fn split_text(value: &str, units: &[(usize, usize, String)], output: Output) -> String {
+    let esc = |s: &str| text_in(output, s);
     let lay = |from: usize, to: usize| -> String {
         let mut out = String::new();
         let mut at = from;
         for (start, end, offset) in units.iter().filter(|u| u.0 >= from && u.1 <= to) {
-            out.push_str(&escape_text(&value[at..*start]));
+            out.push_str(&esc(&value[at..*start]));
             out.push_str(&format!(
                 "<span class=\"mq-l\" style=\"--mq-o:{offset}\">{}</span>",
-                escape_text(&value[*start..*end])
+                esc(&value[*start..*end])
             ));
             at = *end;
         }
-        out.push_str(&escape_text(&value[at..to]));
+        out.push_str(&esc(&value[at..to]));
         out
     };
     let mut out = String::new();

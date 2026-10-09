@@ -72,6 +72,17 @@ pub trait Profile {
         }
     }
 
+    /// Where an allowed link points: None keeps the target as written, Some
+    /// is the address the anchor uses instead (a note's chapter inside an
+    /// ePub, a file's path inside an export). Asked only after `link_allowed`
+    /// says yes - a refused link stays refused - and for every anchor the
+    /// renderer draws from an author target: links, turbolinks, and the
+    /// fallback link of an embed. The visible text stays the author's;
+    /// `turbolink` and `media` still see the original target.
+    fn link_target(&self, _target: &str) -> Option<String> {
+        None
+    }
+
     /// Resolve an embed target to a media kind, or None for the inert
     /// fallback. The kind is resolved at render time (SPEC.md, "Media").
     fn media(&self, target: &str) -> Option<MediaResolution> {
@@ -123,6 +134,10 @@ pub trait Profile {
     /// - Place the children: a claiming answer MUST include `children_html`
     ///   (already-escaped) or a known substitute for them - the shrug's
     ///   never-eat-content rule binds embedder vocabulary too.
+    ///
+    /// - Match the output: a profile used with `Output::Xhtml` must return
+    ///   well-formed XHTML (here and in `span` and `turbolink`) - the renderer
+    ///   places embedder HTML as given and can't rewrite it.
     ///
     /// Embedder-first: a claim on a name the language defines wins.
     fn directive(&self, _name: &str, _attrs: &Attrs, _children_html: &str) -> Option<String> {

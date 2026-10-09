@@ -8,6 +8,8 @@ use comrak::{format_commonmark, parse_document, Arena};
 use marquee_parser::{parse, serialize, Attrs, Node};
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
+use std::fmt;
+use std::sync::Arc;
 
 // The one error a conversion can surface (an unknown Marquee dialect version),
 // re-exported so consumers can name it without depending on the parser crate.
@@ -58,14 +60,38 @@ impl OnLoss {
     }
 }
 
-/// Conversion options. `Default` is [`Dialect::Extended`] with [`OnLoss::Silent`].
-#[derive(Debug, Clone, Default)]
+/// Where a link points in the Markdown: `None` keeps the target as written,
+/// `Some` is the address to use instead. See [`Options::link_target`].
+pub type LinkTarget = Arc<LinkRewrite>;
+
+/// The function behind a [`LinkTarget`].
+pub type LinkRewrite = dyn Fn(&str) -> Option<String> + Send + Sync;
+
+/// Conversion options. `Default` is [`Dialect::Extended`] with [`OnLoss::Silent`]
+/// and every link left where it points.
+#[derive(Clone, Default)]
 pub struct Options {
     /// The Markdown vocabulary allowed in output (mq -> md) and recognized in
     /// input (md -> mq).
     pub dialect: Dialect,
     /// How conversion losses are recorded.
     pub on_loss: OnLoss,
+    /// Rewrites where a link points, mq -> md: an export's notes linking to
+    /// each other by their paths in the zip rather than by the app's address.
+    /// Asked for links and turbolinks, whose visible text stays the author's;
+    /// an embed's target is media, not a link, and is left alone. The HTML
+    /// renderer's `Profile::link_target`, for the Markdown bridge.
+    pub link_target: Option<LinkTarget>,
+}
+
+impl fmt::Debug for Options {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Options")
+            .field("dialect", &self.dialect)
+            .field("on_loss", &self.on_loss)
+            .field("link_target", &self.link_target.as_ref().map(|_| "Fn"))
+            .finish()
+    }
 }
 
 // ===================================================================
@@ -87,6 +113,7 @@ pub fn to_markdown_with(source: &str, options: &Options) -> Result<String, Parse
     let build = Build {
         arena: &arena,
         dialect: options.dialect,
+        link_target: options.link_target.as_deref(),
         footnotes: RefCell::new(Vec::new()),
         next_note: Cell::new(1),
         losses: RefCell::new(Vec::new()),
@@ -109,6 +136,7 @@ pub fn to_markdown_with(source: &str, options: &Options) -> Result<String, Parse
 struct Build<'a> {
     arena: &'a Arena<'a>,
     dialect: Dialect,
+    link_target: Option<&'a LinkRewrite>,
     footnotes: RefCell<Vec<&'a AstNode<'a>>>,
     next_note: Cell<usize>,
     losses: RefCell<Vec<String>>,
@@ -121,6 +149,11 @@ impl<'a> Build<'a> {
 
     fn lose(&self, message: String) {
         self.losses.borrow_mut().push(message);
+    }
+
+    /// Where a link to `target` points in the output.
+    fn url(&self, target: &str) -> String {
+        self.link_target.and_then(|rewrite| rewrite(target)).unwrap_or_else(|| target.to_string())
     }
 
     fn all(&self, nodes: &[Node], parent: &'a AstNode<'a>) {
@@ -200,7 +233,7 @@ impl<'a> Build<'a> {
                 let p = self.node(NodeValue::Paragraph);
                 parent.append(p);
                 let link = self
-                    .node(NodeValue::Link(Box::new(NodeLink { url: target.clone(), title: String::new() })));
+                    .node(NodeValue::Link(Box::new(NodeLink { url: self.url(target), title: String::new() })));
                 p.append(link);
                 link.append(self.node(NodeValue::Text(target.clone().into())));
             }
@@ -262,7 +295,7 @@ impl<'a> Build<'a> {
             }
             Node::Link { target, children } => {
                 let l = self
-                    .node(NodeValue::Link(Box::new(NodeLink { url: target.clone(), title: String::new() })));
+                    .node(NodeValue::Link(Box::new(NodeLink { url: self.url(target), title: String::new() })));
                 parent.append(l);
                 self.all(children, l);
             }
@@ -669,6 +702,27 @@ mod tests {
     }
 
     #[test]
+    fn link_target_rewrites_links_and_turbolinks_not_media() {
+        let opt = Options {
+            link_target: Some(std::sync::Arc::new(|t: &str| {
+                t.strip_prefix("https://app.example/note/").map(|id| format!("notes/{id}.md"))
+            })),
+            ..Default::default()
+        };
+        let out = to_markdown_with(
+            "[the other note](https://app.example/note/07) and [elsewhere](https://e.x)\n\n\
+             https://app.example/note/08\n\n\
+             ![a picture](https://app.example/note/09.png)\n",
+            &opt,
+        )
+        .unwrap();
+        assert!(out.contains("[the other note](notes/07.md)"), "{out}");
+        assert!(out.contains("[elsewhere](https://e.x)"), "None keeps the target: {out}");
+        assert!(out.contains("[https://app.example/note/08](notes/08.md)"), "a turbolink's text stays: {out}");
+        assert!(out.contains("](https://app.example/note/09.png)"), "media is not a link: {out}");
+    }
+
+    #[test]
     fn heading_depth_clamps_to_six() {
         assert_eq!(md("######## deep\n"), "###### deep\n");
     }
@@ -731,7 +785,7 @@ mod tests {
 
     #[test]
     fn loss_comment_stays_pure_commonmark_in_strict() {
-        let opt = Options { dialect: Dialect::Strict, on_loss: OnLoss::Comment };
+        let opt = Options { dialect: Dialect::Strict, on_loss: OnLoss::Comment, ..Default::default() };
         let out = to_markdown_with("[color=red]hi[/color]\n", &opt).expect("known");
         assert!(out.contains("[//]: # (marquee-markdown lost:"), "no link-ref comment: {out}");
         assert!(out.contains("dropped 'color' span"), "{out}");

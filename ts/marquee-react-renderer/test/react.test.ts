@@ -79,6 +79,16 @@ test("blocked schemes never become links (the profile's policy, shared)", () => 
   assert.ok(out.includes("click"));
 });
 
+test("linkTarget rewrites where an allowed link points (the profile's hook, shared)", () => {
+  const out = html({
+    source: "[note](https://app.example/note/07)\n\nhttps://app.example/note/08\n\n[click](javascript:alert(1))\n",
+    profile: { linkTarget: (t) => (t.startsWith("https://app.example/note/") ? `chapter-${t.slice(-2)}.xhtml` : null) },
+  });
+  assert.ok(/<a [^>]*href="chapter-07.xhtml"[^>]*>note<\/a>/.test(out), out);
+  assert.ok(/<a [^>]*href="chapter-08.xhtml"[^>]*>https:\/\/app.example\/note\/08<\/a>/.test(out), `the text stays the author's: ${out}`);
+  assert.ok(!out.includes("javascript:") && out.includes("mq-blocked"), "a refused link stays refused");
+});
+
 test("source positions ride along as data attributes (reverse sync)", () => {
   const out = html({ source: "# Hi\n" });
   assert.ok(out.includes('data-mq-start="0"'), "nodes carry their source extent");

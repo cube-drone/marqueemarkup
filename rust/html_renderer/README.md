@@ -40,6 +40,26 @@ assert!(html.contains("<em>hi</em>"));
 The parser makes trees; this crate turns them into HTML. `render_marquee` is just `parse` then
 `render` for the common case where you start from source.
 
+## XHTML, for an ePub
+
+The default output is HTML5, for a web page. A page that must be well-formed XML — an ePub
+chapter, any XHTML document — asks for `Output::Xhtml`: void elements close themselves
+(`<br/>`, `<img …/>`), boolean attributes carry values (`controls="controls"`), the only
+entities are XML's own five, and characters XML forbids outright (most C0 controls) become
+U+FFFD. Same elements, same classes, same words.
+
+```rust
+use marquee_html_renderer::{render_marquee_with, BareWebProfile, Output};
+
+let page = render_marquee_with("one\\\ntwo\n", &BareWebProfile, Output::Xhtml)
+    .expect("a known dialect");
+assert_eq!(page, r#"<div class="mq-doc"><p>one<br/>two</p></div>"#);
+```
+
+`render_with(&doc, profile, output)` is the tree form. The renderer places what your profile's
+`directive`, `span`, and `turbolink` return as given, so a profile used with `Output::Xhtml`
+must return XHTML too.
+
 ## Profiles: you define the policy
 
 The second argument is a `Profile` — your rules for the fuzzy, embedder-specific decisions:
@@ -63,6 +83,28 @@ impl Profile for HttpsOnly {
 let html = render_marquee("[safe](https://ok.example)\n", &HttpsOnly)
     .expect("a known dialect");
 assert!(html.contains(r#"href="https://ok.example""#));
+```
+
+`link_allowed` decides *whether* a target links; `link_target` decides *where* it points. Return
+`Some(address)` to send an allowed link somewhere else — another note's chapter inside an ePub,
+a file inside an export — and `None` to keep the target as written. It's asked for every anchor
+the renderer draws from an author target (links, turbolinks, an embed's fallback link), only
+after `link_allowed` says yes, and the visible text stays what the author wrote:
+
+```rust
+use marquee_html_renderer::{render_marquee, Profile};
+
+struct Book;
+impl Profile for Book {
+    fn link_target(&self, target: &str) -> Option<String> {
+        let id = target.strip_prefix("https://app.example/note/")?;
+        Some(format!("chapter-{id}.xhtml"))
+    }
+}
+
+let html = render_marquee("[see also](https://app.example/note/07)\n", &Book)
+    .expect("a known dialect");
+assert!(html.contains(r#"<a href="chapter-07.xhtml">see also</a>"#));
 ```
 
 Custom vocabulary goes through `directive()` and `span()` — the span is the inline twin of the

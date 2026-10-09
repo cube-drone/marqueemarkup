@@ -92,6 +92,31 @@ assert!(md.contains("hi")); // the word, visible to the reader
 assert!(md.contains("dropped 'blink' span")); // the note, tucked in a comment
 ```
 
+## Pointing links somewhere else: `link_target`
+
+A Marquee note that links to another note by its web address may need a different address in
+the Markdown — the other file's path inside an export, say. `Options::link_target` rewrites
+where links and turbolinks point (mq -> md): return `Some(address)` to send a link there, `None`
+to keep it as written. The visible text stays the author's, and an embed's target is media,
+not a link, so it's left alone.
+
+```rust
+use std::sync::Arc;
+use marquee_markdown::{to_markdown_with, Options};
+
+let options = Options {
+    link_target: Some(Arc::new(|target: &str| {
+        let id = target.strip_prefix("https://app.example/note/")?;
+        Some(format!("notes/{id}.md"))
+    })),
+    ..Default::default()
+};
+let md = to_markdown_with("[see also](https://app.example/note/07)\n", &options).expect("known");
+assert_eq!(md, "[see also](notes/07.md)\n");
+```
+
+The HTML renderer's `Profile::link_target` is the same hook for rendered pages.
+
 ## A note on the name
 
 Your code reads `use marquee_markdown::`; the crate wears the `cube-drone-` prefix on

@@ -22,6 +22,23 @@ children. Pair the output with
 class contract this renderer targets) and optionally
 [`@cube-drone/marquee-fonts`](https://www.npmjs.com/package/@cube-drone/marquee-fonts).
 
+`linkAllowed` decides *whether* a target links; the optional `linkTarget` decides *where* it
+points — return another address (a note's chapter inside an ePub, a file inside an export) or
+`null` to keep the target as written. It's asked only after `linkAllowed` says yes, for every
+anchor drawn from an author target (links, turbolinks, an embed's fallback link), and the
+visible text stays the author's. The React renderer honors it too.
+
+For a page that must be well-formed XML — an ePub chapter, any XHTML document — pass
+`{ output: "xhtml" }`: void elements close themselves (`<br/>`, `<img …/>`), boolean
+attributes carry values (`controls="controls"`), the only entities are XML's own five, and
+characters XML forbids become U+FFFD. Same elements, classes, and words. Hook output is placed
+as given, so a profile used this way must return XHTML too.
+
+```ts
+render(parse(source), bookProfile, { output: "xhtml" });
+renderMarquee(source, bookProfile, { output: "xhtml" }); // same, from source
+```
+
 The renderer's obligations (never eat content, comments render nothing, unknown vocabulary
 shrugs, invalid constructs render inert placeholders, author bytes never become markup) are
 enforced by its behavioral test suite. You probably want
