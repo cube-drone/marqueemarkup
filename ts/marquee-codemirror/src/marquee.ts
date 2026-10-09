@@ -42,11 +42,18 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
   // Persistent across parses, keyed by a block's source text. Bounded so a
   // long editing session (each keystroke on a block mints a new key) can't
   // grow it without limit; clearing just costs a one-frame re-render.
+  // The text is the whole key - never the block's offset: typing above a
+  // block moves its offset without changing a byte of it, and an offset in
+  // the key turned every keystroke into a re-render of every block below the
+  // caret. Position can't change the output: each block renders on its own
+  // (render() starts fresh state - its own aside numbering - every call), so
+  // the same text renders the same HTML anywhere. The node type rides along
+  // only as a guard.
   const htmlCache = new Map<string, string>();
   const renderBlock = (node: Node, spans: WeakMap<Node, Span>, source: string): string => {
     const span = spans.get(node);
     if (span === undefined) return render(node, profile);
-    const key = `${span.start}:${source.slice(span.start, span.end)}`;
+    const key = `${node.type}:${source.slice(span.start, span.end)}`;
     let cached = htmlCache.get(key);
     if (cached === undefined) {
       cached = render(node, profile);

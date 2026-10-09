@@ -195,3 +195,15 @@ test("accent is a color knob on schemed containers", () => {
   assert.ok(out.includes('class="mq-section mq-scheme-ff6" style="--mq-accent:#b03060"'), out);
   assert.ok(!html({ source: ':::section accent="red;x:y"\nhi\n:::\n' }).includes("--mq-accent"));
 });
+
+test("audio and video keep their description as an aria-label, like the static renderer", () => {
+  const out = html({ source: "![a horse galloping](clip.webm)\n\n![the theme song](song.mp3)\n\n![](bare.mp4)\n" });
+  assert.ok(/<video[^>]*aria-label="a horse galloping"/.test(out), out);
+  assert.ok(/<audio[^>]*aria-label="the theme song"/.test(out), out);
+  assert.ok(!/aria-label=""/.test(out), "no description, no empty label");
+  const looping = html({
+    source: "![a cat, looping](cat-loop.webm)\n",
+    profile: { media: (t: string) => ({ kind: "video" as const, url: t, loop: true }) },
+  });
+  assert.ok(/<video[^>]*aria-label="a cat, looping"/.test(looping), looping);
+});

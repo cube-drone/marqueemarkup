@@ -332,20 +332,23 @@ function embed(node: Node & { type: "embed" }, ctx: Ctx, key: string): ReactNode
     );
   }
   const common = { key, className: "mq-embed" };
+  // Audio and video have no alt attribute; the description labels them for
+  // assistive tech instead, as the static renderer does.
+  const label = { "aria-label": node.alt === "" ? undefined : node.alt };
   if (media.kind === "image") {
     return h("img", nodeProps(node, ctx, { ...common, src: media.url, alt: node.alt, loading: "lazy" }));
   }
   if (media.kind === "audio") {
-    return h("audio", nodeProps(node, ctx, { ...common, src: media.url, controls: true }));
+    return h("audio", nodeProps(node, ctx, { ...common, ...label, src: media.url, controls: true }));
   }
   if (media.loop === true) {
     // A silent animation: the gif's own manners - looping, muted, autoplaying, no controls.
     return h(
       "video",
-      nodeProps(node, ctx, { ...common, src: media.url, autoPlay: true, loop: true, muted: true, playsInline: true }),
+      nodeProps(node, ctx, { ...common, ...label, src: media.url, autoPlay: true, loop: true, muted: true, playsInline: true }),
     );
   }
-  return h("video", nodeProps(node, ctx, { ...common, src: media.url, controls: true }));
+  return h("video", nodeProps(node, ctx, { ...common, ...label, src: media.url, controls: true }));
 }
 
 const TURBOLINK_LEVELS = new Set<TurbolinkLevel>(["full", "title", "bare"]);
