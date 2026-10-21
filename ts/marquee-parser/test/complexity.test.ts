@@ -27,6 +27,11 @@ const SHAPES: Array<[string, string]> = [
   ["nested links", rep("[", N / 8) + "a" + rep("](x)", N / 2)],
   // Every `](` used to lex its target to the end of the container.
   ["unclosed link targets", rep("[a](", N)],
+  // Nested openers each re-parsed every attribute list inside them, until
+  // the opener cap (MAX_SPAN_OPENER_BYTES) bounded the interior.
+  ["nested bare-value openers", rep("[a=", N / 2) + rep("]", N / 4)],
+  ["nested openers, one late quote", rep("[b a=", N / 2) + '"' + rep("]", N / 6)],
+  ["nested quoted openers", rep('[b a="', N / 2) + rep('"]', N / 3)],
   // /[ \t]+$/ retried from every start position in a space run.
   ["paragraph trailing space", "a" + rep(" ", N) + "b"],
   ["thematic break trailing space", "---" + rep(" ", N) + "b"],

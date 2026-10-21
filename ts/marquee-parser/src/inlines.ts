@@ -17,6 +17,7 @@ import { MAX_TARGET_BYTES, type Span } from "./blocks.ts";
 
 export const MAX_INLINE_DEPTH = 16;
 export const MAX_EMOJI_SLUG_BYTES = 64;
+export const MAX_SPAN_OPENER_BYTES = 4096;
 
 /** Positions context: map[cpIndex] = source UTF-16 offset of that code
  * point in the logical text (one extra entry for the end). */
@@ -435,10 +436,20 @@ function isNameAt(chars: string[], from: number, to: number): boolean {
 
 /** parseSpanOpener's early rejections, checked in place: a name, then `=`,
  * a space or tab, or the end. Spares `[a[a[a`... a copy of each interior
- * only to fail on its second char. */
+ * only to fail on its second char. And the opener cap: nested openers each
+ * re-parse the attribute lists inside them, so an uncapped interior made
+ * `[b a=`... quadratic. */
 function maybeSpanOpener(chars: string[], from: number, to: number): boolean {
   if (from >= to || !isNameStart(chars[from])) {
     return false;
+  }
+  let bytes = 0;
+  for (let j = from; j < to; j++) {
+    const cp = chars[j]!.codePointAt(0)!;
+    bytes += cp < 0x80 ? 1 : cp < 0x800 ? 2 : cp < 0x10000 ? 3 : 4;
+    if (bytes > MAX_SPAN_OPENER_BYTES) {
+      return false;
+    }
   }
   let k = from + 1;
   while (k < to && isNameChar(chars[k]!)) {

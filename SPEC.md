@@ -164,7 +164,8 @@ resolve at parse), a renderer re-lexing pipes could never let a cell carry a lit
 parser differential (input parses on one client, blows the stack on another), so the limits are
 conformance rules with vectors: list nesting ≤ 16, blockquote nesting ≤ 16, directive nesting ≤ 8, inline nesting
 (spans, delimiters, and link text - one shared depth) ≤ 16, targets ≤ 4096 bytes, attribute
-values ≤ 2048 bytes, emoji slugs ≤ 64 bytes (an over-cap slug is a non-match: literal text; a
+values ≤ 2048 bytes, span openers ≤ 4096 bytes between the brackets (name and attribute list),
+emoji slugs ≤ 64 bytes (an over-cap slug or span opener is a non-match: literal text; a
 seventeenth-deep span opener or link falls back to literal the same way). The numbers are set
 far past human writing and well short of machine weirdness - and they are sealed with v0:
 raising a cap later is a parser differential between implementations claiming the same

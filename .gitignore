@@ -39,3 +39,4 @@ _site/
 demo/dist/
 
 .DS_Store
+.claude

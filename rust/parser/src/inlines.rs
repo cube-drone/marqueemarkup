@@ -8,6 +8,7 @@ use crate::blocks::MAX_TARGET_BYTES;
 
 pub const MAX_INLINE_DEPTH: usize = 16;
 pub const MAX_EMOJI_SLUG_BYTES: usize = 64;
+pub const MAX_SPAN_OPENER_BYTES: usize = 4096;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum DelimKind {
@@ -399,10 +400,19 @@ fn is_name_at(chars: &[char], from: usize, to: usize) -> bool {
 
 /// `parse_span_opener`'s early rejections, checked in place: a name, then
 /// `=`, a space or tab, or the end. Spares `[a[a[a`... a copy of each
-/// interior only to fail on its second char.
+/// interior only to fail on its second char. And the opener cap: nested
+/// openers each re-parse the attribute lists inside them, so an uncapped
+/// interior made `[b a=`... quadratic.
 fn maybe_span_opener(chars: &[char], from: usize, to: usize) -> bool {
     if from >= to || !is_name_start(chars.get(from)) {
         return false;
+    }
+    let mut bytes = 0;
+    for c in &chars[from..to] {
+        bytes += c.len_utf8();
+        if bytes > MAX_SPAN_OPENER_BYTES {
+            return false;
+        }
     }
     let mut k = from + 1;
     while k < to && is_name_char(chars[k]) {
