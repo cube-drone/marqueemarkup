@@ -68,6 +68,12 @@ test("emoji: the standard table is implicitly loaded", () => {
   assert.ok(marquee(":thisoneisnotreal:\n").includes(":thisoneisnotreal:"), "unknown: literal");
 });
 
+test("emoji: a slug is never one of Object's own properties", () => {
+  for (const slug of ["constructor", "__proto__", "toString", "hasOwnProperty"]) {
+    assert.ok(marquee(`:${slug}:\n`).includes(`:${slug}:`), slug);
+  }
+});
+
 test("emoji: user entries override defaults; emojiDefaults: false opts out", () => {
   const overridden = marquee("hats :tophat: off\n", { emoji: { tophat: "🤠" } });
   assert.ok(overridden.includes("hats 🤠 off"), "user entry wins over the standard table");

@@ -3,7 +3,7 @@
 //! top-of-stack delimiter matching; everything unmatched reverts to literal.
 
 use crate::ast::{Attrs, Node};
-use crate::attrs::{is_name, name_len, parse_attrs, parse_value};
+use crate::attrs::{name_len, parse_attrs, parse_value};
 use crate::blocks::MAX_TARGET_BYTES;
 
 pub const MAX_INLINE_DEPTH: usize = 16;
@@ -52,6 +52,7 @@ pub fn parse_inlines(text: &str) -> Vec<Node> {
 /// would let composition multiply past it).
 fn parse_inlines_at(text: &str, base: usize) -> Vec<Node> {
     let chars: Vec<char> = text.chars().collect();
+    let closes = find_closes(&chars);
     let mut frames: Vec<Frame> = vec![Frame::root()];
     let mut i = 0;
 
@@ -86,9 +87,9 @@ fn parse_inlines_at(text: &str, base: usize) -> Vec<Node> {
                     }
                 }
             }
-            '[' => i = bracket(&chars, i, false, &mut frames, base),
+            '[' => i = bracket(&chars, &closes, i, false, &mut frames, base),
             '!' if chars.get(i + 1) == Some(&'[') => {
-                i = bracket(&chars, i + 1, true, &mut frames, base)
+                i = bracket(&chars, &closes, i + 1, true, &mut frames, base)
             }
             ':' => {
                 let mut k = i + 1;
@@ -230,36 +231,81 @@ fn delimiter(
     i + n
 }
 
+/// Where each `[` and `(` in a container closes (`None` if never), found
+/// all at once: scanning forward from each opener in turn made `[`×n and
+/// `[a](`×n quadratic.
+struct Closes {
+    /// Balanced and escape-aware, as a bracket's interior is.
+    brackets: Vec<Option<usize>>,
+    /// Balanced, no escapes, as a link target is.
+    parens: Vec<Option<usize>>,
+}
+
+fn find_closes(chars: &[char]) -> Closes {
+    Closes {
+        brackets: match_closes(chars, '[', ']', true),
+        parens: match_closes(chars, '(', ')', false),
+    }
+}
+
+/// `level[k]` is the nesting depth after `chars[k]` (an escaped char leaves
+/// it unchanged); the closer matching the opener at j is the first k > j
+/// whose level is `level[j] - 1`, so one right-to-left sweep that remembers
+/// the nearest position of each level answers every opener.
+fn match_closes(chars: &[char], open: char, close: char, escapes: bool) -> Vec<Option<usize>> {
+    let n = chars.len();
+    let mut level = vec![0isize; n];
+    let mut depth = 0isize;
+    let mut k = 0;
+    while k < n {
+        let c = chars[k];
+        if escapes && c == '\\' && k + 1 < n {
+            level[k] = depth;
+            k += 1;
+        } else if c == open {
+            depth += 1;
+        } else if c == close {
+            depth -= 1;
+        }
+        level[k] = depth;
+        k += 1;
+    }
+    // Levels span [-n, n]: nearest[level + n + 1], so level - 1 indexes >= 0.
+    let slot = |l: isize| (l + n as isize + 1) as usize;
+    let mut nearest: Vec<Option<usize>> = vec![None; 2 * n + 2];
+    let mut closes: Vec<Option<usize>> = vec![None; n];
+    for j in (0..n).rev() {
+        if chars[j] == open {
+            closes[j] = nearest[slot(level[j] - 1)];
+        }
+        nearest[slot(level[j])] = Some(j);
+    }
+    closes
+}
+
 /// Handle a bracket construct starting at `chars[open]` (which is `[`).
 /// `embed` means a `!` sits just before it. Returns the new position.
-fn bracket(chars: &[char], open: usize, embed: bool, frames: &mut Vec<Frame>, base: usize) -> usize {
+fn bracket(
+    chars: &[char],
+    closes: &Closes,
+    open: usize,
+    embed: bool,
+    frames: &mut Vec<Frame>,
+    base: usize,
+) -> usize {
     let bang = if embed { open - 1 } else { open };
     let fallback = |frames: &mut Vec<Frame>| {
         push_char(frames, chars[bang]);
         bang + 1
     };
 
-    // Find the matching `]` (balanced, escape-aware).
-    let mut depth = 1usize;
-    let mut k = open + 1;
-    while k < chars.len() {
-        match chars[k] {
-            '\\' => k += 1,
-            '[' => depth += 1,
-            ']' => {
-                depth -= 1;
-                if depth == 0 {
-                    break;
-                }
-            }
-            _ => {}
-        }
-        k += 1;
-    }
-    if k >= chars.len() {
+    // The matching `]` (balanced, escape-aware).
+    let Some(k) = closes.brackets[open] else {
         return fallback(frames);
-    }
-    let interior: String = chars[open + 1..k].iter().collect();
+    };
+    // Copied only once a construct is sure to want it: copying up front made
+    // nested brackets (`[`×n `]`×n) quadratic.
+    let interior = || -> String { chars[open + 1..k].iter().collect() };
 
     // Link / embed: `](` with a lexable target.
     if chars.get(k + 1) == Some(&'(') {
@@ -268,12 +314,12 @@ fn bracket(chars: &[char], open: usize, embed: bool, frames: &mut Vec<Frame>, ba
         if !embed && base + total_depth(frames) >= MAX_INLINE_DEPTH {
             return fallback(frames);
         }
-        if let Some((target, end)) = lex_target(chars, k + 2) {
+        if let Some((target, end)) = lex_target(chars, closes.parens[k + 1], k + 2) {
             let node = if embed {
-                Node::Embed { target, alt: resolve_escapes(&interior) }
+                Node::Embed { target, alt: resolve_escapes(&interior()) }
             } else {
                 let depth = base + total_depth(frames) + 1;
-                Node::Link { target, children: parse_inlines_at(&interior, depth) }
+                Node::Link { target, children: parse_inlines_at(&interior(), depth) }
             };
             frames.last_mut().unwrap().children.push(node);
             return end;
@@ -282,8 +328,9 @@ fn bracket(chars: &[char], open: usize, embed: bool, frames: &mut Vec<Frame>, ba
     }
 
     // Span closer: `[/name]` must name the innermost open span.
-    if let Some(name) = interior.strip_prefix('/') {
-        if is_name(name) {
+    if chars.get(open + 1) == Some(&'/') {
+        if is_name_at(chars, open + 2, k) {
+            let name: String = chars[open + 2..k].iter().collect();
             if embed {
                 push_str(frames, "!"); // the ! belongs to links/embeds, not spans
             }
@@ -306,7 +353,12 @@ fn bracket(chars: &[char], open: usize, embed: bool, frames: &mut Vec<Frame>, ba
 
     // Span opener: `[name ...]`, with the BBCode default-parameter idiom
     // (`[color=red]` puts `color=red` in the span's own attrs).
-    if let Some((name, attrs)) = parse_span_opener(&interior) {
+    let opener = if maybe_span_opener(chars, open + 1, k) {
+        parse_span_opener(&interior())
+    } else {
+        None
+    };
+    if let Some((name, attrs)) = opener {
         if embed {
             push_str(frames, "!"); // the ! belongs to links/embeds, not spans
         }
@@ -326,6 +378,37 @@ fn bracket(chars: &[char], open: usize, embed: bool, frames: &mut Vec<Frame>, ba
     }
 
     fallback(frames)
+}
+
+fn is_name_start(c: Option<&char>) -> bool {
+    c.is_some_and(|c| c.is_ascii_lowercase())
+}
+
+fn is_name_char(c: char) -> bool {
+    c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '_' | '-')
+}
+
+/// `is_name` over `chars[from..to]` in place: it stops at the first
+/// non-name char, so a failed closer (`[/[/[/`...) costs no copy of its
+/// interior.
+fn is_name_at(chars: &[char], from: usize, to: usize) -> bool {
+    from < to
+        && is_name_start(chars.get(from))
+        && chars[from + 1..to].iter().all(|&c| is_name_char(c))
+}
+
+/// `parse_span_opener`'s early rejections, checked in place: a name, then
+/// `=`, a space or tab, or the end. Spares `[a[a[a`... a copy of each
+/// interior only to fail on its second char.
+fn maybe_span_opener(chars: &[char], from: usize, to: usize) -> bool {
+    if from >= to || !is_name_start(chars.get(from)) {
+        return false;
+    }
+    let mut k = from + 1;
+    while k < to && is_name_char(chars[k]) {
+        k += 1;
+    }
+    k == to || matches!(chars[k], '=' | ' ' | '\t')
 }
 
 fn parse_span_opener(interior: &str) -> Option<(String, Attrs)> {
@@ -353,27 +436,20 @@ fn parse_span_opener(interior: &str) -> Option<(String, Attrs)> {
 }
 
 /// Lex a link/embed target from `chars[from]`: no whitespace, balanced
-/// parens, an unbalanced `)` ends it. Returns (target, position after `)`).
-fn lex_target(chars: &[char], from: usize) -> Option<(String, usize)> {
-    let mut depth = 0usize;
-    let mut k = from;
-    while k < chars.len() {
-        match chars[k] {
-            ')' if depth == 0 => {
-                let target: String = chars[from..k].iter().collect();
-                if target.len() > MAX_TARGET_BYTES {
-                    return None;
-                }
-                return Some((target, k + 1));
-            }
-            ')' => depth -= 1,
-            '(' => depth += 1,
-            c if is_ws(c) => return None,
-            _ => {}
-        }
-        k += 1;
+/// parens, an unbalanced `)` ends it. `close` is that `)` (the match of the
+/// `(` before `from`), if any. Returns (target, position after `)`).
+fn lex_target(chars: &[char], close: Option<usize>, from: usize) -> Option<(String, usize)> {
+    // Every char is at least a byte: a target longer than the cap in chars
+    // fails without a look, so no failed target costs more than the cap.
+    let close = close.filter(|&close| close - from <= MAX_TARGET_BYTES)?;
+    let target = &chars[from..close];
+    if target.iter().any(|&c| is_ws(c)) {
+        return None;
     }
-    None
+    if target.iter().map(|c| c.len_utf8()).sum::<usize>() > MAX_TARGET_BYTES {
+        return None;
+    }
+    Some((target.iter().collect(), close + 1))
 }
 
 fn resolve_escapes(s: &str) -> String {

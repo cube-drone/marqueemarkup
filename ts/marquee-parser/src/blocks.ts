@@ -325,7 +325,7 @@ function parseContainer(cur: Cursor, ctx: Ctx, openDir: string | null, T: PosTra
       continue;
     }
 
-    if (line.replace(/[ \t]+$/, "") === "---") {
+    if (trimEndSpaceTab(line) === "---") {
       const li = cur.pos;
       cur.pos += 1;
       out.push(mark(T, cur, { type: "thematic_break" }, li, li));
@@ -387,8 +387,27 @@ function indentOf(line: string): number {
   return i;
 }
 
+// Manual scans, not /[ \t]+$/: V8 retries that regex from every start
+// position in a space run, so `a` + ` `×n + `b` went quadratic. These are
+// Rust's trim_matches / trim_end_matches([' ', '\t']).
+function isSpaceTab(c: string): boolean {
+  return c === " " || c === "\t";
+}
+
+function trimEndSpaceTab(s: string): string {
+  let end = s.length;
+  while (end > 0 && isSpaceTab(s[end - 1]!)) {
+    end -= 1;
+  }
+  return s.slice(0, end);
+}
+
 function trimSpaceTab(s: string): string {
-  return s.replace(/^[ \t]+|[ \t]+$/g, "");
+  let start = 0;
+  while (start < s.length && isSpaceTab(s[start]!)) {
+    start += 1;
+  }
+  return trimEndSpaceTab(s.slice(start));
 }
 
 /** Would this line start a non-paragraph block in this context? (Used both
@@ -400,7 +419,7 @@ function isBlockStart(line: string, ctx: Ctx): boolean {
     headingLine(line) !== null ||
     fenceOpen(line) !== null ||
     (line.startsWith(">") && ctx.quoteDepth < MAX_QUOTE_DEPTH) ||
-    line.replace(/[ \t]+$/, "") === "---" ||
+    trimEndSpaceTab(line) === "---" ||
     (ctx.listDepth < MAX_LIST_DEPTH && marker(line) !== null)
   );
 }
@@ -429,7 +448,7 @@ function fenceOpen(line: string): { len: number; info: string | null } | null {
 }
 
 function fenceClose(line: string, openLen: number): boolean {
-  const t = line.replace(/[ \t]+$/, "");
+  const t = trimEndSpaceTab(line);
   return t.length >= openLen && /^`+$/.test(t);
 }
 
@@ -557,7 +576,7 @@ type DirLine =
   | { kind: "bad"; reason: Reason };
 
 function classifyDirective(line: string): DirLine {
-  const rest = line.slice(3).replace(/[ \t]+$/, "");
+  const rest = trimEndSpaceTab(line.slice(3));
   if (rest === "") {
     return { kind: "close", name: null };
   }

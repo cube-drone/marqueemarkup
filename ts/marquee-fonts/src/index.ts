@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
  * with the renderer's FONTS vocabulary (a test enforces it). The four
  * standard stacks (sans/serif/mono/comic) are deliberately absent: they are
  * fallback stacks, not files. */
-export const FONT_MANIFEST: Record<string, string> = {
+export const FONT_MANIFEST: Record<string, string> = Object.assign(Object.create(null), {
   "radio-canada": "Radio Canada",
   "atkinson-hyperlegible": "Atkinson Hyperlegible",
   lexend: "Lexend",
@@ -53,7 +53,7 @@ export const FONT_MANIFEST: Record<string, string> = {
   rye: "Rye",
   bitcount: "Bitcount",
   quicksand: "Quicksand",
-};
+});
 
 /** Absolute path to a face's WOFF2 within this package, for copiers
  * (site builders shipping fonts/ next to their pages). Null for unknown

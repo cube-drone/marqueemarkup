@@ -217,3 +217,27 @@ test("audio and video keep their description as an aria-label, like the static r
   });
   assert.ok(/<video[^>]*aria-label="a cat, looping"/.test(looping), looping);
 });
+
+test("hostile documents: nesting costs linear work, a lone surrogate renders", () => {
+  let s = "[sidenote]NOTE[/sidenote]";
+  for (let i = 0; i < 15; i++) s = `[wave by=letter]a${s}[/wave]`;
+  let source = `${s}\n`;
+  for (let i = 0; i < 7; i++) source = `:::table\n${source}:::\n`;
+  const start = performance.now();
+  const out = html({ source });
+  assert.ok(performance.now() - start < 1000, "2x per span level, 2x per table");
+  assert.equal(out.split("NOTE").length - 1, 1, "one note, numbered once");
+  const tile = html({ source: ":::section background=tile:https://e.x/a\uD800.png\nwords\n:::\n" });
+  assert.ok(tile.includes("words"));
+});
+
+test("probing first: a React hook that claims a table or a split span still gets its children", () => {
+  const out = html({
+    source: ":::table\n[wave by=letter]hi[/wave]\n:::\n",
+    hooks: {
+      directive: (name, _attrs, kids) => (name === "table" ? h("x-table", null, kids) : null),
+      span: (name, _attrs, kids) => (name === "wave" ? h("x-wave", null, kids) : null),
+    },
+  });
+  assert.ok(out.includes("<x-table>") && out.includes("<x-wave>hi</x-wave>"), out);
+});

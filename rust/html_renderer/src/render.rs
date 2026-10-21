@@ -413,7 +413,11 @@ fn css_url(url: &str) -> String {
 /// color, or `tile:<target>` - a tiled background image, resolved through
 /// the embedder's media policy exactly as an embed (a background fetch is a
 /// fetch): out-of-policy or non-image targets degrade to no background.
-fn style_vars(attrs: &Attrs, profile: &dyn Profile) -> String {
+/// The style attribute, attribute-escaped like any other: the browser decodes
+/// character references before CSS sees the value, so a raw `&apos;` in a tile
+/// URL would otherwise close the url() and write CSS.
+fn style_vars(attrs: &Attrs, ctx: &Ctx) -> String {
+    let profile = ctx.profile;
     let mut vars: Vec<String> = Vec::new();
     if let Some(v) = attrs.get("color").filter(|v| is_color_value(v)) {
         vars.push(format!("--mq-color:{v}"));
@@ -441,7 +445,7 @@ fn style_vars(attrs: &Attrs, profile: &dyn Profile) -> String {
     if vars.is_empty() {
         String::new()
     } else {
-        format!(" style=\"{}\"", vars.join(";"))
+        format!(" style=\"{}\"", ctx.attr(&vars.join(";")))
     }
 }
 
@@ -477,18 +481,17 @@ fn media_size(v: &str) -> Option<String> {
 }
 
 fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
-    // The profile hook sees the children rendered; built-ins that lay their
-    // children out themselves (table, stack) render them again, so rewind
-    // the aside numbering first - or a note inside counts twice.
-    let (note_n, pending) = (ctx.note_n, ctx.pending.clone());
+    // Built-ins that lay their children out themselves (table, stack) probe
+    // the hook (it claims on name and attrs alone) instead of rendering the
+    // children for it: rendering them twice per level is exponential in
+    // nesting, and a note inside would count twice.
+    if matches!(name, "table" | "stack") && ctx.profile.directive(name, attrs, "").is_none() {
+        return if name == "table" { render_table(attrs, nodes, ctx) } else { render_stack(attrs, nodes, ctx) };
+    }
     let inner = children(nodes, ctx);
     if let Some(custom) = ctx.profile.directive(name, attrs, &inner) {
         return custom;
     }
-    let rewind = |ctx: &mut Ctx| {
-        ctx.note_n = note_n;
-        ctx.pending = pending.clone();
-    };
     match name {
         // Carries metadata, renders nothing by default - but never eats an
         // (unconventional) body.
@@ -502,7 +505,7 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
                 "<div class=\"mq-page{layout}{}{}\"{}>{inner}</div>",
                 scheme_class(attrs),
                 font_class(attrs),
-                style_vars(attrs, ctx.profile)
+                style_vars(attrs, ctx)
             )
         }
         "section" => {
@@ -514,7 +517,7 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
                 "<section class=\"mq-section{}{}\"{slot}{}>{inner}</section>",
                 scheme_class(attrs),
                 font_class(attrs),
-                style_vars(attrs, ctx.profile)
+                style_vars(attrs, ctx)
             )
         }
         "turbolink" if attrs.contains_key("target") => {
@@ -531,17 +534,9 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
             let style = if vars.is_empty() {
                 String::new()
             } else {
-                format!(" style=\"{}\"", vars.join(";"))
+                format!(" style=\"{}\"", ctx.attr(&vars.join(";")))
             };
             format!("<div class=\"mq-media\"{style}>{inner}</div>")
-        }
-        "table" => {
-            rewind(ctx);
-            render_table(attrs, nodes, ctx)
-        }
-        "stack" => {
-            rewind(ctx);
-            render_stack(attrs, nodes, ctx)
         }
         // Outside a stack a layer is just a section-like container: its style
         // knobs apply, place/backing mean nothing.
@@ -549,7 +544,7 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
             "<div class=\"mq-layer{}{}\"{}>{inner}</div>",
             scheme_class(attrs),
             font_class(attrs),
-            style_vars(attrs, ctx.profile)
+            style_vars(attrs, ctx)
         ),
         // The <center> tag, back from the dead in directive clothing - plus
         // right for symmetry and left as the un-aligner. Physical
@@ -700,7 +695,7 @@ fn render_stack(attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
     let style = if vars.is_empty() {
         String::new()
     } else {
-        format!(" style=\"{}\"", vars.join(";"))
+        format!(" style=\"{}\"", ctx.attr(&vars.join(";")))
     };
     let split = nodes.len().min(MAX_LAYERS);
     let layers: String = nodes[..split].iter().map(|n| render_layer(n, ctx)).collect();
@@ -743,7 +738,7 @@ fn render_layer(node: &Node, ctx: &mut Ctx) -> String {
         "<div class=\"mq-layer mq-place-{place}{backing}{cover}{}{}\"{}>{inner}</div>",
         scheme_class(attrs),
         font_class(attrs),
-        style_vars(attrs, ctx.profile)
+        style_vars(attrs, ctx)
     )
 }
 
@@ -754,9 +749,15 @@ fn size_rung(value: &str, inner: &str) -> String {
 }
 
 fn span(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
-    let inner = children(nodes, ctx);
-    if let Some(custom) = ctx.profile.span(name, attrs, &inner) {
-        return custom;
+    // Probe first (the hook claims on name and attrs alone): a split renders
+    // its children itself in by_segments, and rendering them here as well
+    // doubled the work - and every note inside - at each nesting level.
+    let splits = splits_by_unit(name, attrs) && ctx.profile.span(name, attrs, "").is_none();
+    let inner = if splits { String::new() } else { children(nodes, ctx) };
+    if !splits {
+        if let Some(custom) = ctx.profile.span(name, attrs, &inner) {
+            return custom;
+        }
     }
     match name {
         "sup" => format!("<sup>{inner}</sup>"),
@@ -876,6 +877,16 @@ fn span(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String {
 /// text, so it caps high.
 const MAX_SPLIT_UNITS: usize = 400;
 const MAX_REVEAL_UNITS: usize = 2000;
+
+/// Does `span` hand this effect to by_segments? Must agree with its arms.
+fn splits_by_unit(name: &str, attrs: &Attrs) -> bool {
+    let by = matches!(attrs.get("by").map(|s| s.as_str()), Some("letter" | "word"));
+    match name {
+        "typewriter" => true,
+        "blink" | "rainbow" | "bounce" | "jitter" | "wave" | "rubber" | "fadein" => by,
+        _ => false,
+    }
+}
 
 /// The one-shot reveals: sequential ordinals, the high unit cap.
 fn is_reveal(effect: &str) -> bool {

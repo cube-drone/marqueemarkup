@@ -161,8 +161,10 @@ function isToken(v: string | undefined): v is string {
  * no files, and the grab bag - SIL OFL faces the embedder serves itself
  * (never a third-party CDN: fonts are a tracking vector, care-modes apply).
  * Values are the `face` presentational attribute - the no-stylesheet floor;
- * the mq-font-* class is the ceiling, where the real @font-face lives. */
-export const FONTS: Record<string, string> = {
+ * the mq-font-* class is the ceiling, where the real @font-face lives.
+ * Author-keyed tables like this one have no prototype, so `font=constructor`
+ * finds nothing instead of Object's own properties. */
+export const FONTS: Record<string, string> = Object.assign(Object.create(null), {
   // standard stacks
   sans: "sans-serif",
   serif: "serif",
@@ -200,7 +202,7 @@ export const FONTS: Record<string, string> = {
   rye: "Rye",
   bitcount: "Bitcount",
   quicksand: "Quicksand",
-};
+});
 
 /** Which grab-bag faces does this rendered HTML actually wear? Pure string
  * scan of the mq-font-* class contract - feed the result to
@@ -239,12 +241,12 @@ function sizeRung(value: string, inner: string): string {
   return `<font class="mq-size-${value}" size="${value}">${inner}</font>`;
 }
 
-const MEDIA_SIZE_TOKENS: Record<string, string> = {
+const MEDIA_SIZE_TOKENS: Record<string, string> = Object.assign(Object.create(null), {
   small: "10rem",
   medium: "20rem",
   large: "32rem",
   full: "100%",
-};
+});
 
 /** Media width/height: a size token or a capped integer of pixels (SPEC.md,
  * "Media"). Anything else degrades to natural sizing. */
@@ -328,8 +330,11 @@ function turbolink(target: string, levelAttr: string | undefined, ctx: Ctx): str
  * that encodeURI deliberately leaves are percent-encoded on top, so the
  * value can never terminate the url() or the declaration - author bytes
  * must not write CSS, even inside their own style attribute. */
+// encodeURI throws on a lone surrogate; an embedder's media() may pass one.
+const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
+
 function cssUrl(url: string): string {
-  return encodeURI(url).replaceAll("'", "%27").replaceAll("(", "%28").replaceAll(")", "%29");
+  return encodeURI(url.replace(LONE_SURROGATE, "\uFFFD")).replaceAll("'", "%27").replaceAll("(", "%28").replaceAll(")", "%29");
 }
 
 /** Style knobs on a block node: validated values into --mq-* slots; the
@@ -361,9 +366,12 @@ function styleVarList(attrs: Attrs, profile: Profile): string {
   return vars.join(";");
 }
 
-function styleVars(attrs: Attrs, profile: Profile): string {
-  const list = styleVarList(attrs, profile);
-  return list === "" ? "" : ` style="${list}"`;
+/** The style attribute, attribute-escaped like any other: the browser
+ * decodes character references before CSS sees the value, so a raw `&apos;`
+ * in a tile URL would otherwise close the url() and write CSS. */
+function styleVars(attrs: Attrs, ctx: Ctx): string {
+  const list = styleVarList(attrs, ctx.profile);
+  return list === "" ? "" : ` style="${ctx.attr(list)}"`;
 }
 
 /** The visual identity a layout container (:::page / :::section) wears -
@@ -390,14 +398,13 @@ function fontClass(attrs: Attrs): string {
 
 function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string {
   const { profile } = ctx;
-  // The profile hook sees the children rendered; built-ins that lay their
-  // children out themselves (table, stack) render them again, so rewind the
-  // aside numbering first - or a note inside counts twice.
-  const saved = { n: ctx.note.n, pending: [...ctx.note.pending] };
-  const rewind = () => {
-    ctx.note.n = saved.n;
-    ctx.note.pending = [...saved.pending];
-  };
+  // Built-ins that lay their children out themselves (table, stack) probe
+  // the hook (it claims on name and attrs alone) instead of rendering the
+  // children for it: rendering them twice per level is exponential in
+  // nesting, and a note inside would count twice.
+  if ((name === "table" || name === "stack") && profile.directive(name, attrs, "") === null) {
+    return name === "table" ? renderTable(attrs, nodes, ctx) : renderStack(attrs, nodes, ctx);
+  }
   const inner = children(nodes, ctx);
   const custom = profile.directive(name, attrs, inner);
   if (custom !== null) {
@@ -410,11 +417,11 @@ function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string 
       return inner;
     case "page": {
       const layout = isToken(attrs["layout"]) ? ` mq-layout-${attrs["layout"]}` : "";
-      return `<div class="mq-page${layout}${schemeClass(attrs)}${fontClass(attrs)}"${styleVars(attrs, profile)}>${inner}</div>`;
+      return `<div class="mq-page${layout}${schemeClass(attrs)}${fontClass(attrs)}"${styleVars(attrs, ctx)}>${inner}</div>`;
     }
     case "section": {
       const slot = isToken(attrs["slot"]) ? ` data-slot="${attrs["slot"]}"` : "";
-      return `<section class="mq-section${schemeClass(attrs)}${fontClass(attrs)}"${slot}${styleVars(attrs, profile)}>${inner}</section>`;
+      return `<section class="mq-section${schemeClass(attrs)}${fontClass(attrs)}"${slot}${styleVars(attrs, ctx)}>${inner}</section>`;
     }
     case "turbolink": {
       const target = attrs["target"];
@@ -436,16 +443,10 @@ function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string 
       const style = vars.length === 0 ? "" : ` style="${vars.join(";")}"`;
       return `<div class="mq-media"${style}>${inner}</div>`;
     }
-    case "table":
-      rewind();
-      return renderTable(attrs, nodes, ctx);
-    case "stack":
-      rewind();
-      return renderStack(attrs, nodes, ctx);
     case "layer":
       // Outside a stack a layer is just a section-like container: its style
       // knobs apply, place/backing mean nothing.
-      return `<div class="mq-layer${schemeClass(attrs)}${fontClass(attrs)}"${styleVars(attrs, profile)}>${inner}</div>`;
+      return `<div class="mq-layer${schemeClass(attrs)}${fontClass(attrs)}"${styleVars(attrs, ctx)}>${inner}</div>`;
     case "center":
     case "right":
     case "left":
@@ -545,13 +546,13 @@ const PLACES = new Set([
 ]);
 
 /** The `aspect` vocabulary as CSS aspect-ratio values. */
-const STACK_ASPECTS: Record<string, string> = {
+const STACK_ASPECTS: Record<string, string> = Object.assign(Object.create(null), {
   "16:9": "16/9",
   "4:3": "4/3",
   "3:2": "3/2",
   "1:1": "1/1",
   card: "5/7",
-};
+});
 
 /** :::stack (SPEC.md, "Stacks"): every direct child is a layer, source order
  * is z-order. The stylesheet puts every layer in one grid cell, so the box
@@ -594,7 +595,7 @@ function renderLayer(node: Node, ctx: Ctx): string {
       ? " mq-layer-cover"
       : "";
   const inner = children(content, ctx);
-  return `<div class="mq-layer mq-place-${place}${backing}${cover}${schemeClass(attrs)}${fontClass(attrs)}"${styleVars(attrs, ctx.profile)}>${inner}</div>`;
+  return `<div class="mq-layer mq-place-${place}${backing}${cover}${schemeClass(attrs)}${fontClass(attrs)}"${styleVars(attrs, ctx)}>${inner}</div>`;
 }
 
 /** Effect/typographic spans. The `<font>` tag is deliberate: presentational
@@ -603,19 +604,19 @@ function renderLayer(node: Node, ctx: Ctx): string {
  * attributes - the floor of the degradation ladder. The --mq-color slot is
  * the stylesheet-era ceiling on the same element. */
 function span(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string {
-  const saved = { n: ctx.note.n, pending: [...ctx.note.pending] };
+  // Probe first (the hook claims on name and attrs alone): a split renders
+  // its children itself, and rendering them here as well doubled the work at
+  // every nesting level - exponential in a document anyone can sync.
+  const look = ctx.profile.span(name, attrs, "") === null ? effectLook(name, attrs, nodes) : null;
+  if (look !== null && look.units !== null) {
+    return renderEffect(name, look, nodes, "", ctx);
+  }
   const inner = children(nodes, ctx);
   const custom = ctx.profile.span(name, attrs, inner);
   if (custom !== null) {
     return custom;
   }
-  const look = effectLook(name, attrs, nodes);
   if (look !== null) {
-    if (look.units !== null) {
-      // A split renders its children again: rewind the aside numbering.
-      ctx.note.n = saved.n;
-      ctx.note.pending = [...saved.pending];
-    }
     return renderEffect(name, look, nodes, inner, ctx);
   }
   switch (name) {

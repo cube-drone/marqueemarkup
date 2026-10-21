@@ -13,7 +13,7 @@ const UA =
  * HTML5 table (2,000+ names); an unknown name is left as-is rather than
  * guessed. Mirror of the Rust crate's NAMED_ENTITIES.
  */
-const NAMED_ENTITIES: Record<string, string> = {
+const NAMED_ENTITIES: Record<string, string> = Object.assign(Object.create(null), {
   lt: "<",
   gt: ">",
   quot: '"',
@@ -34,7 +34,7 @@ const NAMED_ENTITIES: Record<string, string> = {
   raquo: "\u00bb",
   bull: "\u2022",
   middot: "\u00b7",
-};
+});
 
 const ENTITY_RE = /&(#[xX][0-9a-fA-F]{1,6}|#[0-9]{1,7}|[a-zA-Z][a-zA-Z0-9]{1,31});/g;
 

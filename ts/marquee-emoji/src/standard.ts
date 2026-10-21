@@ -2,7 +2,7 @@
 // edit by hand (npm run fetch-standard regenerates). Data: github/gemoji
 // (MIT; see GEMOJI-LICENSE). 1913 shortcodes.
 
-export const STANDARD: Record<string, string> = {
+export const STANDARD: Record<string, string> = Object.assign(Object.create(null), {
   "+1": "👍",
   "-1": "👎",
   "100": "💯",
@@ -1916,4 +1916,4 @@ export const STANDARD: Record<string, string> = {
   "zombie_man": "🧟‍♂️",
   "zombie_woman": "🧟‍♀️",
   "zzz": "💤",
-};
+});

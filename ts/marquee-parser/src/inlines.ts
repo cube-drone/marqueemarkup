@@ -12,7 +12,7 @@
 // itself is untouched either way: spans live outside the wire contract.
 
 import type { Attrs, Node } from "./ast.ts";
-import { isName, nameLen, parseAttrs, parseValue, utf8Len } from "./attrs.ts";
+import { nameLen, parseAttrs, parseValue } from "./attrs.ts";
 import { MAX_TARGET_BYTES, type Span } from "./blocks.ts";
 
 export const MAX_INLINE_DEPTH = 16;
@@ -80,6 +80,7 @@ function mk(P: PosCtx | null, node: Node, cpStart: number, cpEnd: number): Node 
  * would let composition multiply past it). */
 function parseInlinesAt(text: string, base: number, P: PosCtx | null): Node[] {
   const chars = Array.from(text);
+  const closes = findCloses(chars);
   const frames: Frame[] = [rootFrame()];
   let i = 0;
 
@@ -110,9 +111,9 @@ function parseInlinesAt(text: string, base: number, P: PosCtx | null): Node[] {
         i += n;
       }
     } else if (c === "[") {
-      i = bracket(chars, i, false, frames, base, P);
+      i = bracket(chars, closes, i, false, frames, base, P);
     } else if (c === "!" && chars[i + 1] === "[") {
-      i = bracket(chars, i + 1, true, frames, base, P);
+      i = bracket(chars, closes, i + 1, true, frames, base, P);
     } else if (c === ":") {
       let k = i + 1;
       while (k < chars.length && isSlugChar(chars[k]!)) {
@@ -258,10 +259,60 @@ function delimiter(
   return i + n;
 }
 
+/** Where each `[` and `(` in a container closes (-1 if never), found all
+ * at once: scanning forward from each opener in turn made `[`×n and
+ * `[a](`×n quadratic. */
+interface Closes {
+  /** Balanced and escape-aware, as a bracket's interior is. */
+  brackets: Int32Array;
+  /** Balanced, no escapes, as a link target is. */
+  parens: Int32Array;
+}
+
+function findCloses(chars: string[]): Closes {
+  return {
+    brackets: matchCloses(chars, "[", "]", true),
+    parens: matchCloses(chars, "(", ")", false),
+  };
+}
+
+/** level[k] is the nesting depth after chars[k] (an escaped char leaves it
+ * unchanged); the closer matching the opener at j is the first k > j whose
+ * level is level[j] - 1, so one right-to-left sweep that remembers the
+ * nearest position of each level answers every opener. */
+function matchCloses(chars: string[], open: string, close: string, escapes: boolean): Int32Array {
+  const n = chars.length;
+  const level = new Int32Array(n);
+  let depth = 0;
+  for (let k = 0; k < n; k += 1) {
+    const c = chars[k]!;
+    if (escapes && c === "\\" && k + 1 < n) {
+      level[k] = depth;
+      k += 1;
+    } else if (c === open) {
+      depth += 1;
+    } else if (c === close) {
+      depth -= 1;
+    }
+    level[k] = depth;
+  }
+  // Levels span [-n, n]: nearest[level + n + 1], so level - 1 indexes >= 0.
+  const nearest = new Int32Array(2 * n + 2).fill(-1);
+  const closes = new Int32Array(n).fill(-1);
+  for (let j = n - 1; j >= 0; j -= 1) {
+    if (chars[j] === open) {
+      closes[j] = nearest[level[j]! + n]!;
+    }
+    nearest[level[j]! + n + 1] = j;
+  }
+  return closes;
+}
+
 /** Handle a bracket construct starting at `chars[open]` (which is `[`).
  * `embed` means a `!` sits just before it. Returns the new position. */
 function bracket(
   chars: string[],
+  closes: Closes,
   open: number,
   embed: boolean,
   frames: Frame[],
@@ -274,27 +325,14 @@ function bracket(
     return bang + 1;
   };
 
-  // Find the matching `]` (balanced, escape-aware).
-  let depth = 1;
-  let k = open + 1;
-  while (k < chars.length) {
-    const c = chars[k]!;
-    if (c === "\\") {
-      k += 1;
-    } else if (c === "[") {
-      depth += 1;
-    } else if (c === "]") {
-      depth -= 1;
-      if (depth === 0) {
-        break;
-      }
-    }
-    k += 1;
-  }
-  if (k >= chars.length) {
+  // The matching `]` (balanced, escape-aware).
+  const k = closes.brackets[open]!;
+  if (k < 0) {
     return fallback();
   }
-  const interior = chars.slice(open + 1, k).join("");
+  // Copied only once a construct is sure to want it: copying up front made
+  // nested brackets (`[`×n `]`×n) quadratic.
+  const interior = (): string => chars.slice(open + 1, k).join("");
 
   // Link / embed: `](` with a lexable target.
   if (chars[k + 1] === "(") {
@@ -303,7 +341,7 @@ function bracket(
     if (!embed && base + totalDepth(frames) >= MAX_INLINE_DEPTH) {
       return fallback();
     }
-    const lexed = lexTarget(chars, k + 2);
+    const lexed = lexTarget(chars, closes.parens[k + 1]!, k + 2);
     if (lexed !== null) {
       const depth = base + totalDepth(frames) + 1;
       // The link text's own positions: the interior is a contiguous slice
@@ -314,8 +352,8 @@ function bracket(
         mk(
           P,
           embed
-            ? { type: "embed", target: lexed.target, alt: resolveEscapes(interior) }
-            : { type: "link", target: lexed.target, children: parseInlinesAt(interior, depth, subP) },
+            ? { type: "embed", target: lexed.target, alt: resolveEscapes(interior()) }
+            : { type: "link", target: lexed.target, children: parseInlinesAt(interior(), depth, subP) },
           bang,
           lexed.end,
         ),
@@ -326,9 +364,9 @@ function bracket(
   }
 
   // Span closer: `[/name]` must name the innermost open span.
-  if (interior.startsWith("/")) {
-    const name = interior.slice(1);
-    if (isName(name)) {
+  if (chars[open + 1] === "/") {
+    if (isNameAt(chars, open + 2, k)) {
+      const name = chars.slice(open + 2, k).join("");
       if (embed) {
         pushStr(frames, "!", P, bang, bang + 1); // the ! belongs to links/embeds, not spans
       }
@@ -349,7 +387,7 @@ function bracket(
 
   // Span opener: `[name ...]`, with the BBCode default-parameter idiom
   // (`[color=red]` puts `color=red` in the span's own attrs).
-  const opener = parseSpanOpener(interior);
+  const opener = maybeSpanOpener(chars, open + 1, k) ? parseSpanOpener(interior()) : null;
   if (opener !== null) {
     if (embed) {
       pushStr(frames, "!", P, bang, bang + 1); // the ! belongs to links/embeds, not spans
@@ -371,6 +409,42 @@ function bracket(
   }
 
   return fallback();
+}
+
+function isNameStart(c: string | undefined): boolean {
+  return c !== undefined && c >= "a" && c <= "z";
+}
+
+function isNameChar(c: string): boolean {
+  return (c >= "a" && c <= "z") || (c >= "0" && c <= "9") || c === "_" || c === "-";
+}
+
+/** isName over chars[from, to) in place: it stops at the first non-name
+ * char, so a failed closer (`[/[/[/`...) costs no copy of its interior. */
+function isNameAt(chars: string[], from: number, to: number): boolean {
+  if (from >= to || !isNameStart(chars[from])) {
+    return false;
+  }
+  for (let k = from + 1; k < to; k += 1) {
+    if (!isNameChar(chars[k]!)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** parseSpanOpener's early rejections, checked in place: a name, then `=`,
+ * a space or tab, or the end. Spares `[a[a[a`... a copy of each interior
+ * only to fail on its second char. */
+function maybeSpanOpener(chars: string[], from: number, to: number): boolean {
+  if (from >= to || !isNameStart(chars[from])) {
+    return false;
+  }
+  let k = from + 1;
+  while (k < to && isNameChar(chars[k]!)) {
+    k += 1;
+  }
+  return k === to || chars[k] === "=" || chars[k] === " " || chars[k] === "\t";
 }
 
 function parseSpanOpener(interior: string): { name: string; attrs: Attrs } | null {
@@ -407,29 +481,31 @@ function parseSpanOpener(interior: string): { name: string; attrs: Attrs } | nul
 }
 
 /** Lex a link/embed target from `chars[from]`: no whitespace, balanced
- * parens, an unbalanced `)` ends it. Returns the position after `)`. */
-function lexTarget(chars: string[], from: number): { target: string; end: number } | null {
-  let depth = 0;
-  let k = from;
-  while (k < chars.length) {
-    const c = chars[k]!;
-    if (c === ")" && depth === 0) {
-      const target = chars.slice(from, k).join("");
-      if (utf8Len(target) > MAX_TARGET_BYTES) {
-        return null;
-      }
-      return { target, end: k + 1 };
-    }
-    if (c === ")") {
-      depth -= 1;
-    } else if (c === "(") {
-      depth += 1;
-    } else if (isWs(c)) {
+ * parens, an unbalanced `)` ends it. `close` is that `)` (the match of the
+ * `(` before `from`), or -1. Returns the position after `)`. */
+function lexTarget(chars: string[], close: number, from: number): { target: string; end: number } | null {
+  // Every char is at least a byte: a target longer than the cap in chars
+  // fails without a look, so no failed target costs more than the cap.
+  if (close < 0 || close - from > MAX_TARGET_BYTES) {
+    return null;
+  }
+  let bytes = 0;
+  for (let k = from; k < close; k += 1) {
+    if (isWs(chars[k]!)) {
       return null;
     }
-    k += 1;
+    bytes += cpUtf8Len(chars[k]!);
   }
-  return null;
+  if (bytes > MAX_TARGET_BYTES) {
+    return null;
+  }
+  return { target: chars.slice(from, close).join(""), end: close + 1 };
+}
+
+/** utf8Len of one code point (a lone surrogate encodes as U+FFFD: 3). */
+function cpUtf8Len(c: string): number {
+  const cp = c.codePointAt(0)!;
+  return cp < 0x80 ? 1 : cp < 0x800 ? 2 : cp < 0x10000 ? 3 : 4;
 }
 
 function resolveEscapes(s: string): string {

@@ -41,6 +41,17 @@ function stringHook(
   return hook(name, attrs, childrenHtml);
 }
 
+/** Would embedder vocabulary claim this node? A probe with empty children,
+ * through whichever hook path would actually run (the React hook wins). */
+function claimed(kind: "directive" | "span", name: string, attrs: Attrs, ctx: Ctx): boolean {
+  const reactHook = ctx.hooks[kind];
+  if (reactHook !== undefined) {
+    const claim = reactHook(name, attrs, null);
+    return claim !== undefined && claim !== null;
+  }
+  return ctx.profile[kind](name, attrs, "") !== null;
+}
+
 /** React-returning versions of the rendering hooks. When present these win
  * over the string-returning `Profile` hooks (no innerHTML at all). */
 export interface ReactHooks {
@@ -89,12 +100,12 @@ function isToken(v: string | undefined): v is string {
   return v !== undefined && TOKEN.test(v);
 }
 
-const MEDIA_SIZE_TOKENS: Record<string, string> = {
+const MEDIA_SIZE_TOKENS: Record<string, string> = Object.assign(Object.create(null), {
   small: "10rem",
   medium: "20rem",
   large: "32rem",
   full: "100%",
-};
+});
 
 function mediaSize(v: string | undefined): string | null {
   if (v === undefined) {
@@ -113,8 +124,11 @@ function mediaSize(v: string | undefined): string | null {
 
 /** A URL safe inside a CSS url('...') token: author bytes must not write
  * CSS, even in their own style attribute. */
+// encodeURI throws on a lone surrogate; an embedder's media() may pass one.
+const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
+
 function cssUrl(url: string): string {
-  return encodeURI(url).replaceAll("'", "%27").replaceAll("(", "%28").replaceAll(")", "%29");
+  return encodeURI(url.replace(LONE_SURROGATE, "\uFFFD")).replaceAll("'", "%27").replaceAll("(", "%28").replaceAll(")", "%29");
 }
 
 /** Style knobs -> React style object (custom properties are legal keys). */
@@ -395,14 +409,12 @@ function turbolink(
 
 function directive(node: Node & { type: "directive" }, ctx: Ctx, key: string): ReactNode {
   const { name, attrs } = node;
-  // The hooks see the children rendered; built-ins that lay their children
-  // out themselves (table, stack) render them again, so rewind the aside
-  // numbering first - or a note inside counts twice.
-  const saved = { n: ctx.note.n, pending: [...ctx.note.pending] };
-  const rewind = (): void => {
-    ctx.note.n = saved.n;
-    ctx.note.pending = [...saved.pending];
-  };
+  // Built-ins that lay their children out themselves (table, stack) probe
+  // the hooks instead of rendering the children for them: rendering them
+  // twice per level is exponential in nesting, and a note would count twice.
+  if ((name === "table" || name === "stack") && !claimed("directive", name, attrs, ctx)) {
+    return name === "table" ? renderTable(node, ctx, key) : renderStack(node, ctx, key);
+  }
   const kids = renderChildren(node.children, ctx);
 
   const custom = ctx.hooks.directive?.(name, attrs, kids);
@@ -463,12 +475,6 @@ function directive(node: Node & { type: "directive" }, ctx: Ctx, key: string): R
       }
       return h("div", nodeProps(node, ctx, { key, className: "mq-media", style }), ...kids);
     }
-    case "table":
-      rewind();
-      return renderTable(node, ctx, key);
-    case "stack":
-      rewind();
-      return renderStack(node, ctx, key);
     case "layer":
       // Outside a stack a layer is just a section-like container: its style
       // knobs apply, place/backing mean nothing.
@@ -578,13 +584,13 @@ const PLACES = new Set([
 ]);
 
 /** The `aspect` vocabulary as CSS aspect-ratio values. */
-const STACK_ASPECTS: Record<string, string> = {
+const STACK_ASPECTS: Record<string, string> = Object.assign(Object.create(null), {
   "16:9": "16/9",
   "4:3": "4/3",
   "3:2": "3/2",
   "1:1": "1/1",
   card: "5/7",
-};
+});
 
 /** :::stack - every direct child is a layer, source order is z-order; the
  * stylesheet puts every layer in one grid cell (SPEC.md, "Stacks"). Layers
@@ -651,6 +657,13 @@ function sizeRung(value: string, inner: ReactNode[], node: Node, ctx: Ctx, key: 
 
 function span(node: Node & { type: "span" }, ctx: Ctx, key: string): ReactNode {
   const { name, attrs } = node;
+  // A split effect renders its children itself (splitRender): probe the
+  // hooks rather than render them here too, which doubled the work - and
+  // every note inside - at each nesting level.
+  const look = effectLook(name, attrs, node.children);
+  if (look !== null && look.units !== null && !claimed("span", name, attrs, ctx)) {
+    return effect(node, ctx, key);
+  }
   const kids = renderChildren(node.children, ctx);
 
   const custom = ctx.hooks.span?.(name, attrs, kids);

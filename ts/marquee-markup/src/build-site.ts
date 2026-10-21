@@ -176,7 +176,7 @@ function buildSiteCore(
         return bareWebProfile.media(target);
       },
       turbolink: composeTurbolinks(plugins, resolved),
-      emoji: (slug: string) => emojiTable[slug] ?? null,
+      emoji: (slug: string) => (Object.hasOwn(emojiTable, slug) ? emojiTable[slug]! : null),
       directive(name, attrs, _children) {
         if (name !== "include" || depth > 0) {
           return null; // deep include -> unknown vocabulary -> inert placeholder

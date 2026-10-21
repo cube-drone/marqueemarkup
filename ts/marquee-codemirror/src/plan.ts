@@ -71,11 +71,11 @@ export type WidgetSpec =
   | { type: "span"; node: Node };
 
 
-const SIZE_EM: Record<string, string> = {
+const SIZE_EM: Record<string, string> = Object.assign(Object.create(null), {
   "1": "0.65em", "2": "0.82em", "3": "1em", "4": "1.15em",
   "5": "1.35em", "6": "1.7em", "7": "2.4em",
-};
-const NAMED_SIZE: Record<string, string> = { teeny: "1", tiny: "2", huge: "6", enormous: "7" };
+});
+const NAMED_SIZE: Record<string, string> = Object.assign(Object.create(null), { teeny: "1", tiny: "2", huge: "6", enormous: "7" });
 const HEX_OR_TOKEN = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$|^[a-z][a-z0-9-]{0,31}$/;
 
 export function plan(source: string, sels: Sel[], profile: Profile): DecoSpec[] {

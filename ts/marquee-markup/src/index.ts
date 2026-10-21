@@ -93,7 +93,8 @@ function assembleProfile(
   return {
     ...bareWebProfile,
     turbolink: composeTurbolinks(plugins, resolved),
-    emoji: (slug: string) => emoji[slug] ?? null,
+    // hasOwn: a spread table has a prototype again, and `:constructor:` is author text.
+    emoji: (slug: string) => (Object.hasOwn(emoji, slug) ? emoji[slug]! : null),
     ...opts.profile,
   };
 }

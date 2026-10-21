@@ -467,3 +467,59 @@ test("split words wrap as one: a word's units sit in a nowrap group", () => {
   assert.ok(html.includes('<strong><span class="mq-l" style="--mq-o:11">8</span></strong>'), html);
   assert.equal(renderMarquee("[rainbow by=letter]漢字かな ok[/rainbow]\n").split("mq-w").length - 1, 1);
 });
+
+// -- hostile documents: synced from other people, rendered by everyone
+
+test("escaping: character references in a tile URL cannot write CSS", () => {
+  // The browser decodes &apos; / &rpar; in the attribute before CSS sees
+  // the value; raw, they closed the url() and wrote a declaration.
+  const source = ':::section background="tile:https://e.x/a.png#&apos;&rpar;;position&colon;fixed"\nhi\n:::\n';
+  for (const output of ["html", "xhtml"] as const) {
+    const html = renderMarquee(source, bareWebProfile, { output });
+    const style = /style="([^"]*)"/.exec(html)?.[1] ?? "";
+    assert.ok(style.includes("url('"), `the tile survives: ${html}`);
+    assert.ok(!/&(?!amp;)/.test(style), `a live character reference in the style attribute: ${style}`);
+  }
+});
+
+test("author keys never find Object's own properties", () => {
+  for (const source of [
+    "[font=constructor]x[/font]\n",
+    "[font=__proto__]x[/font]\n",
+    ":::section font=toString\nx\n:::\n",
+    ":::media width=constructor\n![p](https://e.x/p.png)\n:::\n",
+    ":::stack aspect=constructor\nx\n:::\n",
+    "![p](https://e.x/p.constructor)\n",
+  ]) {
+    const html = renderMarquee(source);
+    assert.ok(!/function|\[object|mq-font-(toString|constructor)/.test(html), `${JSON.stringify(source)}: ${html}`);
+  }
+});
+
+test("a lone surrogate in a target renders instead of throwing", () => {
+  const html = renderMarquee(":::section background=tile:https://e.x/a\uD800.png\nwords\n:::\n");
+  assert.ok(html.includes("words"));
+  assert.equal(bareWebProfile.linkAllowed("https://e.x/\uDC00"), false);
+  assert.equal(bareWebProfile.linkAllowed("https://e.x/🎩"), true, "a real pair is fine");
+});
+
+test("nesting costs linear work: split spans and tables render their children once", () => {
+  let s = "[sidenote]NOTE[/sidenote]";
+  for (let i = 0; i < 15; i++) s = `[wave by=letter]a${s}[/wave]`;
+  let source = `${s}\n`;
+  for (let i = 0; i < 7; i++) source = `:::table\n${source}:::\n`;
+  const start = performance.now();
+  const html = renderMarquee(source);
+  assert.ok(performance.now() - start < 1000, "was ~40 s: 2x per span level, 2x per table");
+  assert.equal(html.split("NOTE").length - 1, 1, "one note, numbered once");
+});
+
+test("probing first: a hook that claims a table or a split span still gets its children", () => {
+  const profile = {
+    ...bareWebProfile,
+    directive: (name: string, _a: unknown, kids: string) => (name === "table" ? `<x-table>${kids}</x-table>` : null),
+    span: (name: string, _a: unknown, kids: string) => (name === "wave" ? `<x-wave>${kids}</x-wave>` : null),
+  };
+  const html = renderMarquee(":::table\n[wave by=letter]hi[/wave]\n:::\n", profile);
+  assert.ok(html.includes("<x-table>") && html.includes("<x-wave>hi</x-wave>"), html);
+});

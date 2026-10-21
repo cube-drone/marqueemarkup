@@ -76,12 +76,14 @@ export interface Profile {
 
 // Mirror of the Rust renderer's table (rust/html_renderer/src/profile.rs). `apng` and
 // `opus` joined 2026-09-03: ringtome mints both and they rendered as the placeholder.
-const MEDIA_KINDS: Record<string, MediaResolution["kind"]> = {
+const MEDIA_KINDS: Record<string, MediaResolution["kind"]> = Object.assign(Object.create(null), {
   png: "image", jpg: "image", jpeg: "image", gif: "image", webp: "image",
   avif: "image", apng: "image", svg: "image",
   mp3: "audio", ogg: "audio", opus: "audio", wav: "audio", flac: "audio", m4a: "audio",
   mp4: "video", webm: "video",
-};
+});
+
+const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
 
 // Read the scheme the way a browser will: the URL parser strips leading C0
 // controls and spaces and drops tabs/newlines anywhere, so
@@ -97,7 +99,9 @@ function scheme(target: string): string | null {
  * degrades inert. */
 export const bareWebProfile: Profile = {
   linkAllowed(target) {
-    if (/[\x00-\x1f\x7f]/.test(target)) {
+    // A lone surrogate isn't a URL anyone can write; refusing it here keeps
+    // every anchor and media path well-formed.
+    if (/[\x00-\x1f\x7f]/.test(target) || LONE_SURROGATE.test(target)) {
       return false;
     }
     const s = scheme(target);

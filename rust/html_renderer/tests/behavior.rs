@@ -8,7 +8,7 @@
 //!   3. Fail closed, visibly: one placeholder per invalid_directive.
 //!   4. Escaping: author bytes cannot become markup.
 
-use marquee_html_renderer::{escape_text, render, render_marquee, BareWebProfile, Profile};
+use marquee_html_renderer::{escape_text, render, render_marquee, render_marquee_with, BareWebProfile, Output, Profile};
 
 /// Drop every <...> tag, keeping the (escaped) text between them.
 fn strip_tags(html: &str) -> String {
@@ -24,7 +24,7 @@ fn strip_tags(html: &str) -> String {
     }
     out
 }
-use marquee_parser::{parse, Node};
+use marquee_parser::{parse, Attrs, Node};
 use std::fs;
 use std::path::PathBuf;
 
@@ -465,4 +465,51 @@ fn split_words_wrap_as_one() {
     assert!(html.contains("<strong><span class=\"mq-l\" style=\"--mq-o:11\">8</span></strong>"), "a lone unit needs no group: {html}");
     let cjk = mq("[rainbow by=letter]漢字かな ok[/rainbow]\n");
     assert_eq!(cjk.matches("mq-w").count(), 1, "spaceless scripts wrap between characters: {cjk}");
+}
+
+// -- hostile documents: synced from other people, rendered by everyone
+
+#[test]
+fn escaping_character_references_in_a_tile_url_cannot_write_css() {
+    // The browser decodes &apos; / &rpar; in the attribute before CSS sees
+    // the value; raw, they closed the url() and wrote a declaration.
+    let source = ":::section background=\"tile:https://e.x/a.png#&apos;&rpar;;position&colon;fixed\"\nhi\n:::\n";
+    for output in [Output::Html, Output::Xhtml] {
+        let html = render_marquee_with(source, &BareWebProfile, output).unwrap();
+        let style = html.split("style=\"").nth(1).and_then(|s| s.split('"').next()).unwrap_or("");
+        assert!(style.contains("url('"), "the tile survives: {html}");
+        let live = style.match_indices('&').any(|(i, _)| !style[i..].starts_with("&amp;"));
+        assert!(!live, "a live character reference in the style attribute: {style}");
+    }
+}
+
+#[test]
+fn nesting_costs_linear_work_split_spans_and_tables_render_their_children_once() {
+    let mut s = String::from("[sidenote]NOTE[/sidenote]");
+    for _ in 0..15 {
+        s = format!("[wave by=letter]a{s}[/wave]");
+    }
+    let mut source = format!("{s}\n");
+    for _ in 0..7 {
+        source = format!(":::table\n{source}:::\n");
+    }
+    let start = std::time::Instant::now();
+    let html = render_marquee(&source, &BareWebProfile).unwrap();
+    assert!(start.elapsed().as_secs() < 1, "2x per span level, 2x per table");
+    assert_eq!(html.matches("NOTE").count(), 1, "one note, numbered once");
+}
+
+#[test]
+fn probing_first_a_hook_that_claims_a_table_or_a_split_span_still_gets_its_children() {
+    struct Claims;
+    impl Profile for Claims {
+        fn directive(&self, name: &str, _attrs: &Attrs, kids: &str) -> Option<String> {
+            (name == "table").then(|| format!("<x-table>{kids}</x-table>"))
+        }
+        fn span(&self, name: &str, _attrs: &Attrs, kids: &str) -> Option<String> {
+            (name == "wave").then(|| format!("<x-wave>{kids}</x-wave>"))
+        }
+    }
+    let html = render_marquee(":::table\n[wave by=letter]hi[/wave]\n:::\n", &Claims).unwrap();
+    assert!(html.contains("<x-table>") && html.contains("<x-wave>hi</x-wave>"), "{html}");
 }
