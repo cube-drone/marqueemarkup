@@ -112,6 +112,38 @@ test("escaping: author bytes cannot become markup", () => {
   assert.ok(html.includes("&lt;script&gt;alert(1)&lt;/script&gt;"), "escaped text present");
 });
 
+// Browsers strip leading C0 controls/spaces and drop tabs/newlines before
+// reading the scheme, so each of these is a javascript: URL in a browser.
+const DISGUISED_JAVASCRIPT = [
+  "\x01javascript:alert(1)",
+  "\x00javascript:alert(1)",
+  "\x1fjavascript:alert(1)",
+  " javascript:alert(1)",
+  "java\tscript:alert(1)",
+  "java\nscript:alert(1)",
+  "javascript\r:alert(1)",
+  "javascript:alert(1)\x7f",
+];
+
+test("escaping: a control-character prefix cannot smuggle a scheme past the link check", () => {
+  for (const t of ["\x01javascript:alert(1)", "\x1fjavascript:alert(1)"]) {
+    const link = renderMarquee(`[click](${t})\n`);
+    assert.ok(!link.includes("<a "), `disguised javascript: became a link: ${JSON.stringify(link)}`);
+    assert.ok(link.includes("click"), "the words survive");
+    const embed = renderMarquee(`![pic](${t})\n`);
+    assert.ok(!embed.includes("<a "), `disguised javascript: became an embed link: ${JSON.stringify(embed)}`);
+  }
+});
+
+test("bareWebProfile reads schemes the way a browser does", () => {
+  for (const t of DISGUISED_JAVASCRIPT) {
+    assert.equal(bareWebProfile.linkAllowed(t), false, JSON.stringify(t));
+    assert.equal(bareWebProfile.media(t + ".png"), null, JSON.stringify(t));
+  }
+  assert.equal(bareWebProfile.linkAllowed(" https://e.x/"), true);
+  assert.equal(bareWebProfile.linkAllowed("notes/today"), true);
+});
+
 test("blocked links keep their children", () => {
   const html = renderMarquee("[the words](weird://scheme)\n");
   assert.ok(html.includes("the words"));

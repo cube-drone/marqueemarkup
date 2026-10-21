@@ -38,7 +38,12 @@ pub enum EmojiResolution {
     Image { url: String, alt: Option<String> },
 }
 
+/// Read the scheme the way a browser will: the URL parser strips leading C0
+/// controls and spaces and drops tabs/newlines anywhere, so "\x01javascript:"
+/// and "java\tscript:" are javascript: URLs. Targets with controls are refused
+/// outright (see `link_allowed`); leading spaces are skipped.
 fn scheme(target: &str) -> Option<String> {
+    let target = target.trim_start_matches(' ');
     let bytes = target.as_bytes();
     if !bytes.first().is_some_and(|b| b.is_ascii_alphabetic()) {
         return None;
@@ -66,6 +71,9 @@ pub trait Profile {
     /// May this target become a hyperlink? Disallowed links render their
     /// children without an anchor (content survives, capability doesn't).
     fn link_allowed(&self, target: &str) -> bool {
+        if target.bytes().any(|b| b.is_ascii_control()) {
+            return false;
+        }
         match scheme(target) {
             None => true, // relative references
             Some(s) => matches!(s.as_str(), "http" | "https" | "mailto"),

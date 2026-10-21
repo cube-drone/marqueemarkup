@@ -83,8 +83,12 @@ const MEDIA_KINDS: Record<string, MediaResolution["kind"]> = {
   mp4: "video", webm: "video",
 };
 
+// Read the scheme the way a browser will: the URL parser strips leading C0
+// controls and spaces and drops tabs/newlines anywhere, so
+// "\x01javascript:" and "java\tscript:" are javascript: URLs. Targets with
+// controls are refused outright (see linkAllowed); leading spaces are skipped.
 function scheme(target: string): string | null {
-  const m = /^([A-Za-z][A-Za-z0-9+.-]*):/.exec(target);
+  const m = /^ *([A-Za-z][A-Za-z0-9+.-]*):/.exec(target);
   return m ? m[1]!.toLowerCase() : null;
 }
 
@@ -93,6 +97,9 @@ function scheme(target: string): string | null {
  * degrades inert. */
 export const bareWebProfile: Profile = {
   linkAllowed(target) {
+    if (/[\x00-\x1f\x7f]/.test(target)) {
+      return false;
+    }
     const s = scheme(target);
     return s === null || s === "http" || s === "https" || s === "mailto";
   },

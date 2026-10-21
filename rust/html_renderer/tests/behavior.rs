@@ -8,7 +8,7 @@
 //!   3. Fail closed, visibly: one placeholder per invalid_directive.
 //!   4. Escaping: author bytes cannot become markup.
 
-use marquee_html_renderer::{escape_text, render, render_marquee, BareWebProfile};
+use marquee_html_renderer::{escape_text, render, render_marquee, BareWebProfile, Profile};
 
 /// Drop every <...> tag, keeping the (escaped) text between them.
 fn strip_tags(html: &str) -> String {
@@ -132,6 +132,40 @@ fn escaping_author_bytes_cannot_become_markup() {
     assert!(!html.contains("href=\"javascript:"), "javascript: URL became a link");
     assert!(!html.contains("secret"), "comment content leaked");
     assert!(html.contains("&lt;script&gt;alert(1)&lt;/script&gt;"));
+}
+
+/// Browsers strip leading C0 controls/spaces and drop tabs/newlines before
+/// reading the scheme, so each of these is a javascript: URL in a browser.
+const DISGUISED_JAVASCRIPT: &[&str] = &[
+    "\x01javascript:alert(1)",
+    "\x00javascript:alert(1)",
+    "\x1fjavascript:alert(1)",
+    " javascript:alert(1)",
+    "java\tscript:alert(1)",
+    "java\nscript:alert(1)",
+    "javascript\r:alert(1)",
+    "javascript:alert(1)\x7f",
+];
+
+#[test]
+fn escaping_a_control_character_prefix_cannot_smuggle_a_scheme_past_the_link_check() {
+    for t in ["\x01javascript:alert(1)", "\x1fjavascript:alert(1)"] {
+        let link = render_marquee(&format!("[click]({t})\n"), &BareWebProfile).unwrap();
+        assert!(!link.contains("<a "), "disguised javascript: became a link: {link:?}");
+        assert!(link.contains("click"), "the words survive");
+        let embed = render_marquee(&format!("![pic]({t})\n"), &BareWebProfile).unwrap();
+        assert!(!embed.contains("<a "), "disguised javascript: became an embed link: {embed:?}");
+    }
+}
+
+#[test]
+fn bare_web_profile_reads_schemes_the_way_a_browser_does() {
+    for t in DISGUISED_JAVASCRIPT {
+        assert!(!BareWebProfile.link_allowed(t), "{t:?}");
+        assert!(BareWebProfile.media(&format!("{t}.png")).is_none(), "{t:?}");
+    }
+    assert!(BareWebProfile.link_allowed(" https://e.x/"));
+    assert!(BareWebProfile.link_allowed("notes/today"));
 }
 
 #[test]
