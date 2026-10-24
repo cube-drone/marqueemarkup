@@ -86,6 +86,9 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
         return lines;
       }
       if (spec.kind === "mark") {
+        // CodeMirror throws on an empty mark, and a throw here wedges the
+        // editor: the keystroke lands in the DOM but never in the state.
+        if (spec.to <= spec.from) return [];
         const attributes = { ...spec.attrs, ...(spec.style === undefined ? {} : { style: spec.style }) };
         return Decoration.mark({
           ...(spec.class === undefined ? {} : { class: spec.class }),

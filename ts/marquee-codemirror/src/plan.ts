@@ -134,7 +134,9 @@ export function planFromAst(
       case "heading": {
         if (span) {
           markers([span.start, span.start + node.level + 1], [span.start, span.start], touched(span));
-          out.push({ kind: "mark", from: span.start + node.level + 1, to: span.end, class: `cm-mq-h${node.level}` });
+          // A heading still being typed ("### ", no words yet) has no content to size.
+          const from = span.start + node.level + 1;
+          if (span.end > from) out.push({ kind: "mark", from, to: span.end, class: `cm-mq-h${node.level}` });
         }
         node.children.forEach(inline);
         return;

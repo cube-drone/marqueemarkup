@@ -38,6 +38,16 @@ test("heading prefix hides away, dims near; content sized", () => {
   assert.ok(find(specs, (s) => s.kind === "mark" && s.class === "cm-mq-h2"));
 });
 
+test("a heading with no words yet plans no empty mark", () => {
+  // CodeMirror throws on an empty mark decoration, which wedged the editor
+  // the moment "### " was typed: the space never reached the state.
+  for (const [src, at] of [["### ", 4], ["x\n### ", 6], ["#### \n", 5]] as const) {
+    const specs = plan(src, cursorAt(at), P);
+    assert.ok(!specs.some((s) => s.kind === "mark" && s.to <= s.from), JSON.stringify(src));
+    assert.ok(find(specs, (s) => s.kind === "mark" && s.class === "cm-mq-marker"), "the marker still shows");
+  }
+});
+
 test("a link away from the cursor is a real followable anchor widget", () => {
   const src = "see [my site](https://e.x/p) ok\n";
   const specs = plan(src, noCursor, bareWebProfile);
