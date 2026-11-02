@@ -1234,8 +1234,10 @@ big {
   font-family: UnifrakturMaguntia, "Old English Text MT", "Times New Roman", serif;
 }
 
-.mq-scheme-newsprint :is(h2, h3, h4, h5, h6) {
-  margin: 0.5em 0 0.3em;
+/* No top margin, so a column that opens on a headline starts level with one
+ * that opens on body text. The paragraph above still leaves its 0.6em. */
+.mq-scheme-newsprint :is(h2, h3, h4, h5, h6, .mq-h7, .mq-h8) {
+  margin: 0 0 0.3em;
   line-height: 1.05;
   text-align: left;
   hyphens: none;

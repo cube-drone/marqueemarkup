@@ -74,7 +74,7 @@ And no blank line is needed to start a block — here's my list:
 
 ### A heading with *emphasis*, [color=goldenrod]color[/color], and [blink]blink[/blink]
 
-######## Eight hashes still works — deeper than HTML dares.
+######## Eight hashes still works. That's right: suck it, HTML, welcome to the h8 zone
 
 ######### Nine hashes is just a paragraph, rendered literally.
 
@@ -89,7 +89,7 @@ lone * asterisk just sits there. Escapes work too: \*not emphasis\*, and a line 
 
 \- an escaped dash, which is not a list.
 
-[blink]forgot the closer — so this whole run renders literally, brackets and all.
+[blink]this is an un-closed element — so this whole run renders literally, brackets and all.
 ```
 
 *emphasis*, **strong**, **strong with *emphasis* inside**, ~~struck through~~, and
@@ -619,7 +619,7 @@ slide 3 of 12
 :::
 :::
 
-The box grows to fit, so nothing gets cut off: a caption too long for its picture makes the
+The box grows to fit, so nothing gets cut off. A caption too long for its picture makes the
 whole box taller, and the picture crops at its edges instead. Pictures can be cropped; words
 never are.
 
@@ -660,8 +660,9 @@ typing itself out. That's a visual-novel scene, in plain Marquee:
 
 This one's not intended for humans to write, normally. Let's say you're editing Marquee in
 a Marquee-aware environment that supports different versions? Well, there's a special block
-for conflicts, so that they can look extra pretty.  You still have to figure out how to
-deal with the conflict, though. 
+for conflicts, so that they can look extra concerning and imposing.
+
+You still have to figure out how to deal with the conflict, though. 
 
 ```marquee
 :::conflict
@@ -682,10 +683,6 @@ Meet at the **north** entrance.
 Meet at the **north** entrance, by the fountain.
 ::: variant
 ::: conflict
-
-Resolve it by editing: delete the version you don't want, keep (or splice) the one you do, and
-save — whatever you leave *is* the document, nothing is parsed back out. A reader too old to know
-`:::conflict` shows both variants stacked, in full: the words never vanish.
 
 ## Quotes
 
@@ -748,7 +745,7 @@ Need literal triple-backticks *inside* a block? Fence with four:
 :::meta title="Writing Marquee, live" date=2026-07-10 tags="guide, demo":::
 ```
 
-There is a live comment in this very spot — and rendering it as nothing *is* the demo:
+There is a live comment in this very spot. You can't see it. It's a comment. 
 
 %% you can't see me.
 
@@ -794,12 +791,12 @@ signed, ~~the management~~ ur mom
 
 ```marquee
 :::section scheme=terminal
-sys.status: [color=#33ff66]COZY[/color] · uptime 11,315 days
+sys.status: [color=#33ff66]COZY[/color] · downtime 11,315 days
 :::
 ```
 
 :::section scheme=terminal
-sys.status: [color=#33ff66]COZY[/color] · uptime 11,315 days
+sys.status: [color=#33ff66]COZY[/color] · downtime 11,315 days
 :::
 
 :::section scheme=parchment
@@ -849,34 +846,39 @@ Frog learned **Regular Frog Stuff**! (`scheme=chronotrigger`)
 :::
 
 :::section scheme=ff6 accent=#b03060
-Config > Window color, set to wine. (`scheme=ff6 accent=#b03060`)
+This should be blue, but instead it is... wine colored? (`scheme=ff6 accent=#b03060`)
 :::
 
 :::section scheme=chronotrigger
-Crono learned **Cyclone**! (`scheme=chronotrigger`)
+Crono learned **Brutal Intestinal Cyclone**! Crono should not have eaten at the *Taco Bell*. (`scheme=chronotrigger`)
 :::
 
-Then I got carried away with paper.
+Also, some other styles:
 
 ```marquee
 :::section scheme=newsprint
 # The Daily Marquee
 
-## Markup Language Adds Windows
+## Markup Language Adds Needless Themes
 
-Local developers were astonished today. "We did not ask for this," said one reader, visibly delighted.
+Local developers "did not ask for this", are "not sure why you would include this in a markup language". 
+
+### Weather
+
+We have checked with our sources and they have confirmed: weather's still happening,
+despite our many attempts to defeat it. 
 :::
 
 :::section scheme=typewriter
 # Memorandum
 
-**URGENT:** the *carbon paper* is missing again.
+**URGENT:** the *carbon paper* is missing again. Whoever has it, please return it to the supply closet.
 :::
 
 :::section scheme=bluescreen
 # Windows
 
-A fatal exception 0E has occurred at 0028:C0011E36.
+A fatal exception 0E has occurred at 0028:C0011E36 in VXD VMM(01) + 00010E36. The current application will be terminated.
 
 Press any key to continue
 :::
@@ -887,11 +889,12 @@ Press any key to continue
 
 ## Markup Language Adds Windows
 
-Local developers were astonished today when a markup language that had no business doing so started rendering operating systems. "We did not ask for this," said one reader, visibly delighted.
+Local developers "did not ask for this", are "not sure why you would include this in a markup language". 
 
 ### Weather
 
-Gray, with a chance of beveled edges by the afternoon. Officials urge calm, and also urge everyone to check their borders, which are inset.
+We have checked with our sources and they have confirmed: weather's still happening,
+despite our many attempts to defeat it. 
 :::
 
 :::section scheme=typewriter
@@ -976,7 +979,12 @@ The bare `pear-message` takes no side and has no tail.
 Neither does the bare `robot-message`.
 :::
 
-And then, God help us, operating systems. A leading heading is the title bar, a plain section inside is a group box, and `accent=` repaints the bar.
+And then, God help us, operating systems. 
+
+These are thanks to the excellent [xp.css](https://botoxparty.github.io/XP.css/) and
+[98.css](https://jdan.github.io/98.css/) libraries, which are included.
+
+A leading heading is the title bar, a plain section inside is a group box, and `accent=` repaints the bar.
 
 ```marquee
 :::section scheme=windows
@@ -992,8 +1000,14 @@ A plain section inside.
 :::
 :::
 
-:::section scheme=windows-xp accent=#6b8e23
+:::section scheme=windows-xp
 # My Computer
+
+Bliss. You can almost see the hill.
+:::
+
+:::section scheme=windows-xp accent=#6b8e23
+# My Computer, But Olive
 
 Olive, the theme of champions.
 :::
