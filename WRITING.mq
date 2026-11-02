@@ -856,6 +856,174 @@ Config > Window color, set to wine. (`scheme=ff6 accent=#b03060`)
 Crono learned **Cyclone**! (`scheme=chronotrigger`)
 :::
 
+Then I got carried away with paper.
+
+```marquee
+:::section scheme=newsprint
+# The Daily Marquee
+
+## Markup Language Adds Windows
+
+Local developers were astonished today. "We did not ask for this," said one reader, visibly delighted.
+:::
+
+:::section scheme=typewriter
+# Memorandum
+
+**URGENT:** the *carbon paper* is missing again.
+:::
+
+:::section scheme=bluescreen
+# Windows
+
+A fatal exception 0E has occurred at 0028:C0011E36.
+
+Press any key to continue
+:::
+```
+
+:::section scheme=newsprint
+# The Daily Marquee
+
+## Markup Language Adds Windows
+
+Local developers were astonished today when a markup language that had no business doing so started rendering operating systems. "We did not ask for this," said one reader, visibly delighted.
+
+### Weather
+
+Gray, with a chance of beveled edges by the afternoon. Officials urge calm, and also urge everyone to check their borders, which are inset.
+:::
+
+:::section scheme=typewriter
+# Memorandum
+
+**URGENT:** the *carbon paper* is missing again. Whoever has it, please return it to the supply closet.
+:::
+
+:::section scheme=bluescreen
+# Windows
+
+A fatal exception 0E has occurred at 0028:C0011E36 in VXD VMM(01) + 00010E36. The current application will be terminated.
+
+Press any key to continue
+:::
+
+Sections make good text messages: `-me` sits on the right, `-other` on the left. `accent=` is the bubble, and the text picks black or white to suit it.
+
+```marquee
+:::section scheme=pear-message-other
+Are you coming to the thing?
+:::
+
+:::section scheme=pear-message-me
+Which thing
+:::
+
+:::section scheme=pear-message-me accent=#34c759
+Oh, THE thing. On my way.
+:::
+
+:::section scheme=robot-message-other
+Did the build pass?
+:::
+
+:::section scheme=robot-message-me
+All green
+:::
+
+:::section scheme=robot-message-other accent=#1b5e20
+Deploying it now.
+:::
+
+:::section scheme=pear-message
+The bare `pear-message` takes no side and has no tail.
+:::
+
+:::section scheme=robot-message
+Neither does the bare `robot-message`.
+:::
+```
+
+:::section scheme=pear-message-other
+Are you coming to the thing?
+:::
+
+:::section scheme=pear-message-me
+Which thing
+:::
+
+:::section scheme=pear-message-me accent=#34c759
+Oh, THE thing. On my way.
+:::
+
+:::section scheme=robot-message-other
+Did the build pass?
+:::
+
+:::section scheme=robot-message-me
+All green
+:::
+
+:::section scheme=robot-message-other accent=#1b5e20
+Deploying it now.
+:::
+
+:::section scheme=pear-message
+The bare `pear-message` takes no side and has no tail.
+:::
+
+:::section scheme=robot-message
+Neither does the bare `robot-message`.
+:::
+
+And then, God help us, operating systems. A leading heading is the title bar, a plain section inside is a group box, and `accent=` repaints the bar.
+
+```marquee
+:::section scheme=windows
+# Untitled - Notepad
+
+It is 1998 and it will always be 1998.
+
+> A quote is a sunken panel.
+
+:::section
+### Group box
+A plain section inside.
+:::
+:::
+
+:::section scheme=windows-xp accent=#6b8e23
+# My Computer
+
+Olive, the theme of champions.
+:::
+```
+
+:::section scheme=windows
+# Untitled - Notepad
+
+It is 1998 and it will always be 1998.
+
+> A quote is a sunken panel.
+
+:::section
+### Group box
+A plain section inside.
+:::
+:::
+
+:::section scheme=windows-xp
+# My Computer
+
+Bliss. You can almost see the hill.
+:::
+
+:::section scheme=windows-xp accent=#6b8e23
+# My Computer, But Olive
+
+Olive, the theme of champions.
+:::
+
 And backgrounds tile images, exactly as the old web intended — any image target, honoring
 the host's media policy like every other embed:
 

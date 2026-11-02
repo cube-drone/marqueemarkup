@@ -62,6 +62,9 @@ const SCHEME_FONTS: &[(&str, &str)] = &[
     ("crosscode", "vt323"),
     ("ff6", "vt323"),
     ("chronotrigger", "vt323"),
+    ("bluescreen", "vt323"),
+    ("typewriter", "special-elite"),
+    ("newsprint", "unifraktur"),
 ];
 
 /// Which grab-bag faces does this rendered HTML actually wear? Pure string

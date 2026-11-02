@@ -454,6 +454,12 @@ fn accent_is_a_color_knob_and_schemes_wear_their_faces() {
     for scheme in ["crosscode", "ff6", "chronotrigger"] {
         assert_eq!(used_font_tokens(&mq(&format!(":::section scheme={scheme}\nhi\n:::\n"))), vec!["vt323"], "{scheme}");
     }
+    for (scheme, face) in [("bluescreen", "vt323"), ("typewriter", "special-elite"), ("newsprint", "unifraktur")] {
+        assert_eq!(used_font_tokens(&mq(&format!(":::section scheme={scheme}\nhi\n:::\n"))), vec![face], "{scheme}");
+    }
+    for scheme in ["windows", "windows-xp", "pear-message-me", "robot-message-other"] {
+        assert!(used_font_tokens(&mq(&format!(":::section scheme={scheme}\nhi\n:::\n"))).is_empty(), "{scheme}");
+    }
 }
 
 #[test]

@@ -420,6 +420,35 @@ The last three speak VT323, a pixel terminal face.
 `accent=` sets a window's signature color: the frame for EarthBound (so
 `scheme=earthbound-mint accent=#ff6a00` is a flavor of your own), the window itself for FF6
 and Chrono Trigger (their config menus let you change it too), the inner border for CrossCode.
+**Period pieces** dress a section up as an object:
+
+- `newsprint` — a broadsheet: justified columns, and a leading `# heading` becomes a blackletter
+  masthead.
+- `typewriter` — an old typed page. One size, one face: headings shout and underline, `*emphasis*`
+  is underscored, and `**strong**` lands in the red half of the ribbon (`accent=` swaps the red).
+- `bluescreen` — Windows 95 regrets to inform you. A leading heading is the reversed `Windows`
+  chip, and the last line ends in a blinking cursor.
+
+**Messages** make the section a chat bubble, so a conversation is just a run of them:
+
+- `pear-message-me` and `pear-message-other` — iOS bubbles, on the right and on the left, with
+  tails. `pear-message` takes no side.
+- `robot-message-me`, `robot-message-other`, and `robot-message` — the Android equivalent.
+
+`accent=` is the bubble color, so `scheme=pear-message-me accent=#34c759` is the green bubble you
+were warned about. The text picks black or white to suit it.
+
+**Operating systems** are the whole widget set, not just a costume:
+
+- `windows` — a Windows 98 window ([98.css](https://github.com/jdan/98.css)).
+- `windows-xp` — a Windows XP window ([XP.css](https://github.com/botoxparty/XP.css)).
+
+The section is the window and a leading heading is its title bar (no heading, untitled window).
+Inside, quotes and code are sunken panels, tables are list views, and a plain `:::section` is a
+group box whose leading heading is its label. `accent=` repaints the title bar. The buttons on it
+are pictures: nothing closes. Any HTML a plugin puts inside gets the library's full treatment,
+class names included.
+
 Any knob still wins over its scheme — `scheme=earthbound font=serif` drops the pixel font. Styling flows down by containment: everything inside a schemed page inherits its
 look, and whichever knob is set *closest* wins — that's the entire cascade. A section without
 a slot is just a styled container, usable anywhere.

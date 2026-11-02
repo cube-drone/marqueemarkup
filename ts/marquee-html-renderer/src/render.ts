@@ -231,6 +231,9 @@ const SCHEME_FONTS: [string, string][] = [
   ["crosscode", "vt323"],
   ["ff6", "vt323"],
   ["chronotrigger", "vt323"],
+  ["bluescreen", "vt323"],
+  ["typewriter", "special-elite"],
+  ["newsprint", "unifraktur"],
 ];
 
 /** One rung of the font-element seven-step dial: presentational floor
