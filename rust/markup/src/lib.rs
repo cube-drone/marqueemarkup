@@ -8,7 +8,7 @@ pub mod opengraph;
 pub mod turbolink;
 
 pub use build_site::{build_site, build_site_fetch, SiteOptions, SiteReport};
-pub use css::MARQUEE_CSS;
+pub use css::{marquee_css, strip_css_comments, MARQUEE_CSS};
 pub use emoji::{standard_emoji, standard_emoji_table};
 pub use fonts::{external_font_faces, font_bytes, inline_font_faces};
 
@@ -195,7 +195,7 @@ fn fragment_core(
         body = format!("<div class=\"mq-envelope\">{body}</div>");
     }
     let font_tokens = used_font_tokens(&body);
-    let mut css = format!("{MARQUEE_CSS}\n{}", turbolink_styles(plugins));
+    let mut css = format!("{}\n{}", marquee_css(), turbolink_styles(plugins));
     if enveloped {
         css.push_str(&format!("\n{ENVELOPE_CSS}"));
     }

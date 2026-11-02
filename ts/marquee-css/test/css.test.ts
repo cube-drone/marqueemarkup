@@ -1,6 +1,7 @@
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { marqueeCss } from "../src/index.ts";
+import { marqueeCss, stripCssComments as strip } from "../src/index.ts";
 
 test("the stylesheet string is the stylesheet", () => {
   assert.ok(marqueeCss.includes(".mq-doc"), "scoping root present");
@@ -47,4 +48,25 @@ test("the OS schemes are scoped, attributed, and carry no baggage", () => {
   for (const m of marqueeCss.matchAll(/url\(\s*["']?([^"')\s]{0,20})/g)) {
     assert.ok(m[1]!.startsWith("data:") || m[1]!.startsWith("%23"), `non-inline url: ${m[1]}`);
   }
+});
+
+// The same cases as the Rust crate's lockstep.rs: both strippers must agree.
+test("comment stripping: comments go, strings and notices stay", () => {
+  assert.equal(strip("a { color: red; } /* gone */\n"), "a { color: red; }");
+  assert.equal(strip("/* whole\n   lines */\n\n  b {\n    top: 0;\n  }\n"), "b {\ntop: 0;\n}");
+  assert.equal(strip("/*! keep\n * me */\na{}"), "/*! keep\n* me */\na{}");
+  assert.equal(strip("a{b:c/**/d}"), "a{b:c d}", "a comment separates tokens");
+  assert.equal(strip('a{background:url("x/*y*/z")}'), 'a{background:url("x/*y*/z")}');
+  assert.equal(strip("a{content:'\\'/*k*/'}"), "a{content:'\\'/*k*/'}");
+  assert.equal(strip('a{content:"é"}/* é */b{}'), 'a{content:"é"} b{}');
+  assert.equal(strip("a{} /* never closed"), "a{}");
+});
+
+test("the wire stylesheet is the file minus its comments, every rule intact", () => {
+  const file = readFileSync(new URL("../marquee.css", import.meta.url), "utf8");
+  assert.ok(marqueeCss.length < file.length);
+  assert.ok(!marqueeCss.includes("the reference stylesheet for rendered Marquee"), "ordinary comments go");
+  // Ruleset count is the same with and without: nothing but comments left.
+  const rules = (css: string) => (css.replace(/\/\*[\s\S]*?\*\//g, "").match(/\{/g) ?? []).length;
+  assert.equal(rules(marqueeCss), rules(file));
 });

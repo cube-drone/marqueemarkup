@@ -30,6 +30,30 @@ fn css_is_byte_identical_to_the_npm_package() {
     );
 }
 
+/// The same cases as the npm package's css.test.ts: both strippers must agree.
+#[test]
+fn comment_stripping_matches_the_npm_package() {
+    use marquee_markup::strip_css_comments as strip;
+    assert_eq!(strip("a { color: red; } /* gone */\n"), "a { color: red; }");
+    assert_eq!(strip("/* whole\n   lines */\n\n  b {\n    top: 0;\n  }\n"), "b {\ntop: 0;\n}");
+    assert_eq!(strip("/*! keep\n * me */\na{}"), "/*! keep\n* me */\na{}");
+    assert_eq!(strip("a{b:c/**/d}"), "a{b:c d}");
+    assert_eq!(strip("a{background:url(\"x/*y*/z\")}"), "a{background:url(\"x/*y*/z\")}");
+    assert_eq!(strip("a{content:'\\'/*k*/'}"), "a{content:'\\'/*k*/'}");
+    assert_eq!(strip("a{content:\"é\"}/* é */b{}"), "a{content:\"é\"} b{}");
+    assert_eq!(strip("a{} /* never closed"), "a{}");
+}
+
+#[test]
+fn the_wire_stylesheet_leaves_comments_behind_but_not_the_license() {
+    let css = marquee_markup::marquee_css();
+    assert!(css.len() < marquee_markup::MARQUEE_CSS.len());
+    assert!(!css.contains("the reference stylesheet for rendered Marquee"), "ordinary comments go");
+    assert!(css.contains("Copyright 2020 Jordan Scales"), "MIT notice stays");
+    assert!(css.contains("Copyright 2020 Adam Hammad, Jordan Scales"), "MIT notice stays");
+    assert!(css.contains(".mq-scheme-windows-xp"), "the rules stay");
+}
+
 #[test]
 fn fonts_are_byte_identical_to_the_npm_package() {
     if !in_repo() { return; }

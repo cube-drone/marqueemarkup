@@ -12,8 +12,8 @@ use crate::turbolink::{
     TurbolinkPlugin,
 };
 use crate::{
-    emoji_table, external_font_faces, font_bytes, meta_title, readability_css, ColorScheme,
-    MarqueeOptions, ENVELOPE_CSS, MARQUEE_CSS,
+    emoji_table, external_font_faces, font_bytes, marquee_css, meta_title, readability_css,
+    ColorScheme, MarqueeOptions, ENVELOPE_CSS,
 };
 use marquee_html_renderer::{
     escape_text, render, used_font_tokens, BareWebProfile, EmojiResolution, MediaResolution,
@@ -280,7 +280,7 @@ fn build_site_core(
         .collect();
 
     fs::create_dir_all(out_dir.join("css"))?;
-    fs::write(out_dir.join("css/marquee.css"), MARQUEE_CSS)?;
+    fs::write(out_dir.join("css/marquee.css"), marquee_css())?;
     fs::write(out_dir.join("css/turbolink.css"), turbolink_styles(plugins))?;
 
     let copied = RefCell::new(HashMap::new());

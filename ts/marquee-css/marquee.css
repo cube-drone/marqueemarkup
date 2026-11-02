@@ -1543,7 +1543,9 @@ big {
  * page-level rules (body, h1-h4, u) are gone. XP.css's pixel-traced SVG art
  * (230KB) is redrawn small, so its window buttons, scroll buttons, dropdown arrows
  * and slider thumbs are approximations. Everything else is as they wrote it.
- *
+ */
+
+/*!
  * 98.css v0.1.21 - https://github.com/jdan/98.css
  * Copyright 2020 Jordan Scales
  *

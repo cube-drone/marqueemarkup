@@ -71,38 +71,48 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
 
   const zonesOf = (specs: DecoSpec[]): Zone[] => specs.filter((s): s is Zone => s.kind === "zone");
 
+  /** One line decoration per line of a container: the scheme class sets the
+   * --mq-* slots (marquee.css) and the style knobs set them inline; the
+   * cm-mq-zone rule in the theme consumes them. The frame itself is drawn once,
+   * behind them (the frames layer below). A line belongs to the innermost zone
+   * holding it, which already carries everything inherited from the zones
+   * around it: zones come outer-first, so an inner one simply overwrites. This
+   * runs on every keystroke and caret move, so one pass, and lines that look
+   * alike share a decoration. Directive fences sit at column 0, so z.from is
+   * already a line start. */
+  const zoneLines = (zones: Zone[], source: string) => {
+    const owner = new Map<number, Zone>();
+    for (const z of zones) {
+      for (let pos = z.from; pos <= z.to; ) {
+        owner.set(pos, z);
+        const nl = source.indexOf("\n", pos);
+        if (nl === -1) break;
+        pos = nl + 1;
+      }
+    }
+    const shared = new Map<string, Decoration>();
+    return [...owner].map(([pos, z]) => {
+      const open = TITLED.test(z.class ?? "") ? " cm-mq-zone-titled" : " cm-mq-zone-open";
+      const last = source.lastIndexOf("\n", z.to - 1) + 1;
+      const edge = (pos === z.from ? open : "") + (pos === last ? " cm-mq-zone-close" : "");
+      const key = `${edge}|${z.depth}|${z.look.class}|${z.look.style}`;
+      let deco = shared.get(key);
+      if (deco === undefined) {
+        deco = Decoration.line({
+          attributes: {
+            class: `cm-mq-zone${edge}${z.look.class === "" ? "" : ` ${z.look.class}`}`,
+            style: `${z.look.style === "" ? "" : `${z.look.style};`}--cm-mq-depth:${z.depth}`,
+          },
+        });
+        shared.set(key, deco);
+      }
+      return deco.range(pos);
+    });
+  };
+
   const toDecorations = (specs: DecoSpec[], spans: WeakMap<Node, Span>, source: string): DecorationSet => {
     const ranges = specs.flatMap((spec) => {
-      if (spec.kind === "zone") {
-        // One line decoration per line of the container: the scheme class
-        // sets the --mq-* slots (marquee.css) and the style knobs set them
-        // inline; the cm-mq-zone rule in the theme consumes them. The frame
-        // itself is drawn once, behind them (the frames layer below). Directive
-        // fences sit at column 0, so spec.from is already a line start.
-        // A line belongs to the innermost zone holding it, which already
-        // carries everything inherited from the zones around it.
-        const line = (edge: string) =>
-          Decoration.line({
-            attributes: {
-              class: `cm-mq-zone${edge}${spec.look.class === "" ? "" : ` ${spec.look.class}`}`,
-              style: `${spec.look.style === "" ? "" : `${spec.look.style};`}--cm-mq-depth:${spec.depth}`,
-            },
-          });
-        const nested = zonesOf(specs).filter((z) => z.depth > spec.depth && z.from >= spec.from && z.to <= spec.to);
-        const open = TITLED.test(spec.class ?? "") ? " cm-mq-zone-titled" : " cm-mq-zone-open";
-        const lines = [];
-        const last = source.lastIndexOf("\n", spec.to - 1) + 1;
-        for (let pos = spec.from; pos <= spec.to; ) {
-          if (!nested.some((z) => pos >= z.from && pos <= z.to)) {
-            const edge = (pos === spec.from ? open : "") + (pos === last ? " cm-mq-zone-close" : "");
-            lines.push(line(edge).range(pos));
-          }
-          const nl = source.indexOf("\n", pos);
-          if (nl === -1) break;
-          pos = nl + 1;
-        }
-        return lines;
-      }
+      if (spec.kind === "zone") return [];
       if (spec.kind === "mark") {
         // CodeMirror throws on an empty mark, and a throw here wedges the
         // editor: the keystroke lands in the DOM but never in the state.
@@ -136,7 +146,7 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
         block: true,
       }).range(spec.from, spec.to);
     });
-    return Decoration.set(ranges, true);
+    return Decoration.set([...zoneLines(zonesOf(specs), source), ...ranges], true);
   };
 
   /** Parse afresh (a new document) and plan. */
