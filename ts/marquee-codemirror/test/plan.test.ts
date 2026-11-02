@@ -267,6 +267,17 @@ test("zones count their painted depth, outer-first, skipping plain containers", 
   assert.equal(blockSpec(specs)?.look?.depth, 2, "a block inside knows how far in it sits");
 });
 
+test("an inner scheme replaces the outer one; inner knobs layer over outer ones", () => {
+  const src = ":::section scheme=windows accent=#800000\n:::section scheme=noir color=#fff8dc\n- a\n:::\n:::\n";
+  const specs = plan(src, noCursor, bareWebProfile);
+  const look = blockSpec(specs)?.look;
+  assert.equal(look?.class, "mq-scheme-noir", "stylesheet order must not pick the winner");
+  assert.ok(look?.style.includes("--mq-accent:#800000") && look.style.includes("--mq-color:#fff8dc"));
+  const inner = specs.filter((s) => s.kind === "zone")[1];
+  assert.equal(inner?.class, "mq-scheme-noir");
+  assert.equal(inner?.style, "--mq-color:#fff8dc", "the frame's own knobs stay its own");
+});
+
 test("comments dim; the whole vector corpus plans in-bounds", () => {
   assert.ok(find(plan("%% note\n\nhi\n", noCursor, bareWebProfile), (s) => s.kind === "mark" && s.class === "cm-mq-comment"));
   const dir = fileURLToPath(new URL("../../../vectors/", import.meta.url));

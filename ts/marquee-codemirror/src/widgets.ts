@@ -18,6 +18,7 @@
 import { EditorSelection } from "@codemirror/state";
 import { WidgetType, type EditorView, type LayerMarker } from "@codemirror/view";
 import type { Profile } from "@cube-drone/marquee-html-renderer";
+import type { Look } from "./plan.ts";
 
 /** One painted container's frame, in the layer behind the text: a real
  * <section> wearing the scheme, so marquee.css draws it exactly as it would
@@ -122,8 +123,8 @@ export class LinkWidget extends WidgetType {
 export class BlockWidget extends WidgetType {
   readonly html: string;
   readonly dimmed: boolean;
-  readonly look: { class: string; style: string } | undefined;
-  constructor(html: string, dimmed: boolean, look?: { class: string; style: string }) {
+  readonly look: Look | undefined;
+  constructor(html: string, dimmed: boolean, look?: Look) {
     super();
     this.html = html;
     this.dimmed = dimmed;
@@ -135,7 +136,8 @@ export class BlockWidget extends WidgetType {
       o.html === this.html &&
       o.dimmed === this.dimmed &&
       o.look?.class === this.look?.class &&
-      o.look?.style === this.look?.style
+      o.look?.style === this.look?.style &&
+      o.look?.depth === this.look?.depth
     );
   }
   toDOM(view: EditorView): HTMLElement {
@@ -146,7 +148,7 @@ export class BlockWidget extends WidgetType {
     // the painted zone around it.
     if (this.look !== undefined) {
       el.className += ` cm-mq-zone${this.look.class === "" ? "" : ` ${this.look.class}`}`;
-      if (this.look.style !== "") el.setAttribute("style", this.look.style);
+      el.setAttribute("style", `${this.look.style === "" ? "" : `${this.look.style};`}--cm-mq-depth:${this.look.depth ?? 1}`);
     }
     el.innerHTML = this.html;
     // Media loads late and changes the block's height; CM measured it before

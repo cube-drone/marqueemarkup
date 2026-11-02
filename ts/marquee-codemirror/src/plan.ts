@@ -60,11 +60,12 @@ export type DecoSpec =
   /** Paint a layout container's visual identity - scheme, background tile,
    * color, font - across the editor lines it occupies. The fences and the
    * source inside stay editable; they just wear the container's look, over
-   * one frame drawn behind them all. `depth` counts painted containers, 1 at
-   * the outermost, so a nested frame can sit inside its parent's. (The
-   * container's GEOMETRY still doesn't render here - that stays the job of
-   * a separate preview window.) */
-  | { kind: "zone"; from: number; to: number; depth: number; class?: string; style?: string };
+   * one frame drawn behind them all. `class` and `style` are this container's
+   * own, for its frame; `look` is what its lines wear, inherited knobs and all.
+   * `depth` counts painted containers, 1 at the outermost, so a nested frame
+   * can sit inside its parent's. (The container's GEOMETRY still doesn't render
+   * here - that stays the job of a separate preview window.) */
+  | { kind: "zone"; from: number; to: number; depth: number; look: Look; class?: string; style?: string };
 
 export type WidgetSpec =
   | { type: "emoji"; slug: string }
@@ -235,24 +236,28 @@ export function planFromAst(
       let inherited = look;
       if (span !== undefined && (worn.classes !== "" || worn.style !== "")) {
         const depth = (look?.depth ?? 0) + 1;
+        // Nested containers layer outer-first, so the inner look wins where
+        // they disagree - the same cascade rendering would produce. Knobs
+        // sort that out by order, but two scheme classes would fall to
+        // stylesheet order, so an inner scheme replaces the outer one.
+        const innerScheme = /\bmq-scheme-/.test(worn.classes);
+        const outerClasses = (look?.class ?? "")
+          .split(" ")
+          .filter((c) => c !== "" && !(innerScheme && c.startsWith("mq-scheme-")));
+        inherited = {
+          class: [...outerClasses, worn.classes].filter((c) => c !== "").join(" "),
+          style: [look?.style ?? "", worn.style].filter((s) => s !== "").join(";"),
+          depth,
+        };
         out.push({
           kind: "zone",
           from: span.start,
           to: span.end,
           depth,
+          look: inherited,
           ...(worn.classes === "" ? {} : { class: worn.classes }),
           ...(worn.style === "" ? {} : { style: worn.style }),
         });
-        // Nested containers layer outer-first, so the inner look wins where
-        // they disagree - the same cascade rendering would produce.
-        inherited =
-          look === undefined
-            ? { class: worn.classes, style: worn.style, depth }
-            : {
-                class: `${look.class} ${worn.classes}`.trim(),
-                style: [look.style, worn.style].filter((s) => s !== "").join(";"),
-                depth,
-              };
       }
       node.children.forEach((child) => block(child, inherited));
       return;

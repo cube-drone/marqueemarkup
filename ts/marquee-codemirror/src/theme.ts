@@ -64,10 +64,12 @@ export const marqueeTheme = EditorView.theme({
   },
   "& .cm-line.cm-mq-zone, & .cm-mq-block.cm-mq-zone": {
     background: "none",
+    border: "none",
     boxShadow: "none",
     clipPath: "none",
     paddingInline: "calc(var(--cm-mq-depth, 1) * 1.25rem)",
   },
+  "& .cm-mq-preview.cm-mq-zone": { borderLeft: "2px solid rgba(127,127,127,0.35)" },
   "& .cm-mq-zone::before, & .cm-mq-zone::after": { display: "none" },
   // The fences clear the frame's top and bottom edges...
   "& .cm-line.cm-mq-zone-open": { paddingTop: "0.9rem" },

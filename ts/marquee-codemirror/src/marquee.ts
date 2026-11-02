@@ -79,19 +79,24 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
         // inline; the cm-mq-zone rule in the theme consumes them. The frame
         // itself is drawn once, behind them (the frames layer below). Directive
         // fences sit at column 0, so spec.from is already a line start.
+        // A line belongs to the innermost zone holding it, which already
+        // carries everything inherited from the zones around it.
         const line = (edge: string) =>
           Decoration.line({
             attributes: {
-              class: `cm-mq-zone${edge}${spec.class === undefined ? "" : ` ${spec.class}`}`,
-              style: `${spec.style === undefined ? "" : `${spec.style};`}--cm-mq-depth:${spec.depth}`,
+              class: `cm-mq-zone${edge}${spec.look.class === "" ? "" : ` ${spec.look.class}`}`,
+              style: `${spec.look.style === "" ? "" : `${spec.look.style};`}--cm-mq-depth:${spec.depth}`,
             },
           });
+        const nested = zonesOf(specs).filter((z) => z.depth > spec.depth && z.from >= spec.from && z.to <= spec.to);
         const open = TITLED.test(spec.class ?? "") ? " cm-mq-zone-titled" : " cm-mq-zone-open";
         const lines = [];
         const last = source.lastIndexOf("\n", spec.to - 1) + 1;
         for (let pos = spec.from; pos <= spec.to; ) {
-          const edge = (pos === spec.from ? open : "") + (pos === last ? " cm-mq-zone-close" : "");
-          lines.push(line(edge).range(pos));
+          if (!nested.some((z) => pos >= z.from && pos <= z.to)) {
+            const edge = (pos === spec.from ? open : "") + (pos === last ? " cm-mq-zone-close" : "");
+            lines.push(line(edge).range(pos));
+          }
           const nl = source.indexOf("\n", pos);
           if (nl === -1) break;
           pos = nl + 1;
@@ -179,16 +184,13 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
   // height map rather than the DOM, so a frame reaching past the viewport still
   // gets its true box, and only frames touching the viewport are drawn. Zones
   // come outer-first, so nested frames stack the right way up.
-  let frameLayer: HTMLElement | null = null;
   const frames = layer({
     above: false,
     class: "cm-mq-frames",
-    mount(dom) {
-      frameLayer = dom;
-    },
     update: (u) =>
       u.docChanged || u.geometryChanged || u.viewportChanged || u.startState.field(field) !== u.state.field(field),
     markers(view): LayerMarker[] {
+      const frameLayer = view.scrollDOM.querySelector(":scope > .cm-mq-frames");
       if (frameLayer === null) return [];
       const base = frameLayer.getBoundingClientRect();
       const content = view.contentDOM.getBoundingClientRect();
@@ -204,7 +206,7 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
           const left = (content.left - base.left) / view.scaleX;
           const width = content.width / view.scaleX;
           const css = [
-            z.style,
+            z.look.style === "" ? undefined : z.look.style,
             `--cm-mq-fence-h:${first.height}px`,
             "position:absolute",
             "box-sizing:border-box",
