@@ -54,15 +54,34 @@ export const marqueeTheme = EditorView.theme({
     borderTop: "2px solid rgba(127,127,127,0.4)",
     verticalAlign: "middle",
   },
-  // A painted layout container: cm-mq-zone consumes the same --mq-* slots
-  // marquee.css gives .mq-page/.mq-section, so a section's scheme class
-  // (which sets the slots - load marquee.css for schemes), background tile,
-  // and color knobs land on the source lines they contain.
+  // A painted layout container is one real <section> behind its lines (the
+  // frames layer, marquee.ts), because a frame can't be sliced: pixel corners
+  // and clip-paths need the one box. Lines and blocks inside keep the scheme
+  // class for its slots, text color, and face, and give up everything that
+  // would draw a box per line. Load marquee.css for schemes.
   "& .cm-mq-zone": {
-    backgroundColor: "var(--mq-bg, transparent)",
-    backgroundImage: "var(--mq-bg-tile, none)",
     color: "var(--mq-color, inherit)",
   },
+  "& .cm-line.cm-mq-zone, & .cm-mq-block.cm-mq-zone": {
+    background: "none",
+    boxShadow: "none",
+    clipPath: "none",
+    paddingInline: "calc(var(--cm-mq-depth, 1) * 1.25rem)",
+  },
+  "& .cm-mq-zone::before, & .cm-mq-zone::after": { display: "none" },
+  // The fences clear the frame's top and bottom edges...
+  "& .cm-line.cm-mq-zone-open": { paddingTop: "0.9rem" },
+  "& .cm-line.cm-mq-zone-close": { paddingBottom: "0.9rem" },
+  // ...except a window's opening fence, which sits in its title bar.
+  "& .cm-line.cm-mq-zone-titled": { paddingTop: "3px", color: "#ffffff" },
+  // The frame's knobs without marquee.css. Keyed to the inline knob, so that
+  // a scheme's own painted background (an FF6 gradient) isn't overridden.
+  '& .cm-mq-frame[style*="--mq-bg:"]': { backgroundColor: "var(--mq-bg)" },
+  '& .cm-mq-frame[style*="--mq-bg-tile:"]': { backgroundImage: "var(--mq-bg-tile)" },
+  // An untitled window's bar, sized to the fence line sitting in it. Important
+  // against marquee.css's long selector; 98's bar starts 3px down its bevel.
+  "& .cm-mq-frame.mq-scheme-windows::before": { minHeight: "calc(var(--cm-mq-fence-h) - 3px) !important" },
+  "& .cm-mq-frame.mq-scheme-windows-xp::before": { minHeight: "var(--cm-mq-fence-h) !important" },
   // A rendered block sits in the text flow. PADDING, never margin: CodeMirror
   // measures a widget's offsetHeight (which excludes margin), so a margin
   // would drift every position below it by ~a line - breaking click accuracy

@@ -12,11 +12,11 @@
 // image reload, no height change. Only the block you're actually editing moves.
 
 import { StateField, type EditorState, type Extension } from "@codemirror/state";
-import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
+import { Decoration, type DecorationSet, EditorView, layer, type LayerMarker } from "@codemirror/view";
 import { parseWithPositions, type Node, type Span } from "@cube-drone/marquee-parser";
 import { bareWebProfile, render, type Profile } from "@cube-drone/marquee-html-renderer";
 import { planFromAst, type DecoSpec, type Sel } from "./plan.ts";
-import { BlockWidget, EmojiWidget, LinkWidget } from "./widgets.ts";
+import { BlockWidget, EmojiWidget, FrameMarker, LinkWidget } from "./widgets.ts";
 import { marqueeTheme } from "./theme.ts";
 
 export interface MarqueeEditorOptions {
@@ -25,8 +25,14 @@ export interface MarqueeEditorOptions {
   profile?: Partial<Profile>;
 }
 
+type Zone = Extract<DecoSpec, { kind: "zone" }>;
+
+/** A window's opening fence sits in its title bar rather than clearing it. */
+const TITLED = /\bmq-scheme-windows(-xp)?\b/;
+
 interface State {
   deco: DecorationSet;
+  zones: Zone[];
   source: string;
   doc: Node | null;
   spans: WeakMap<Node, Span>;
@@ -63,22 +69,29 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
     return cached;
   };
 
+  const zonesOf = (specs: DecoSpec[]): Zone[] => specs.filter((s): s is Zone => s.kind === "zone");
+
   const toDecorations = (specs: DecoSpec[], spans: WeakMap<Node, Span>, source: string): DecorationSet => {
     const ranges = specs.flatMap((spec) => {
       if (spec.kind === "zone") {
         // One line decoration per line of the container: the scheme class
         // sets the --mq-* slots (marquee.css) and the style knobs set them
-        // inline; the cm-mq-zone rule in the theme consumes them. Directive
+        // inline; the cm-mq-zone rule in the theme consumes them. The frame
+        // itself is drawn once, behind them (the frames layer below). Directive
         // fences sit at column 0, so spec.from is already a line start.
-        const deco = Decoration.line({
-          attributes: {
-            class: `cm-mq-zone${spec.class === undefined ? "" : ` ${spec.class}`}`,
-            ...(spec.style === undefined ? {} : { style: spec.style }),
-          },
-        });
+        const line = (edge: string) =>
+          Decoration.line({
+            attributes: {
+              class: `cm-mq-zone${edge}${spec.class === undefined ? "" : ` ${spec.class}`}`,
+              style: `${spec.style === undefined ? "" : `${spec.style};`}--cm-mq-depth:${spec.depth}`,
+            },
+          });
+        const open = TITLED.test(spec.class ?? "") ? " cm-mq-zone-titled" : " cm-mq-zone-open";
         const lines = [];
+        const last = source.lastIndexOf("\n", spec.to - 1) + 1;
         for (let pos = spec.from; pos <= spec.to; ) {
-          lines.push(deco.range(pos));
+          const edge = (pos === spec.from ? open : "") + (pos === last ? " cm-mq-zone-close" : "");
+          lines.push(line(edge).range(pos));
           const nl = source.indexOf("\n", pos);
           if (nl === -1) break;
           pos = nl + 1;
@@ -136,7 +149,7 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
       doc = null;
     }
     const specs = doc === null ? [] : planFromAst(doc, spans, source, selectionsOf(state), profile);
-    return { deco: toDecorations(specs, spans, source), source, doc, spans };
+    return { deco: toDecorations(specs, spans, source), zones: zonesOf(specs), source, doc, spans };
   };
 
   /** Re-plan for a moved cursor, reusing the cached parse and renders. */
@@ -145,7 +158,7 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
       return prev;
     }
     const specs = planFromAst(prev.doc, prev.spans, prev.source, selectionsOf(state), profile);
-    return { ...prev, deco: toDecorations(specs, prev.spans, prev.source) };
+    return { ...prev, deco: toDecorations(specs, prev.spans, prev.source), zones: zonesOf(specs) };
   };
 
   const field = StateField.define<State>({
@@ -162,5 +175,50 @@ export function marquee(options: MarqueeEditorOptions = {}): Extension {
     provide: (f) => EditorView.decorations.from(f, (v) => v.deco),
   });
 
-  return [field, marqueeTheme];
+  // Each painted container's one frame, behind the text. Measured from the
+  // height map rather than the DOM, so a frame reaching past the viewport still
+  // gets its true box, and only frames touching the viewport are drawn. Zones
+  // come outer-first, so nested frames stack the right way up.
+  let frameLayer: HTMLElement | null = null;
+  const frames = layer({
+    above: false,
+    class: "cm-mq-frames",
+    mount(dom) {
+      frameLayer = dom;
+    },
+    update: (u) =>
+      u.docChanged || u.geometryChanged || u.viewportChanged || u.startState.field(field) !== u.state.field(field),
+    markers(view): LayerMarker[] {
+      if (frameLayer === null) return [];
+      const base = frameLayer.getBoundingClientRect();
+      const content = view.contentDOM.getBoundingClientRect();
+      const { from: vFrom, to: vTo } = view.viewport;
+      const inset = "1.25rem";
+      return view.state
+        .field(field)
+        .zones.filter((z) => z.to >= vFrom && z.from <= vTo)
+        .map((z) => {
+          const first = view.lineBlockAt(z.from);
+          const top = (view.documentTop + first.top - base.top) / view.scaleY;
+          const height = view.lineBlockAt(z.to).bottom - first.top;
+          const left = (content.left - base.left) / view.scaleX;
+          const width = content.width / view.scaleX;
+          const css = [
+            z.style,
+            `--cm-mq-fence-h:${first.height}px`,
+            "position:absolute",
+            "box-sizing:border-box",
+            "margin:0",
+            "max-width:none",
+            `left:calc(${left}px + ${z.depth - 1} * ${inset})`,
+            `top:${top}px`,
+            `width:calc(${width}px - ${2 * (z.depth - 1)} * ${inset})`,
+            `height:${height}px`,
+          ];
+          return new FrameMarker(z.class ?? "", css.filter((c) => c !== undefined).join(";"));
+        });
+    },
+  });
+
+  return [field, frames, marqueeTheme];
 }

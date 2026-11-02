@@ -38,7 +38,7 @@ export interface Sel {
 
 /** A layout container's visual identity, carried onto rendered blocks
  * inside it so they wear the surrounding scheme. */
-export type Look = { class: string; style: string };
+export type Look = { class: string; style: string; depth?: number };
 
 export type DecoSpec =
   /** Style raw text in place (bold, a heading size, a color, an effect).
@@ -59,10 +59,12 @@ export type DecoSpec =
   | { kind: "preview"; at: number; node: Node; look?: Look }
   /** Paint a layout container's visual identity - scheme, background tile,
    * color, font - across the editor lines it occupies. The fences and the
-   * source inside stay editable; they just wear the container's look. (The
+   * source inside stay editable; they just wear the container's look, over
+   * one frame drawn behind them all. `depth` counts painted containers, 1 at
+   * the outermost, so a nested frame can sit inside its parent's. (The
    * container's GEOMETRY still doesn't render here - that stays the job of
    * a separate preview window.) */
-  | { kind: "zone"; from: number; to: number; class?: string; style?: string };
+  | { kind: "zone"; from: number; to: number; depth: number; class?: string; style?: string };
 
 export type WidgetSpec =
   | { type: "emoji"; slug: string }
@@ -232,10 +234,12 @@ export function planFromAst(
       const worn = containerLook(node.attrs, profile);
       let inherited = look;
       if (span !== undefined && (worn.classes !== "" || worn.style !== "")) {
+        const depth = (look?.depth ?? 0) + 1;
         out.push({
           kind: "zone",
           from: span.start,
           to: span.end,
+          depth,
           ...(worn.classes === "" ? {} : { class: worn.classes }),
           ...(worn.style === "" ? {} : { style: worn.style }),
         });
@@ -243,10 +247,11 @@ export function planFromAst(
         // they disagree - the same cascade rendering would produce.
         inherited =
           look === undefined
-            ? { class: worn.classes, style: worn.style }
+            ? { class: worn.classes, style: worn.style, depth }
             : {
                 class: `${look.class} ${worn.classes}`.trim(),
                 style: [look.style, worn.style].filter((s) => s !== "").join(";"),
+                depth,
               };
       }
       node.children.forEach((child) => block(child, inherited));

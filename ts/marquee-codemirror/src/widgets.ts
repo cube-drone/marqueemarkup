@@ -16,8 +16,34 @@
 // reload, no height churn (the cause of the scroll flailing).
 
 import { EditorSelection } from "@codemirror/state";
-import { WidgetType, type EditorView } from "@codemirror/view";
+import { WidgetType, type EditorView, type LayerMarker } from "@codemirror/view";
 import type { Profile } from "@cube-drone/marquee-html-renderer";
+
+/** One painted container's frame, in the layer behind the text: a real
+ * <section> wearing the scheme, so marquee.css draws it exactly as it would
+ * on the page. `css` is the knobs plus the measured box; inline, it beats the
+ * scheme's own idea of its size (a message bubble's fit-content). */
+export class FrameMarker implements LayerMarker {
+  readonly classes: string;
+  readonly css: string;
+  constructor(classes: string, css: string) {
+    this.classes = classes;
+    this.css = css;
+  }
+  eq(other: LayerMarker): boolean {
+    return other instanceof FrameMarker && other.classes === this.classes && other.css === this.css;
+  }
+  draw(): HTMLElement {
+    const el = document.createElement("section");
+    this.update(el);
+    return el;
+  }
+  update(el: HTMLElement): boolean {
+    el.className = `mq-section cm-mq-frame ${this.classes}`.trim();
+    el.setAttribute("style", this.css);
+    return true;
+  }
+}
 
 function cursorInto(view: EditorView, el: HTMLElement): void {
   const pos = view.posAtDOM(el);

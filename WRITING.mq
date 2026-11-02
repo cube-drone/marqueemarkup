@@ -2,8 +2,7 @@
 
 :::meta title="Marquee Markup" date=2026-07-10 tags="marquee, markup, guide, demo":::
 
-%% This comment never renders. If you can read it, you're in view-source —
-%% which is the point: comments are invisible to readers, never secret from them.
+%% This comment doesn't render. If you can read it, you're in view-source.
 
 :::center
 ![marquee-logo](./marquee-logo.png)
@@ -159,7 +158,7 @@ https://www.youtube.com/watch?v=kiTpHaShznE
 Wrap embeds in a `:::media` block — its knobs apply to everything inside. Width and height
 take exact pixels (like `200`) or the tokens `small` / `medium` / `large` / `full`. One
 dimension scales (aspect ratio kept); both dimensions make a frame the media fills, cropped,
-never squashed:
+not squashed:
 
 ```marquee
 :::media width=200 height=300
@@ -239,7 +238,7 @@ When numbers feel cold, the rungs have names: [teeny]teeny[/teeny],
 And a spoiler stays hidden until you ask: [spoiler]jesus dies at the end[/spoiler] —
 click to reveal it here, hover to peek at it in a plain HTML page.
 
-Fonts are picked from a closed list, never uploaded: [font=orbitron]SPACE STATION[/font],
+Fonts are picked from a closed list, not uploaded: [font=orbitron]SPACE STATION[/font],
 [font=vt323]terminal green[/font], [font=im-fell-english]ye olde booke[/font],
 [font=press-start]INSERT COIN[/font], [font=lobster]a fancy lobster[/font],
 [font=creepster]the abomination approves[/font], [font=comic]the people's classic[/font],
@@ -263,7 +262,7 @@ and [big]big[/big] is [small]small[/small]'s mirror.
 When numbers feel cold, the rungs have names: [teeny]teeny[/teeny],
 [tiny]tiny[/tiny], [huge]huge[/huge], [enormous]ENORMOUS[/enormous].
 
-Fonts are picked from a closed list, never uploaded: [font=orbitron]SPACE STATION[/font],
+Fonts are picked from a closed list, not uploaded: [font=orbitron]SPACE STATION[/font],
 [font=vt323]terminal green[/font], [font=im-fell-english]ye olde booke[/font],
 [font=press-start]INSERT COIN[/font], [font=lobster]a fancy lobster[/font],
 [font=creepster]the abomination approves[/font], [font=comic]the people's classic[/font],
@@ -376,7 +375,7 @@ renders as itself:
 [jitter]jitter[/jitter] · [wave]wave[/wave] · [rubber]rubber[/rubber] ·
 [typewriter speed=30]typewriter — it types itself out, letter by letter, in pure CSS[/typewriter]
 
-Nesting is the point: [marquee][blink]still open at 3am[/blink][/marquee]
+Nesting: [marquee][blink]still open at 3am[/blink][/marquee]
 
 [rainbow by=letter]EVERY LETTER ITS OWN HUE[/rainbow] ·
 [wave by=letter]a true undulating wave[/wave] ·
@@ -406,7 +405,7 @@ Nesting is the point: [marquee][blink]still open at 3am[/blink][/marquee]
 [jitter]jitter[/jitter] · [wave]wave[/wave] · [rubber]rubber[/rubber] ·
 [typewriter speed=30]typewriter — it types itself out, letter by letter, in pure CSS[/typewriter]
 
-Nesting is the point: [marquee][blink]still open at 3am[/blink][/marquee]
+Nesting: [marquee][blink]still open at 3am[/blink][/marquee]
 
 And `by=letter` / `by=word` give every unit its own offset cycle:
 
@@ -621,7 +620,7 @@ slide 3 of 12
 
 The box grows to fit, so nothing gets cut off. A caption too long for its picture makes the
 whole box taller, and the picture crops at its edges instead. Pictures can be cropped; words
-never are.
+can't.
 
 Put it all together: a backdrop, a character, and a dialogue box in a game-window scheme,
 typing itself out. That's a visual-novel scene, in plain Marquee:
@@ -1056,7 +1055,7 @@ And a whole page-in-miniature, wrapping slotted sections:
 ```marquee
 :::page layout=nav-footer scheme=noir
 :::section slot=nav
-**a tiny demo page** — layout picked from a list, never authored
+**a tiny demo page** — layout picked from a list
 :::
 :::section slot=main
 Nav above, footer below, this in the middle.
@@ -1069,7 +1068,7 @@ Nav above, footer below, this in the middle.
 
 :::page layout=nav-footer scheme=noir
 :::section slot=nav
-**a tiny demo page** — layout picked from a list, never authored
+**a tiny demo page** — layout picked from a list
 :::
 :::section slot=main
 Nav above, footer below, this in the middle. On a real site this wrapper would be the whole
@@ -1100,7 +1099,7 @@ graceful deal that lets old clients meet new vocabulary:
 
 :::construction:::
 
-And one deliberate mistake — spaces around `=` — so you can see "strict but never
+And one deliberate mistake — spaces around `=` — so you can see "strict but not
 destructive":
 
 ```marquee

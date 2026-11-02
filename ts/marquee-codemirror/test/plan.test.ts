@@ -259,6 +259,14 @@ test("nested container looks layer outer-first (inner wins)", () => {
   assert.ok(b.look.style.includes("--mq-color:#fff8dc"));
 });
 
+test("zones count their painted depth, outer-first, skipping plain containers", () => {
+  const src = ":::section scheme=windows\n:::section\n:::section scheme=noir\n- a\n:::\n:::\n:::\n";
+  const specs = plan(src, noCursor, bareWebProfile);
+  const zones = specs.filter((s) => s.kind === "zone");
+  assert.deepEqual(zones.map((z) => [z.class, z.depth]), [["mq-scheme-windows", 1], ["mq-scheme-noir", 2]]);
+  assert.equal(blockSpec(specs)?.look?.depth, 2, "a block inside knows how far in it sits");
+});
+
 test("comments dim; the whole vector corpus plans in-bounds", () => {
   assert.ok(find(plan("%% note\n\nhi\n", noCursor, bareWebProfile), (s) => s.kind === "mark" && s.class === "cm-mq-comment"));
   const dir = fileURLToPath(new URL("../../../vectors/", import.meta.url));
