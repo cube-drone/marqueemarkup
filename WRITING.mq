@@ -545,38 +545,43 @@ the same either way. There is deliberately no way to put a table inside a table.
 
 ## Expand
 
-Fold a region away behind its title. The first paragraph is the title (inline markup and
-all), everything after the blank line is the body, and the fold itself is the browser's own
-— no scripts were harmed. Lead with a heading instead and the heading is the title:
+Fold a region away behind its title. 
+
+The first paragraph in the expand element is the title, everything after that first paragraph
+is the body. It manages all this with just CSS and HTML, which is nice: no external JavaScript
+scripts required. 
 
 ```marquee
 :::expand
-What's in the *secret* menu? :eyes:
+I Don't Like Legacy Board Games :eyes:
 
-Everything on the regular menu, but [rainbow]whispered[/rainbow].
+Just Make The Board Game Configurable Up Front, like Cubitos, Dang.
 
-- Spaghetti al Limone
-- Linguine alle Vongole
+- Gloomhaven is horseshit, actually
+- I'm not going to play the same game with the same group 38 subtly different times in a row
+
 :::
 
 :::expand
-### Is there a secret *secret* menu?
-We are not at liberty to say.
+### I Might Make An Exception For *Oath*
+
+Oath can be reset relatively easily to its initial state. I don't like Oath for **other reasons**. 
 :::
 ```
 
 :::expand
-What's in the *secret* menu? :eyes:
+I Don't Like Legacy Board Games :eyes:
 
-Everything on the regular menu, but [rainbow]whispered[/rainbow].
+Just Make The Board Game Configurable Up Front, like Cubitos, Dang.
 
-- Spaghetti al Limone
-- Linguine alle Vongole
+- Gloomhaven is horseshit, actually
+- I'm not going to play the same game with the same group 38 subtly different times in a row
 :::
 
 :::expand
-### Is there a secret *secret* menu?
-We are not at liberty to say.
+### I Might Make An Exception For *Oath*
+
+Oath can be reset relatively easily to its initial state. I don't like Oath for **other reasons**. 
 :::
 
 ## Stacks
