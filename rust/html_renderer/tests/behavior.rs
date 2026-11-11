@@ -272,6 +272,47 @@ fn spoiler_withholds_but_never_eats() {
 }
 
 #[test]
+fn expand_is_native_details_titled_by_its_first_paragraph() {
+    let html = render_marquee(
+        ":::expand\nShipping *and* [color=#f06]returns[/color]\n\nTuesdays.\n\n- no refunds\n:::\n",
+        &BareWebProfile,
+    )
+    .unwrap();
+    assert!(
+        html.contains("<details class=\"mq-expand\"><summary>Shipping <em>and</em> <font"),
+        "the title is the first paragraph's inline content, markup and all: {html}"
+    );
+    assert!(html.contains("</summary><p>Tuesdays.</p><ul>"), "the rest is the body, in order");
+    assert!(!html.contains("<script") && !html.contains("onclick"), "the browser owns the fold");
+    // A leading heading is the title too, kept as a heading; a deep one is a
+    // span, because a summary may not hold a <p>.
+    let headed = render_marquee(":::expand\n## A *heading*\nbody\n:::\n", &BareWebProfile).unwrap();
+    assert!(headed.contains(
+        "<details class=\"mq-expand\"><summary><h2>A <em>heading</em></h2></summary><p>body</p></details>"
+    ));
+    let deep = render_marquee(":::expand\n######## deep\nbody\n:::\n", &BareWebProfile).unwrap();
+    assert!(deep.contains("<summary><span class=\"mq-h8\" role=\"heading\" aria-level=\"8\">deep</span></summary>"));
+    let flow = render_marquee("######## deep\n", &BareWebProfile).unwrap();
+    assert!(flow.contains("<p class=\"mq-h8\""), "in the flow it is still a block");
+    // Anything else first: no <summary> (the browser labels it), and it stays
+    // in the body.
+    let bare = render_marquee(":::expand\n- a\n\nbody\n:::\n", &BareWebProfile).unwrap();
+    assert!(bare.contains("<details class=\"mq-expand\"><ul><li><p>a</p></li></ul><p>body</p></details>"));
+    let leaf = render_marquee(":::expand:::\n", &BareWebProfile).unwrap();
+    assert!(leaf.contains("<details class=\"mq-expand\"></details>"), "a leaf is an empty fold");
+    // A title's sidenote lands at the top of the body, never inside <summary>.
+    let noted =
+        render_marquee(":::expand\ntitle[sidenote]psst[/sidenote]\n\nbody\n:::\n", &BareWebProfile).unwrap();
+    let after = &noted[noted.find("</summary>").expect("a summary") + "</summary>".len()..];
+    assert!(after.starts_with("<aside class=\"mq-notes\">") && after.contains("psst"), "{noted}");
+    assert!(after.contains("</aside><p>body</p>"));
+    // Folds nest.
+    let nested =
+        render_marquee(":::expand\nouter\n\n:::expand\ninner\n\ndeep\n:::\n:::\n", &BareWebProfile).unwrap();
+    assert_eq!(nested.matches("<details class=\"mq-expand\"><summary>").count(), 2);
+}
+
+#[test]
 fn tables_rows_cells_headers_nothing_eaten() {
     let html = render_marquee(
         ":::table header=row\n[c]dish[/c] [c]price[/c]\n\n[c]*Spaghetti*[/c] [c]$12[/c]\n:::\n",

@@ -543,6 +543,42 @@ association, not just the bold):
 Line the source up into columns or don't — spacing between cells is yours, and it renders
 the same either way. There is deliberately no way to put a table inside a table.
 
+## Expand
+
+Fold a region away behind its title. The first paragraph is the title (inline markup and
+all), everything after the blank line is the body, and the fold itself is the browser's own
+— no scripts were harmed. Lead with a heading instead and the heading is the title:
+
+```marquee
+:::expand
+What's in the *secret* menu? :eyes:
+
+Everything on the regular menu, but [rainbow]whispered[/rainbow].
+
+- Spaghetti al Limone
+- Linguine alle Vongole
+:::
+
+:::expand
+### Is there a secret *secret* menu?
+We are not at liberty to say.
+:::
+```
+
+:::expand
+What's in the *secret* menu? :eyes:
+
+Everything on the regular menu, but [rainbow]whispered[/rainbow].
+
+- Spaghetti al Limone
+- Linguine alle Vongole
+:::
+
+:::expand
+### Is there a secret *secret* menu?
+We are not at liberty to say.
+:::
+
 ## Stacks
 
 None of the prior stuff allowed you to stack content on top of other content, which means

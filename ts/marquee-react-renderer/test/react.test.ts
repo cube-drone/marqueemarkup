@@ -52,6 +52,24 @@ test("spoiler: click-to-reveal button, content present, never eaten", () => {
   assert.ok(block.includes("end.jpg"), "the image is present, withheld");
 });
 
+test("expand: native details, no state; the first paragraph is the summary", () => {
+  const out = html({ source: ":::expand\nShipping *and* returns\n\nTuesdays.\n:::\n" });
+  assert.ok(out.includes('<details class="mq-expand"'), "the shared class, the native element");
+  assert.ok(/<details[^>]*><summary[^>]*>Shipping <em[^>]*>and<\/em> returns<\/summary><p[^>]*>Tuesdays\.<\/p><\/details>/.test(out), out);
+  assert.ok(!out.includes(" open"), "starts folded");
+  // A leading heading is the title, kept as a heading inside the summary.
+  const headed = html({ source: ":::expand\n## Why?\nbecause\n:::\n" });
+  assert.ok(/<details[^>]*><summary><h2[^>]*>Why\?<\/h2><\/summary><p[^>]*>because<\/p>/.test(headed), headed);
+  // Anything else first: no summary, nothing eaten.
+  const bare = html({ source: ":::expand\n- a\n:::\n" });
+  assert.ok(bare.includes("<details") && !bare.includes("<summary") && bare.includes("<li"));
+  // A title's sidenote must not wrap the summary: a summary that is not the
+  // details' first child is not a summary.
+  const noted = html({ source: ":::expand\ntitle[sidenote]psst[/sidenote]\n\nbody\n:::\n" });
+  assert.ok(/<details[^>]*><summary/.test(noted), "summary is still the first child");
+  assert.ok(/<\/summary><aside class="mq-notes">.*psst/.test(noted), "the note sits just below it");
+});
+
 test("never eat content: unknown vocabulary shrugs, children survive", () => {
   const out = html({ source: "[spiral]still here[/spiral]\n\n:::nonsense\ninside\n:::\n" });
   assert.ok(out.includes("still here"), "unknown span keeps its children");

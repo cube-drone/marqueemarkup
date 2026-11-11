@@ -72,16 +72,8 @@ function renderNode(node: Node, ctx: Ctx): string {
       return `<div class="mq-doc">${children(node.children, ctx)}</div>`;
     case "paragraph":
       return flushNotes(ctx, `<p>${children(node.children, ctx)}</p>`);
-    case "heading": {
-      // HTML's ladder stops at h6; levels 7-8 (the grammar allows 1-8) keep
-      // real heading semantics via ARIA on a styled block.
-      const inner = children(node.children, ctx);
-      const html =
-        node.level <= 6
-          ? `<h${node.level}>${inner}</h${node.level}>`
-          : `<p class="mq-h${node.level}" role="heading" aria-level="${node.level}">${inner}</p>`;
-      return flushNotes(ctx, html);
-    }
+    case "heading":
+      return flushNotes(ctx, headingHtml(node, "p", ctx));
     case "code_block": {
       const lang = infoToken(node.info);
       const cls = lang === null ? "" : ` class="language-${ctx.attr(lang)}"`;
@@ -137,6 +129,16 @@ function renderNode(node: Node, ctx: Ctx): string {
     case "hard_break":
       return `<br${ctx.void}`;
   }
+}
+
+/** HTML's ladder stops at h6; levels 7-8 (the grammar allows 1-8) keep real
+ * heading semantics via ARIA on a styled element - `deep` names it: a block
+ * in the flow, a span where only phrasing content may go. */
+function headingHtml(node: Node & { type: "heading" }, deep: "p" | "span", ctx: Ctx): string {
+  const inner = children(node.children, ctx);
+  return node.level <= 6
+    ? `<h${node.level}>${inner}</h${node.level}>`
+    : `<${deep} class="mq-h${node.level}" role="heading" aria-level="${node.level}">${inner}</${deep}>`;
 }
 
 function children(nodes: Node[], ctx: Ctx): string {
@@ -405,8 +407,12 @@ function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string 
   // the hook (it claims on name and attrs alone) instead of rendering the
   // children for it: rendering them twice per level is exponential in
   // nesting, and a note inside would count twice.
-  if ((name === "table" || name === "stack") && profile.directive(name, attrs, "") === null) {
-    return name === "table" ? renderTable(attrs, nodes, ctx) : renderStack(attrs, nodes, ctx);
+  if ((name === "table" || name === "stack" || name === "expand") && profile.directive(name, attrs, "") === null) {
+    return name === "table"
+      ? renderTable(attrs, nodes, ctx)
+      : name === "stack"
+        ? renderStack(attrs, nodes, ctx)
+        : renderExpand(nodes, ctx);
   }
   const inner = children(nodes, ctx);
   const custom = profile.directive(name, attrs, inner);
@@ -492,6 +498,27 @@ function directive(name: string, attrs: Attrs, nodes: Node[], ctx: Ctx): string 
   return nodes.length > 0
     ? `<div class="mq-unknown" data-directive="${ctx.attr(name)}">${inner}</div>`
     : `<div class="mq-placeholder" data-directive="${ctx.attr(name)}"></div>`;
+}
+
+/** :::expand (SPEC.md, "Expand"): a region folded behind its title - native
+ * <details>/<summary>, so the fold needs no script and the browser supplies
+ * the keyboard handling, the semantics, and find-in-page that opens it. The
+ * title is the first child when that child is a paragraph (its inline
+ * content, whole) or a heading (the heading itself, so the fold keeps its
+ * place in the outline) - either way a title takes the full inline grammar.
+ * Any other first child (or none) leaves the title out and the browser
+ * supplies its own localized label; that child stays in the body, never
+ * eaten. */
+function renderExpand(nodes: Node[], ctx: Ctx): string {
+  const first = nodes[0];
+  if (first === undefined || (first.type !== "paragraph" && first.type !== "heading")) {
+    return `<details class="mq-expand">${children(nodes, ctx)}</details>`;
+  }
+  // A summary holds phrasing content or a heading: a deep heading is a span.
+  const title = first.type === "paragraph" ? children(first.children, ctx) : headingHtml(first, "span", ctx);
+  // A title's sidenotes land at the top of the body, just below it.
+  const summary = flushNotes(ctx, `<summary>${title}</summary>`);
+  return `<details class="mq-expand">${summary}${children(nodes.slice(1), ctx)}</details>`;
 }
 
 /** :::table (SPEC.md, "Tables"): each paragraph child is a row; a row's

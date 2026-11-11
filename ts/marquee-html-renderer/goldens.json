@@ -208,6 +208,22 @@
     "html": "<div class=\"mq-doc\"><div class=\"mq-conflict\"><div class=\"mq-variant\"><div class=\"mq-variant-head\"><span class=\"mq-variant-label\">a</span></div><div class=\"mq-conflict\"><div class=\"mq-variant\"><div class=\"mq-variant-head\"><span class=\"mq-variant-label\">a1</span></div><p>one</p></div><div class=\"mq-variant\"><div class=\"mq-variant-head\"><span class=\"mq-variant-label\">a2</span></div><p>two</p></div></div></div><div class=\"mq-variant\"><div class=\"mq-variant-head\"><span class=\"mq-variant-label\">b</span></div><p>three</p></div></div></div>"
   },
   {
+    "name": "directives/expand",
+    "html": "<div class=\"mq-doc\"><details class=\"mq-expand\"><summary>Shipping <em>and</em> returns</summary><p>We ship on Tuesdays.</p><ul><li><p>no refunds</p></li><li><p>no exceptions</p></li></ul></details></div>"
+  },
+  {
+    "name": "directives/expand-heading-title",
+    "html": "<div class=\"mq-doc\"><details class=\"mq-expand\"><summary><h2>Why <em>Tuesdays</em>?</h2></summary><p>The truck comes on Tuesdays.</p></details></div>"
+  },
+  {
+    "name": "directives/expand-first-child-not-a-paragraph",
+    "html": "<div class=\"mq-doc\"><details class=\"mq-expand\"><ul><li><p>straight to</p></li><li><p>the list</p></li></ul></details></div>"
+  },
+  {
+    "name": "directives/expand-nested",
+    "html": "<div class=\"mq-doc\"><details class=\"mq-expand\"><summary>outer</summary><details class=\"mq-expand\"><summary>inner</summary><p>deep</p></details></details></div>"
+  },
+  {
     "name": "emphasis/simple",
     "html": "<div class=\"mq-doc\"><p><em>hi</em></p></div>"
   },

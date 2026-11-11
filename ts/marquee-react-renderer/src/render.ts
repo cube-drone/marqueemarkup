@@ -204,6 +204,20 @@ function withNotes(ctx: Ctx, element: ReactNode, key: string): ReactNode {
   );
 }
 
+/** HTML's ladder stops at h6; 7 and 8 keep heading semantics via ARIA on a
+ * styled element - `deep` names it: a block in the flow, a span where only
+ * phrasing content may go. */
+function headingEl(node: Node & { type: "heading" }, deep: "p" | "span", ctx: Ctx, key: string): ReactNode {
+  const inner = renderChildren(node.children, ctx);
+  return node.level <= 6
+    ? h(`h${node.level}`, nodeProps(node, ctx, { key }), ...inner)
+    : h(
+        deep,
+        nodeProps(node, ctx, { key, className: `mq-h${node.level}`, role: "heading", "aria-level": node.level }),
+        ...inner,
+      );
+}
+
 export function renderNode(node: Node, ctx: Ctx, key: string): ReactNode {
   switch (node.type) {
     case "document":
@@ -212,24 +226,8 @@ export function renderNode(node: Node, ctx: Ctx, key: string): ReactNode {
       const el = h("p", nodeProps(node, ctx, { key }), ...renderChildren(node.children, ctx));
       return withNotes(ctx, el, key);
     }
-    case "heading": {
-      const inner = renderChildren(node.children, ctx);
-      // HTML's ladder stops at h6; 7 and 8 keep heading semantics via ARIA.
-      const el =
-        node.level <= 6
-          ? h(`h${node.level}`, nodeProps(node, ctx, { key }), ...inner)
-          : h(
-              "p",
-              nodeProps(node, ctx, {
-                key,
-                className: `mq-h${node.level}`,
-                role: "heading",
-                "aria-level": node.level,
-              }),
-              ...inner,
-            );
-      return withNotes(ctx, el, key);
-    }
+    case "heading":
+      return withNotes(ctx, headingEl(node, "p", ctx, key), key);
     case "code_block": {
       const lang = infoToken(node.info);
       return h(
@@ -412,8 +410,12 @@ function directive(node: Node & { type: "directive" }, ctx: Ctx, key: string): R
   // Built-ins that lay their children out themselves (table, stack) probe
   // the hooks instead of rendering the children for them: rendering them
   // twice per level is exponential in nesting, and a note would count twice.
-  if ((name === "table" || name === "stack") && !claimed("directive", name, attrs, ctx)) {
-    return name === "table" ? renderTable(node, ctx, key) : renderStack(node, ctx, key);
+  if ((name === "table" || name === "stack" || name === "expand") && !claimed("directive", name, attrs, ctx)) {
+    return name === "table"
+      ? renderTable(node, ctx, key)
+      : name === "stack"
+        ? renderStack(node, ctx, key)
+        : renderExpand(node, ctx, key);
   }
   const kids = renderChildren(node.children, ctx);
 
@@ -523,6 +525,38 @@ function directive(node: Node & { type: "directive" }, ctx: Ctx, key: string): R
   return node.children.length > 0
     ? h("div", nodeProps(node, ctx, { key, className: "mq-unknown", "data-directive": name }), ...kids)
     : h("div", nodeProps(node, ctx, { key, className: "mq-placeholder", "data-directive": name }));
+}
+
+/** :::expand - native <details>/<summary> (SPEC.md, "Expand"): the browser
+ * owns the fold, so there is no state here. The title is the first child
+ * when it is a paragraph (its inline content; the summary registers as that
+ * paragraph for scroll sync) or a heading (the heading itself, inside the
+ * summary); otherwise the browser supplies its own label. */
+function renderExpand(node: Node & { type: "directive" }, ctx: Ctx, key: string): ReactNode {
+  const first = node.children[0];
+  if (first === undefined || (first.type !== "paragraph" && first.type !== "heading")) {
+    return h("details", nodeProps(node, ctx, { key, className: "mq-expand" }), ...renderChildren(node.children, ctx));
+  }
+  // A summary holds phrasing content or a heading: a deep heading is a span.
+  const summary =
+    first.type === "paragraph"
+      ? h("summary", nodeProps(first, ctx, { key: "summary" }), ...renderChildren(first.children, ctx))
+      : h("summary", { key: "summary" }, headingEl(first, "span", ctx, "0"));
+  // A title's sidenotes land at the top of the body, just below it. Not
+  // withNotes: its wrapper would stop the summary being the details' first
+  // child, and a summary anywhere else is not a summary.
+  const pending = ctx.note.pending;
+  ctx.note.pending = [];
+  const notes =
+    pending.length === 0
+      ? null
+      : h(
+          "aside",
+          { key: "notes", className: "mq-notes" },
+          pending.map((n, i) => h("p", { key: i, className: "mq-note" }, n)),
+        );
+  const body = node.children.slice(1).map((child, i) => renderNode(child, ctx, String(i + 1)));
+  return h("details", nodeProps(node, ctx, { key, className: "mq-expand" }), summary, notes, ...body);
 }
 
 /** :::table - paragraph-rows, [c] cell spans (SPEC.md, "Tables"). */

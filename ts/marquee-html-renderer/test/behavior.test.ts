@@ -309,6 +309,39 @@ test("spoiler: content present and never eaten, just withheld", () => {
   assert.ok(block.includes("<img") && block.includes("end.jpg"), "the image survives, just blurred");
 });
 
+test("expand: native details, the first paragraph is the title, nothing eaten", () => {
+  const html = renderMarquee(":::expand\nShipping *and* [color=#f06]returns[/color]\n\nTuesdays.\n\n- no refunds\n:::\n");
+  assert.ok(
+    html.includes('<details class="mq-expand"><summary>Shipping <em>and</em> <font'),
+    "the title is the first paragraph's inline content, markup and all",
+  );
+  assert.ok(html.includes("</summary><p>Tuesdays.</p><ul>"), "the rest is the body, in order");
+  assert.ok(!html.includes("<script") && !html.includes("onclick"), "the browser owns the fold");
+  // A leading heading is the title too, kept as a heading; a deep one is a
+  // span, because a summary may not hold a <p>.
+  const headed = renderMarquee(":::expand\n## A *heading*\nbody\n:::\n");
+  assert.ok(headed.includes('<details class="mq-expand"><summary><h2>A <em>heading</em></h2></summary><p>body</p></details>'));
+  const deep = renderMarquee(":::expand\n######## deep\nbody\n:::\n");
+  assert.ok(deep.includes('<summary><span class="mq-h8" role="heading" aria-level="8">deep</span></summary>'));
+  assert.ok(renderMarquee("######## deep\n").includes('<p class="mq-h8"'), "in the flow it is still a block");
+  // Anything else first: no <summary> (the browser labels it), and it stays
+  // in the body.
+  const bare = renderMarquee(":::expand\n- a\n\nbody\n:::\n");
+  assert.ok(bare.includes('<details class="mq-expand"><ul><li><p>a</p></li></ul><p>body</p></details>'));
+  assert.ok(renderMarquee(":::expand:::\n").includes('<details class="mq-expand"></details>'), "a leaf is an empty fold");
+  // A title's sidenote lands at the top of the body, never inside <summary>.
+  const noted = renderMarquee(":::expand\ntitle[sidenote]psst[/sidenote]\n\nbody\n:::\n");
+  assert.ok(/<\/summary><aside class="mq-notes">.*psst.*<\/aside><p>body<\/p>/.test(noted));
+  // Folds nest, and an embedder may still claim the name.
+  const nested = renderMarquee(":::expand\nouter\n\n:::expand\ninner\n\ndeep\n:::\n:::\n");
+  assert.equal((nested.match(/<details class="mq-expand"><summary>/g) ?? []).length, 2);
+  const claimed = renderMarquee(":::expand\nt\n\nb\n:::\n", {
+    ...bareWebProfile,
+    directive: (name, _attrs, inner) => (name === "expand" ? `<x-fold>${inner}</x-fold>` : null),
+  });
+  assert.ok(claimed.includes("<x-fold>") && !claimed.includes("<details"));
+});
+
 test("tables: paragraph-rows, [c] cells, header promotion, nothing eaten", () => {
   const html = renderMarquee(
     ":::table header=row\n[c]dish[/c] [c]price[/c]\n\n[c]*Spaghetti*[/c] [c]$12[/c]\n:::\n",

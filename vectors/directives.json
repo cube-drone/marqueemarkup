@@ -588,5 +588,238 @@
       "type": "document",
       "version": 0
     }
+  },
+  {
+    "name": "directives/expand",
+    "marquee": ":::expand\nShipping *and* returns\n\nWe ship on Tuesdays.\n\n- no refunds\n- no exceptions\n::: expand\n",
+    "ast": {
+      "children": [
+        {
+          "attrs": {},
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Shipping "
+                },
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "and"
+                    }
+                  ],
+                  "type": "emphasis"
+                },
+                {
+                  "type": "text",
+                  "value": " returns"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "We ship on Tuesdays."
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "no refunds"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "list_item"
+                },
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "no exceptions"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "list_item"
+                }
+              ],
+              "ordered": false,
+              "type": "list"
+            }
+          ],
+          "name": "expand",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    }
+  },
+  {
+    "name": "directives/expand-heading-title",
+    "marquee": ":::expand\n## Why *Tuesdays*?\nThe truck comes on Tuesdays.\n::: expand\n",
+    "ast": {
+      "children": [
+        {
+          "attrs": {},
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Why "
+                },
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "Tuesdays"
+                    }
+                  ],
+                  "type": "emphasis"
+                },
+                {
+                  "type": "text",
+                  "value": "?"
+                }
+              ],
+              "level": 2,
+              "type": "heading"
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The truck comes on Tuesdays."
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "name": "expand",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    }
+  },
+  {
+    "name": "directives/expand-first-child-not-a-paragraph",
+    "marquee": ":::expand\n- straight to\n- the list\n:::\n",
+    "ast": {
+      "children": [
+        {
+          "attrs": {},
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "straight to"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "list_item"
+                },
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "the list"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "list_item"
+                }
+              ],
+              "ordered": false,
+              "type": "list"
+            }
+          ],
+          "name": "expand",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    }
+  },
+  {
+    "name": "directives/expand-nested",
+    "marquee": ":::expand\nouter\n\n:::expand\ninner\n\ndeep\n::: expand\n::: expand\n",
+    "ast": {
+      "children": [
+        {
+          "attrs": {},
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "outer"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {},
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "inner"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "deep"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "name": "expand",
+              "type": "directive"
+            }
+          ],
+          "name": "expand",
+          "type": "directive"
+        }
+      ],
+      "type": "document",
+      "version": 0
+    }
   }
 ]

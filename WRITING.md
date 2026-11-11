@@ -513,6 +513,37 @@ cell. The blank line between rows is just the ordinary paragraph break:
   or don't; it renders the same.
 - There is deliberately no way to put a table inside a table.
 
+## Expand: fold it away
+
+Wrap a region in `:::expand` and it folds up behind its title — click (or tab to it and press
+Enter) to open it. The **first paragraph is the title**; everything after the blank line is
+what's inside:
+
+```
+:::expand
+Shipping *and* returns
+
+We ship on Tuesdays.
+
+- no refunds
+- no exceptions
+:::
+```
+
+- The title is an ordinary paragraph, so it takes the full inline grammar: emphasis, color,
+  emoji, even effects.
+- **Mind the blank line.** Title and body on consecutive lines are one paragraph, and the
+  whole thing becomes the title.
+- **Or lead with a heading**: `## Shipping and returns` as the first line is the title too,
+  at heading size, and it stays a real heading in the page outline. Good for FAQs. (A heading
+  is one line, so no blank line needed after it.)
+- If the block starts with anything else (say it opens with a list), the reader gets a
+  generic "Details" label and nothing is lost.
+- It's for *optional* reading — long asides, answers, fine print. To hide something until the
+  reader asks, that's `[spoiler]`.
+- Folds nest. No JavaScript is involved anywhere: it's the browser's own disclosure widget, so
+  find-in-page still finds what's folded.
+
 ## Stacks: content on top of content
 
 A `:::stack` piles its children on top of each other: a picture with words over it, a card

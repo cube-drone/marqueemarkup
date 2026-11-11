@@ -600,6 +600,40 @@ stacks) and its strong point is inline nesting (explicit BBCode closers, legible
 - Depth arithmetic: page > section > table is three directive levels - comfortable under the
   cap even before v0's raise, by design.
 
+### Expand: a region folded behind its title
+
+```
+:::expand
+Shipping *and* returns
+
+We ship on Tuesdays.
+::: expand
+```
+
+Pure vocabulary - one directive, no attrs, no new grammar - and the one piece of reader
+interaction the language defines, so it is built on the one interactive element HTML gives
+away for free:
+
+- **The first child is the title when it is a paragraph or a heading; the rest is the body.**
+  A paragraph gives its inline content, whole; a heading stays a heading inside the title, so
+  a folded section keeps its place in the document outline (and needs no blank line before the
+  body). Either way the title takes the full inline grammar (emphasis, color, emoji, effects)
+  with no second mini-language in an attribute value, and it lives in the AST like any other
+  text: positioned, conformance-covered, identical in every implementation. When the first
+  child is anything else (or there are no children) there is no title: the renderer supplies
+  a generic label and that child stays in the body.
+- **Rendered as native disclosure** - `<details>`/`<summary>` in HTML, folded by default. No
+  script: the browser owns the toggle, the keyboard handling, the accessibility semantics, and
+  find-in-page reaching into a folded region. An interactive renderer adds nothing; a renderer
+  for a medium that cannot fold shows the title followed by the body.
+- **Nothing is eaten.** Folded content is in the AST and the DOM, never withheld from the
+  document. A renderer that doesn't know `expand` shows the title paragraph and then the body
+  as plain content, which is the right reading order anyway.
+- **Folding is not secrecy** - that is `spoiler`. An expand says "this is optional"; a spoiler
+  says "this is withheld until you ask."
+- Folds nest, under the ordinary directive depth cap. A title's sidenotes land at the top of
+  the body.
+
 ### Stacks: layered content
 
 ```

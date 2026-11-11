@@ -203,14 +203,7 @@ fn render_node(node: &Node, ctx: &mut Ctx) -> String {
             flush_notes(ctx, html)
         }
         Node::Heading { level, children: c } => {
-            // HTML's ladder stops at h6; levels 7-8 (the grammar allows 1-8)
-            // keep real heading semantics via ARIA on a styled block.
-            let inner = children(c, ctx);
-            let html = if *level <= 6 {
-                format!("<h{level}>{inner}</h{level}>")
-            } else {
-                format!("<p class=\"mq-h{level}\" role=\"heading\" aria-level=\"{level}\">{inner}</p>")
-            };
+            let html = heading_html(*level, c, "p", ctx);
             flush_notes(ctx, html)
         }
         Node::CodeBlock { info, text } => {
@@ -283,6 +276,18 @@ fn serde_reason(reason: &marquee_parser::Reason) -> &'static str {
         DepthExceeded => "depth_exceeded",
         MismatchedClose => "mismatched_close",
         StrayClose => "stray_close",
+    }
+}
+
+/// HTML's ladder stops at h6; levels 7-8 (the grammar allows 1-8) keep real
+/// heading semantics via ARIA on a styled element - `deep` names it: a block
+/// in the flow, a span where only phrasing content may go.
+fn heading_html(level: u8, nodes: &[Node], deep: &str, ctx: &mut Ctx) -> String {
+    let inner = children(nodes, ctx);
+    if level <= 6 {
+        format!("<h{level}>{inner}</h{level}>")
+    } else {
+        format!("<{deep} class=\"mq-h{level}\" role=\"heading\" aria-level=\"{level}\">{inner}</{deep}>")
     }
 }
 
@@ -488,8 +493,12 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
     // the hook (it claims on name and attrs alone) instead of rendering the
     // children for it: rendering them twice per level is exponential in
     // nesting, and a note inside would count twice.
-    if matches!(name, "table" | "stack") && ctx.profile.directive(name, attrs, "").is_none() {
-        return if name == "table" { render_table(attrs, nodes, ctx) } else { render_stack(attrs, nodes, ctx) };
+    if matches!(name, "table" | "stack" | "expand") && ctx.profile.directive(name, attrs, "").is_none() {
+        return match name {
+            "table" => render_table(attrs, nodes, ctx),
+            "stack" => render_stack(attrs, nodes, ctx),
+            _ => render_expand(nodes, ctx),
+        };
     }
     let inner = children(nodes, ctx);
     if let Some(custom) = ctx.profile.directive(name, attrs, &inner) {
@@ -599,6 +608,27 @@ fn directive(name: &str, attrs: &Attrs, nodes: &[Node], ctx: &mut Ctx) -> String
             ctx.attr(name)
         ),
     }
+}
+
+/// :::expand (SPEC.md, "Expand"): a region folded behind its title - native
+/// <details>/<summary>, so the fold needs no script and the browser supplies
+/// the keyboard handling, the semantics, and find-in-page that opens it. The
+/// title is the first child when that child is a paragraph (its inline
+/// content, whole) or a heading (the heading itself, so the fold keeps its
+/// place in the outline) - either way a title takes the full inline grammar.
+/// Any other first child (or none) leaves the title out and the browser
+/// supplies its own localized label; that child stays in the body, never
+/// eaten.
+fn render_expand(nodes: &[Node], ctx: &mut Ctx) -> String {
+    let title = match nodes.first() {
+        Some(Node::Paragraph { children: c }) => children(c, ctx),
+        // A summary holds phrasing content or a heading: a deep heading is a span.
+        Some(Node::Heading { level, children: c }) => heading_html(*level, c, "span", ctx),
+        _ => return format!("<details class=\"mq-expand\">{}</details>", children(nodes, ctx)),
+    };
+    // A title's sidenotes land at the top of the body, just below it.
+    let summary = flush_notes(ctx, format!("<summary>{title}</summary>"));
+    format!("<details class=\"mq-expand\">{summary}{}</details>", children(&nodes[1..], ctx))
 }
 
 /// :::table (SPEC.md, "Tables"): each paragraph child is a row; a row's
