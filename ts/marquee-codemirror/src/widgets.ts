@@ -120,6 +120,29 @@ export class LinkWidget extends WidgetType {
   }
 }
 
+// How tall each rendered block last measured, by its HTML. CodeMirror has to
+// guess the height of a widget it has not drawn, and guesses one line. A
+// block's widget is new every time the block opens to its source or closes
+// again, so without this a tall picture whose top is scrolled out of sight
+// was taken for a line: it then seemed to end above the window, was never
+// drawn or measured, and everything under it slid up by the picture's height.
+// The dimmed preview and the rendered block share an entry - same HTML, same
+// height. Bounded like the render cache; clearing costs one bad guess.
+const blockHeights = new Map<string, number>();
+
+function rememberHeight(view: EditorView, el: HTMLElement, html: string): void {
+  view.requestMeasure({
+    read: () => el.offsetHeight,
+    write: (height) => {
+      // Zero is a block not laid out (or already removed), not a measurement.
+      if (height > 0 && el.isConnected) {
+        if (blockHeights.size > 2000) blockHeights.clear();
+        blockHeights.set(html, height);
+      }
+    },
+  });
+}
+
 export class BlockWidget extends WidgetType {
   readonly html: string;
   readonly dimmed: boolean;
@@ -140,6 +163,9 @@ export class BlockWidget extends WidgetType {
       o.look?.depth === this.look?.depth
     );
   }
+  get estimatedHeight(): number {
+    return blockHeights.get(this.html) ?? -1;
+  }
   toDOM(view: EditorView): HTMLElement {
     const el = document.createElement("div");
     el.className = this.dimmed ? "cm-mq-block cm-mq-preview mq-doc" : "cm-mq-block mq-doc";
@@ -152,11 +178,13 @@ export class BlockWidget extends WidgetType {
     }
     el.innerHTML = this.html;
     // Media loads late and changes the block's height; CM measured it before
-    // the load, so re-measure when it arrives or the coordinate map drifts.
+    // the load, so re-measure when it arrives or the coordinate map drifts -
+    // and note the new height (asking for the read is asking for a measure).
     el.querySelectorAll("img, video").forEach((media) => {
-      media.addEventListener("load", () => view.requestMeasure(), { once: true });
-      media.addEventListener("loadedmetadata", () => view.requestMeasure(), { once: true });
+      media.addEventListener("load", () => rememberHeight(view, el, this.html), { once: true });
+      media.addEventListener("loadedmetadata", () => rememberHeight(view, el, this.html), { once: true });
     });
+    rememberHeight(view, el, this.html);
     // Click the rendered block (but not a link/control inside it) to edit.
     el.addEventListener("mousedown", (e) => {
       const t = e.target as HTMLElement;
