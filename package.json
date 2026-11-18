@@ -1,6 +1,6 @@
 {
   "name": "marqueemarkup",
-  "version": "0.10.4",
+  "version": "0.10.5",
   "private": true,
   "description": "The Marquee markup language: spec, conformance vectors, and reference implementations",
   "type": "module",
